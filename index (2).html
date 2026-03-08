@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURA — Practice Readiness Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&family=Epilogue:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#F8F6F2;--white:#FFFFFF;--ink:#0C0B09;--ink2:#1C1A17;--ink3:#2E2C28;
+  --border:#E2DDD6;--border2:#C9C3BA;
+  --sage:#2D6A4F;--sage-m:#52B788;--sage-l:#B7E4C7;--sage-xl:#EBF8F1;
+  --gold:#9B6F1A;--gold-m:#C9A84C;--gold-xl:#FBF5E0;
+  --red:#B91C1C;--red-l:#FEE2E2;
+  --blue:#1D4ED8;--blue-l:#EFF6FF;
+  --gray:#6B7280;--gray2:#9CA3AF;
+  --radius:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+.progress-wrap{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--ink2);height:52px;display:flex;align-items:center;padding:0 24px;gap:16px;}
+.prog-brand{font-family:'Fraunces',serif;font-size:18px;color:var(--sage-m);font-style:italic;flex-shrink:0;}
+.prog-bar-outer{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
+.prog-bar-inner{height:100%;background:var(--sage-m);border-radius:2px;transition:width .4s ease;}
+.prog-label{font-size:11px;color:var(--gray2);font-family:'JetBrains Mono',monospace;flex-shrink:0;min-width:60px;text-align:right;}
+.shell{max-width:720px;margin:0 auto;padding:80px 24px 80px;}
+.intro{text-align:center;padding:48px 0 40px;}
+.intro-eye{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;}
+.intro h1{font-family:'Fraunces',serif;font-size:clamp(32px,5vw,52px);color:var(--ink);margin-bottom:14px;line-height:1.1;font-weight:900;}
+.intro h1 em{color:var(--sage-m);font-style:italic;}
+.intro-sub{font-size:15px;color:var(--gray);line-height:1.8;max-width:520px;margin:0 auto 28px;}
+.intro-checks{display:flex;flex-direction:column;gap:8px;max-width:420px;margin:0 auto 32px;text-align:left;}
+.ic{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink3);line-height:1.5;}
+.ic::before{content:'✓';color:var(--sage-m);font-weight:700;flex-shrink:0;margin-top:1px;}
+.time-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gold-xl);border:1px solid rgba(201,168,76,.3);border-radius:20px;padding:6px 16px;font-size:12px;font-weight:600;color:var(--gold);margin-bottom:28px;}
+.start-btn{background:var(--sage-m);color:#fff;border:none;padding:16px 40px;border-radius:var(--radius);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s;display:inline-block;}
+.start-btn:hover{background:var(--sage);transform:translateY(-1px);}
+.section{display:none;}
+.section.active{display:block;animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.section-header{margin-bottom:28px;}
+.sec-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--sage);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.sec-title{font-family:'Fraunces',serif;font-size:28px;color:var(--ink);margin-bottom:4px;line-height:1.1;}
+.sec-quote{font-size:13px;color:var(--gray);font-style:italic;border-left:3px solid var(--sage-m);padding-left:12px;margin-top:8px;}
+.q-block{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;margin-bottom:14px;}
+.q-label{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:14px;line-height:1.5;}
+.q-sub{font-size:11px;color:var(--gray);margin-top:-8px;margin-bottom:12px;font-style:italic;}
+.radio-group{display:flex;flex-direction:column;gap:8px;}
+.radio-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .18s;font-size:13px;color:var(--ink3);}
+.radio-opt:hover{border-color:var(--sage-m);background:var(--sage-xl);}
+.radio-opt.selected{border-color:var(--sage-m);background:var(--sage-xl);font-weight:600;color:var(--sage);}
+.radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;transition:all .18s;display:flex;align-items:center;justify-content:center;}
+.radio-opt.selected .radio-dot{border-color:var(--sage-m);background:var(--sage-m);}
+.radio-opt.selected .radio-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff;}
+.radio-pts{font-size:10px;font-weight:700;color:var(--gray2);margin-left:auto;font-family:'JetBrains Mono',monospace;}
+.radio-opt.selected .radio-pts{color:var(--sage);}
+.check-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.check-opt{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;color:var(--ink3);transition:all .18s;}
+.check-opt:hover{border-color:var(--sage-m);background:var(--sage-xl);}
+.check-opt.selected{border-color:var(--sage-m);background:var(--sage-xl);font-weight:600;color:var(--sage);}
+.check-box{width:15px;height:15px;border-radius:3px;border:2px solid var(--border2);flex-shrink:0;transition:all .18s;display:flex;align-items:center;justify-content:center;}
+.check-opt.selected .check-box{background:var(--sage-m);border-color:var(--sage-m);}
+.check-opt.selected .check-box::after{content:'✓';font-size:9px;color:#fff;font-weight:700;}
+.text-inp{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-size:13px;font-family:'Epilogue',sans-serif;color:var(--ink);background:var(--white);outline:none;transition:border .2s;resize:vertical;min-height:44px;}
+.text-inp:focus{border-color:var(--sage-m);}
+.num-row{display:flex;align-items:center;gap:10px;}
+.num-inp{width:160px;border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;font-size:15px;font-family:'JetBrains Mono',monospace;color:var(--ink);background:var(--white);outline:none;transition:border .2s;}
+.num-inp:focus{border-color:var(--sage-m);}
+.num-unit{font-size:12px;color:var(--gray);}
+.calc-display{background:var(--sage-xl);border:1px solid var(--sage-l);border-radius:var(--radius);padding:12px 16px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--sage);font-weight:700;}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:28px;}
+.nav-btn{padding:13px 28px;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:none;letter-spacing:.3px;}
+.btn-back{background:transparent;border:1px solid var(--border2);color:var(--gray);}
+.btn-back:hover{border-color:var(--ink);color:var(--ink);}
+.btn-next{background:var(--sage-m);color:#fff;}
+.btn-next:hover{background:var(--sage);}
+.sec-progress{font-size:11px;color:var(--gray2);font-family:'JetBrains Mono',monospace;}
+.contact-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:28px;}
+.contact-section h3{font-family:'Fraunces',serif;font-size:22px;color:var(--ink);margin-bottom:6px;}
+.contact-section p{font-size:13px;color:var(--gray);margin-bottom:20px;line-height:1.6;}
+.field-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.field-label{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;}
+.field-inp{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-size:14px;font-family:'Epilogue',sans-serif;color:var(--ink);outline:none;transition:border .2s;}
+.field-inp:focus{border-color:var(--sage-m);}
+.submit-btn{width:100%;background:var(--sage-m);color:#fff;border:none;padding:16px;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:8px;letter-spacing:.3px;}
+.submit-btn:hover{background:var(--sage);}
+#results{display:none;}
+.results-header{background:var(--ink2);border-radius:var(--radius);padding:40px;text-align:center;margin-bottom:24px;position:relative;overflow:hidden;}
+.results-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 100%,rgba(82,183,136,.1) 0%,transparent 60%);}
+.results-eye{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(82,183,136,.7);margin-bottom:12px;font-family:'JetBrains Mono',monospace;}
+.dc-name{font-family:'Fraunces',serif;font-size:28px;color:#fff;margin-bottom:4px;}
+.practice-name{font-size:13px;color:var(--gray2);margin-bottom:28px;}
+.score-circle{width:140px;height:140px;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center;}
+.score-circle svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+.score-circle circle{fill:none;stroke-linecap:round;}
+.sc-bg{stroke:rgba(255,255,255,.08);stroke-width:10;}
+.sc-fill{stroke:var(--sage-m);stroke-width:10;stroke-dasharray:339.3;transition:stroke-dashoffset 1.5s ease;}
+.score-inner{text-align:center;position:relative;z-index:1;}
+.score-num{font-family:'Fraunces',serif;font-size:48px;color:var(--sage-m);line-height:1;font-weight:900;}
+.score-den{font-size:12px;color:var(--gray2);}
+.score-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--gray2);margin-top:8px;}
+.score-grade{font-family:'Fraunces',serif;font-size:22px;color:#fff;margin-top:8px;}
+.spotlight-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.spotlight-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.spot-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--sage);margin-bottom:4px;}
+.spot-val{font-family:'Fraunces',serif;font-size:26px;color:var(--ink);font-weight:700;line-height:1;margin-bottom:3px;}
+.spot-sub{font-size:11px;color:var(--gray);}
+.insight-block{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;}
+.ins-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:10px;}
+.ins-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink3);line-height:1.5;}
+.ins-item:last-child{border-bottom:none;}
+.ins-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.dot-sage{background:var(--sage-m);}
+.dot-gold{background:var(--gold-m);}
+.dot-red{background:var(--red);}
+.cta-block{background:var(--ink2);border-radius:var(--radius);padding:32px;text-align:center;margin-bottom:20px;}
+.cta-block h3{font-family:'Fraunces',serif;font-size:24px;color:#fff;margin-bottom:8px;}
+.cta-block p{font-size:13px;color:var(--gray2);margin-bottom:20px;line-height:1.6;}
+.cta-btn{display:inline-block;background:var(--sage-m);color:#fff;padding:14px 32px;border-radius:var(--radius);font-size:14px;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:all .2s;}
+.cta-btn:hover{background:var(--sage);}
+.retake-btn{display:block;margin-top:12px;font-size:12px;color:var(--gray);cursor:pointer;text-decoration:underline;background:none;border:none;}
+.summary-block{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:20px;}
+.sum-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:14px;}
+.sum-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;gap:12px;}
+.sum-row:last-child{border-bottom:none;}
+.sum-q{color:var(--gray);flex:1;}
+.sum-a{color:var(--ink);font-weight:600;text-align:right;flex-shrink:0;max-width:55%;}
+@media(max-width:600px){.check-group{grid-template-columns:1fr;}.spotlight-grid{grid-template-columns:1fr;}.shell{padding:72px 16px 60px;}}
+</style>
+</head>
+<body>
+
+<div class="progress-wrap">
+  <div class="prog-brand">PURA</div>
+  <div class="prog-bar-outer"><div class="prog-bar-inner" id="progBar" style="width:0%"></div></div>
+  <div class="prog-label" id="progLabel">0%</div>
+</div>
+
+<div class="shell">
+
+<!-- INTRO -->
+<div id="intro" class="section active">
+  <div class="intro">
+    <div class="intro-eye">PURA Health · Provider Assessment</div>
+    <h1>Is Your Practice Ready for <em>Data-Driven</em> Care?</h1>
+    <div class="time-badge">⏱ Estimated time: 4 minutes</div>
+    <div class="intro-sub">Answer 20 questions about how your practice runs between visits. We'll show you exactly where continuous patient monitoring would have the highest impact — and what that's worth to your practice.</div>
+    <div class="intro-checks">
+      <div class="ic">No EHR login needed — this is about your practice patterns</div>
+      <div class="ic">Your answers stay private and are sent only to the PURA team</div>
+      <div class="ic">You'll receive a personalized score with specific recommendations</div>
+      <div class="ic">Takes 4 minutes — have a rough sense of your monthly patient numbers</div>
+    </div>
+    <button class="start-btn" id="btnStart">Start My Practice Assessment →</button>
+  </div>
+</div>
+
+<!-- SECTION 1 -->
+<div id="s1" class="section">
+  <div class="section-header">
+    <div class="sec-num">01 of 05</div>
+    <div class="sec-title">Your Practice Today</div>
+    <div class="sec-quote">"Before we can identify the gap, we need to know where you're starting."</div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">How long have you been in practice?</div>
+    <div class="radio-group" id="q1">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>Less than 1 year<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>1–3 years<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>3–5 years<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>5–10 years<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>10+ years<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">How many active patients do you see per month?</div>
+    <div class="radio-group" id="q2">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>Under 50<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>50–100<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>100–200<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>200–400<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>400+<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">What devices do your patients most commonly use? <span style="font-weight:400;color:var(--gray)">(select all that apply)</span></div>
+    <div class="check-group" id="q3">
+      <div class="check-opt"><div class="check-box"></div>Apple Watch</div>
+      <div class="check-opt"><div class="check-box"></div>iPhone / Apple Health</div>
+      <div class="check-opt"><div class="check-box"></div>WHOOP</div>
+      <div class="check-opt"><div class="check-box"></div>Oura Ring</div>
+      <div class="check-opt"><div class="check-box"></div>Garmin</div>
+      <div class="check-opt"><div class="check-box"></div>Fitbit</div>
+      <div class="check-opt"><div class="check-box"></div>Samsung Galaxy Watch</div>
+      <div class="check-opt"><div class="check-box"></div>None / Don't know</div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">How do you currently structure care plans for new patients?</div>
+    <div class="radio-group" id="q4">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>No formal care plan — visit by visit<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>Day 1 recommendation only, no follow-through<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Report of Findings with recommended visit frequency<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>Full written care plan with financial agreement<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>Tiered care plan options with outcome tracking<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <div></div>
+    <button class="nav-btn btn-next" id="btn1next">Continue →</button>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div id="s2" class="section">
+  <div class="section-header">
+    <div class="sec-num">02 of 05</div>
+    <div class="sec-title">Patient Retention</div>
+    <div class="sec-quote">"This is where most practices silently bleed revenue every single month."</div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">What percentage of new patients complete their recommended care plan?</div>
+    <div class="radio-group" id="q5">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>0–20%<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>21–40%<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>41–60%<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>61–80%<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>81–100%<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">When a patient drops out early, what is your typical response?</div>
+    <div class="radio-group" id="q6">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>I don't have a system — they're just gone<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>Front desk calls once, then moves on<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>We send a follow-up message after a missed visit<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>Structured reactivation sequence (calls + messages)<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>I have data on why they left and act on it proactively<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">Do you currently monitor any patient health data between visits?</div>
+    <div class="radio-group" id="q7">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>No — I have no visibility until they walk in<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>Patients text or call if something changes<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>I ask at each visit — but it's based on memory<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>Some patients share wearable data informally<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>I have a structured system for between-visit monitoring<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">If you could see one thing about your patients between visits, what would it be?</div>
+    <div class="q-sub">Your answer here shapes what we build first for your practice.</div>
+    <textarea class="text-inp" id="q8" rows="3" placeholder="e.g. I want to know who stopped sleeping well after their last adjustment..."></textarea>
+  </div>
+  <div class="nav-row">
+    <button class="nav-btn btn-back" id="btn2back">← Back</button>
+    <button class="nav-btn btn-next" id="btn2next">Continue →</button>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div id="s3" class="section">
+  <div class="section-header">
+    <div class="sec-num">03 of 05</div>
+    <div class="sec-title">Clinical Performance</div>
+    <div class="sec-quote">"Numbers don't lie. Let's look at what yours are actually saying."</div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">What is your average Patient Visit Average (PVA)?</div>
+    <div class="q-sub">How many total visits does the average patient complete before stopping care?</div>
+    <div class="radio-group" id="q9">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>1–5 visits<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>6–10 visits<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>11–20 visits<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>21–30 visits<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>30+ visits<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">How many new patients do you average per month?</div>
+    <input class="num-inp" type="number" id="q10" placeholder="e.g. 20">
+  </div>
+  <div class="q-block">
+    <div class="q-label">Of those new patients, how many converted to your full care plan?</div>
+    <div class="q-sub">Monthly average over the last 3–6 months.</div>
+    <input class="num-inp" type="number" id="q11" placeholder="e.g. 14">
+    <div class="calc-display" id="convRate" style="display:none"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">What is your average patient visit charge (before insurance)?</div>
+    <div class="num-row">
+      <span class="num-unit">$</span>
+      <input class="num-inp" type="number" id="q12" placeholder="e.g. 65">
+      <span class="num-unit">per visit</span>
+    </div>
+    <div class="calc-display" id="lostRev" style="display:none"></div>
+  </div>
+  <div class="nav-row">
+    <button class="nav-btn btn-back" id="btn3back">← Back</button>
+    <button class="nav-btn btn-next" id="btn3next">Continue →</button>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div id="s4" class="section">
+  <div class="section-header">
+    <div class="sec-num">04 of 05</div>
+    <div class="sec-title">Technology Readiness</div>
+    <div class="sec-quote">"You don't need to be technical. You need to be open."</div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">Which EHR or practice management software do you currently use?</div>
+    <div class="radio-group" id="q13">
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>ChiroTouch</div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Jane App</div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>ECLIPSE</div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Genesis Chiropractic</div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>Paper / No EHR</div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Other</div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">How comfortable are you personally with adopting new digital tools?</div>
+    <div class="radio-group" id="q14">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>Not at all — tech is a barrier for me<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>Hesitant but willing if it's simple<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Comfortable — I adopt tools that save time<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>Actively looking for tech to improve outcomes<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>I'm an early adopter — already using wearables myself<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">Do you personally use a health wearable?</div>
+    <div class="radio-group" id="q15">
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>Yes — I wear it daily and check my data<span class="radio-pts">5 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Yes — I have one but don't use it consistently<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>No — but I'm curious<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="0"><div class="radio-dot"></div>No — not interested<span class="radio-pts">0 pts</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">How do you currently prove to patients that their treatment is working?</div>
+    <div class="radio-group" id="q16">
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>I rely on them telling me they feel better<span class="radio-pts">1 pt</span></div>
+      <div class="radio-opt" data-pts="2"><div class="radio-dot"></div>Pain scale comparison between visits<span class="radio-pts">2 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Range of motion and orthopedic re-exams<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="4"><div class="radio-dot"></div>Outcome questionnaires (Oswestry, PROMIS, etc.)<span class="radio-pts">4 pts</span></div>
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>I have objective biometric data supporting outcomes<span class="radio-pts">5 pts</span></div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="nav-btn btn-back" id="btn4back">← Back</button>
+    <button class="nav-btn btn-next" id="btn4next">Continue →</button>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div id="s5" class="section">
+  <div class="section-header">
+    <div class="sec-num">05 of 05</div>
+    <div class="sec-title">Vision & Fit</div>
+    <div class="sec-quote">"The DCs who change their practice first are the ones who saw the gap before anyone else."</div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">What is your #1 frustration with patient care right now?</div>
+    <div class="radio-group" id="q17">
+      <div class="radio-opt" data-pts="0"><div class="radio-dot"></div>Patients dropping out before completing care</div>
+      <div class="radio-opt" data-pts="0"><div class="radio-dot"></div>Not knowing how patients are doing between visits</div>
+      <div class="radio-opt" data-pts="0"><div class="radio-dot"></div>Difficulty proving outcomes to patients or insurers</div>
+      <div class="radio-opt" data-pts="0"><div class="radio-dot"></div>Patients not following through on home care / lifestyle</div>
+      <div class="radio-opt" data-pts="0"><div class="radio-dot"></div>Revenue unpredictability month to month</div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">Would you be open to a 30-day beta — 5–10 patients track recovery through an app, you see their data in a dashboard — at no cost?</div>
+    <div class="radio-group" id="q18">
+      <div class="radio-opt" data-pts="5"><div class="radio-dot"></div>Yes — I'm very interested, let's talk<span class="radio-pts">5 pts</span></div>
+      <div class="radio-opt" data-pts="3"><div class="radio-dot"></div>Maybe — I have questions first<span class="radio-pts">3 pts</span></div>
+      <div class="radio-opt" data-pts="1"><div class="radio-dot"></div>Probably not right now<span class="radio-pts">1 pt</span></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">What is your revenue goal for the next 12 months?</div>
+    <div class="num-row">
+      <span class="num-unit">$</span>
+      <input class="num-inp" type="number" id="q19" placeholder="e.g. 350000">
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">Anything else you want us to know about your practice?</div>
+    <textarea class="text-inp" id="q20" rows="3" placeholder="Optional — any context helps us give you more specific recommendations..."></textarea>
+  </div>
+  <div class="nav-row">
+    <button class="nav-btn btn-back" id="btn5back">← Back</button>
+    <button class="nav-btn btn-next" id="btn5next">See My Score →</button>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div id="scontact" class="section">
+  <div class="section-header">
+    <div class="sec-num">Almost done</div>
+    <div class="sec-title">Where should we send your results?</div>
+    <div class="sec-quote">"Your personalized Practice Readiness Report is being calculated now."</div>
+  </div>
+  <div class="contact-section">
+    <h3>Enter your details below</h3>
+    <p>Your score, insights, and recommendations appear immediately. We'll also send a copy to your email.</p>
+    <div class="field-group">
+      <div class="field-label">Your Name *</div>
+      <input class="field-inp" type="text" id="fname" placeholder="Dr. First Last">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Practice Name</div>
+      <input class="field-inp" type="text" id="fpractice" placeholder="Your clinic name">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Email Address *</div>
+      <input class="field-inp" type="email" id="femail" placeholder="you@yourclinic.com">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Phone (optional)</div>
+      <input class="field-inp" type="tel" id="fphone" placeholder="(305) 000-0000">
+    </div>
+    <button class="submit-btn" id="btnSubmit">Calculate My Practice Score →</button>
+    <p style="font-size:11px;color:var(--gray2);margin-top:10px;text-align:center;">Your information is private and never sold. PURA Health · HIPAA-aware handling.</p>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="results-header">
+    <div class="results-eye">PURA HEALTH · PRACTICE READINESS REPORT</div>
+    <div class="dc-name" id="r-name">—</div>
+    <div class="practice-name" id="r-practice">—</div>
+    <div class="score-circle">
+      <svg viewBox="0 0 120 120">
+        <circle class="sc-bg" cx="60" cy="60" r="54"/>
+        <circle class="sc-fill" id="scoreArc" cx="60" cy="60" r="54" stroke-dashoffset="339.3"/>
+      </svg>
+      <div class="score-inner">
+        <div class="score-num" id="r-score">—</div>
+        <div class="score-den">/ 100</div>
+      </div>
+    </div>
+    <div class="score-label">Practice Readiness Score</div>
+    <div class="score-grade" id="r-grade">—</div>
+  </div>
+  <div class="spotlight-grid">
+    <div class="spotlight-card">
+      <div class="spot-label">Monthly Revenue at Risk</div>
+      <div class="spot-val" id="r-lost">—</div>
+      <div class="spot-sub">Estimated from dropout rate + visit charge</div>
+    </div>
+    <div class="spotlight-card">
+      <div class="spot-label">Annual Recovery Potential</div>
+      <div class="spot-val" id="r-annual">—</div>
+      <div class="spot-sub">If dropout reduced by 30% with PURA</div>
+    </div>
+    <div class="spotlight-card">
+      <div class="spot-label">Conversion Rate</div>
+      <div class="spot-val" id="r-conv">—</div>
+      <div class="spot-sub">New patient care plan conversion</div>
+    </div>
+    <div class="spotlight-card">
+      <div class="spot-label">Beta Fit</div>
+      <div class="spot-val" id="r-fit">—</div>
+      <div class="spot-sub">Readiness for PURA 30-day pilot</div>
+    </div>
+  </div>
+  <div class="insight-block">
+    <div class="ins-title">Key Insights for Your Practice</div>
+    <div id="r-insights"></div>
+  </div>
+  <div class="cta-block">
+    <h3>You're a PURA beta candidate.</h3>
+    <p>Based on your responses, your practice is exactly the profile we're partnering with for our 30-day pilot. No cost. No commitment. Just data that shows whether continuous monitoring moves the needle for your patients.</p>
+    <button class="cta-btn" id="btnCalendly">📅 Book Your 20-Min Discovery Call</button>
+    <button class="retake-btn" id="btnRetake">↺ Retake Assessment</button>
+  </div>
+  <div class="summary-block">
+    <div class="sum-title">Your Full Response Summary</div>
+    <div id="r-summary"></div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript"></script>
+<script>
+var answers = {};
+var TOTAL_SECTIONS = 5;
+
+function updateProgress(sec) {
+  var pct = Math.round((sec / TOTAL_SECTIONS) * 100);
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progLabel').textContent = pct + '%';
+}
+
+function showSection(id) {
+  var all = document.querySelectorAll('.section');
+  for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+  document.getElementById('results').style.display = 'none';
+  var el = document.getElementById(id);
+  if (el) { el.classList.add('active'); window.scrollTo({top: 0, behavior: 'smooth'}); }
+}
+
+// Radio buttons
+document.querySelectorAll('.radio-group').forEach(function(group) {
+  group.querySelectorAll('.radio-opt').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      group.querySelectorAll('.radio-opt').forEach(function(o) { o.classList.remove('selected'); });
+      opt.classList.add('selected');
+      var qid = group.id;
+      var pts = parseInt(opt.getAttribute('data-pts')) || 0;
+      var text = opt.textContent.trim().replace(/\d+\s*pts?$/, '').trim();
+      answers[qid] = { pts: pts, text: text };
+    });
+  });
+});
+
+// Checkboxes
+document.querySelectorAll('.check-group').forEach(function(group) {
+  group.querySelectorAll('.check-opt').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      opt.classList.toggle('selected');
+      var qid = group.id;
+      if (!answers[qid]) answers[qid] = [];
+      var txt = opt.textContent.trim();
+      if (opt.classList.contains('selected')) {
+        if (answers[qid].indexOf(txt) === -1) answers[qid].push(txt);
+      } else {
+        answers[qid] = answers[qid].filter(function(t) { return t !== txt; });
+      }
+    });
+  });
+});
+
+// Calculated fields
+function calcRetention() {
+  var np = parseFloat(document.getElementById('q10').value) || 0;
+  var conv = parseFloat(document.getElementById('q11').value) || 0;
+  if (np > 0) {
+    var rate = Math.min(Math.round((conv / np) * 100), 100);
+    var el = document.getElementById('convRate');
+    el.style.display = 'block';
+    el.textContent = 'Conversion Rate: ' + rate + '%  (' + conv + ' of ' + np + ' new patients)';
+    answers['convRate'] = rate;
+    answers['newPts'] = np;
+    calcLostRev();
+  }
+}
+
+function calcLostRev() {
+  var np = parseFloat(document.getElementById('q10').value) || 0;
+  var conv = parseFloat(document.getElementById('q11').value) || 0;
+  var charge = parseFloat(document.getElementById('q12').value) || 0;
+  var dropped = np - conv;
+  if (dropped > 0 && charge > 0) {
+    var monthly = dropped * 8 * charge;
+    var el = document.getElementById('lostRev');
+    el.style.display = 'block';
+    el.textContent = 'Estimated monthly revenue at risk from dropouts: $' + monthly.toLocaleString();
+    answers['lostRevMonth'] = monthly;
+  }
+}
+
+document.getElementById('q10').addEventListener('input', calcRetention);
+document.getElementById('q11').addEventListener('input', calcRetention);
+document.getElementById('q12').addEventListener('input', calcLostRev);
+
+function calcScore() {
+  var scoredQs = ['q1','q2','q4','q5','q6','q7','q9','q14','q15','q16','q18'];
+  var total = 0, max = 0;
+  scoredQs.forEach(function(q) {
+    if (answers[q] && answers[q].pts !== undefined) {
+      total += answers[q].pts;
+      max += 5;
+    }
+  });
+  return max > 0 ? Math.round((total / max) * 100) : 0;
+}
+
+function getGrade(score) {
+  if (score >= 85) return { label: 'Excellent — Data-Ready Practice', color: '#52B788' };
+  if (score >= 70) return { label: 'Strong — High-Impact Beta Candidate', color: '#C9A84C' };
+  if (score >= 55) return { label: 'Developing — Big Upside Available', color: '#C9A84C' };
+  return { label: 'Early Stage — Perfect Time to Start', color: '#E8A0A0' };
+}
+
+function getFit(score) {
+  if (score >= 70) return '★ Strong Fit';
+  if (score >= 50) return '◎ Good Fit';
+  return '○ Emerging Fit';
+}
+
+function getInsights() {
+  var insights = [];
+  if (answers['q5'] && answers['q5'].pts <= 2)
+    insights.push({dot:'dot-red', text:'Care plan completion is below 40% — your highest-impact area. Continuous monitoring directly addresses dropout.'});
+  else if (answers['q5'] && answers['q5'].pts >= 4)
+    insights.push({dot:'dot-sage', text:'Strong care plan completion. PURA helps you document and prove these outcomes to patients considering renewal.'});
+  if (answers['q7'] && answers['q7'].pts <= 2)
+    insights.push({dot:'dot-red', text:'No between-visit visibility is your biggest blind spot. You\'re making clinical decisions on information that\'s days old.'});
+  if (answers['q14'] && answers['q14'].pts >= 4)
+    insights.push({dot:'dot-sage', text:'High technology readiness — you\'re likely to see fast ROI with minimal onboarding friction.'});
+  if (answers['q16'] && answers['q16'].pts <= 2)
+    insights.push({dot:'dot-gold', text:'Outcome documentation is limited. PURA\'s Vitality Score gives you objective data to show patients their progress — #1 driver of care plan renewals.'});
+  if (answers['q15'] && answers['q15'].pts >= 4)
+    insights.push({dot:'dot-sage', text:'You already understand wearable data personally — ideal early adopter and credible advocate to patients.'});
+  if (answers['q18'] && answers['q18'].pts >= 4)
+    insights.push({dot:'dot-sage', text:'You\'ve indicated openness to the beta. Based on your profile, your practice is a strong candidate for the 30-day PURA pilot.'});
+  if (answers['q6'] && answers['q6'].pts <= 2)
+    insights.push({dot:'dot-gold', text:'No structured reactivation system means lost patients stay lost. PURA alerts flag at-risk patients before they miss their next visit.'});
+  if (insights.length === 0)
+    insights.push({dot:'dot-sage', text:'Your practice shows a solid foundation. PURA adds a continuous data layer that turns clinical instincts into documented, shareable outcomes.'});
+  return insights;
+}
+
+function buildSummary() {
+  var qLabels = {
+    q1:'Years in practice', q2:'Monthly active patients', q3:'Devices patients use',
+    q4:'Care plan structure', q5:'Care plan completion rate', q6:'Dropout response',
+    q7:'Between-visit monitoring', q8:'Most wanted between-visit insight',
+    q9:'Patient Visit Average', q13:'EHR system', q14:'Tech comfort level',
+    q15:'Personal wearable use', q16:'How you prove outcomes',
+    q17:'Biggest frustration', q18:'Beta interest', q20:'Additional notes'
+  };
+  var html = '';
+  Object.keys(qLabels).forEach(function(k) {
+    var val = '—';
+    if (answers[k]) {
+      if (Array.isArray(answers[k])) val = answers[k].join(', ') || '—';
+      else if (typeof answers[k] === 'object') val = answers[k].text || '—';
+      else val = answers[k];
+    }
+    if (k === 'q8') { var e = document.getElementById('q8'); if (e && e.value) val = e.value; }
+    if (k === 'q20') { var e2 = document.getElementById('q20'); if (e2 && e2.value) val = e2.value; }
+    html += '<div class="sum-row"><div class="sum-q">' + qLabels[k] + '</div><div class="sum-a">' + val + '</div></div>';
+  });
+  return html;
+}
+
+// NAV buttons
+document.getElementById('btnStart').addEventListener('click', function() {
+  showSection('s1'); updateProgress(0);
+});
+document.getElementById('btn1next').addEventListener('click', function() {
+  showSection('s2'); updateProgress(1);
+});
+document.getElementById('btn2back').addEventListener('click', function() {
+  showSection('s1'); updateProgress(0);
+});
+document.getElementById('btn2next').addEventListener('click', function() {
+  showSection('s3'); updateProgress(2);
+});
+document.getElementById('btn3back').addEventListener('click', function() {
+  showSection('s2'); updateProgress(1);
+});
+document.getElementById('btn3next').addEventListener('click', function() {
+  showSection('s4'); updateProgress(3);
+});
+document.getElementById('btn4back').addEventListener('click', function() {
+  showSection('s3'); updateProgress(2);
+});
+document.getElementById('btn4next').addEventListener('click', function() {
+  showSection('s5'); updateProgress(4);
+});
+document.getElementById('btn5back').addEventListener('click', function() {
+  showSection('s4'); updateProgress(3);
+});
+document.getElementById('btn5next').addEventListener('click', function() {
+  showSection('scontact'); updateProgress(5);
+});
+
+// Calendly
+document.getElementById('btnCalendly').addEventListener('click', function() {
+  Calendly.initPopupWidget({url: 'https://calendly.com/coaching1-on-1/discovertheroad'});
+});
+
+// Retake
+document.getElementById('btnRetake').addEventListener('click', function() {
+  answers = {};
+  document.getElementById('results').style.display = 'none';
+  document.querySelectorAll('.radio-opt').forEach(function(el) { el.classList.remove('selected'); });
+  document.querySelectorAll('.check-opt').forEach(function(el) { el.classList.remove('selected'); });
+  document.querySelectorAll('textarea, input').forEach(function(el) { el.value = ''; });
+  document.getElementById('convRate').style.display = 'none';
+  document.getElementById('lostRev').style.display = 'none';
+  showSection('intro'); updateProgress(0);
+});
+
+// SUBMIT
+document.getElementById('btnSubmit').addEventListener('click', function() {
+  var name = document.getElementById('fname').value.trim();
+  var email = document.getElementById('femail').value.trim();
+  if (!name || !email) { alert('Please enter your name and email to see your results.'); return; }
+
+  var practice = document.getElementById('fpractice').value.trim() || 'Your Practice';
+  var score = calcScore();
+  var grade = getGrade(score);
+  var insights = getInsights();
+
+  var all = document.querySelectorAll('.section');
+  for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+
+  var resultsEl = document.getElementById('results');
+  resultsEl.style.display = 'block';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+
+  document.getElementById('r-name').textContent = name;
+  document.getElementById('r-practice').textContent = practice;
+  document.getElementById('r-score').textContent = score;
+  document.getElementById('r-grade').textContent = grade.label;
+  document.getElementById('r-grade').style.color = grade.color;
+  document.getElementById('r-fit').textContent = getFit(score);
+
+  var circumference = 339.3;
+  var offset = circumference - (score / 100) * circumference;
+  setTimeout(function() {
+    document.getElementById('scoreArc').style.strokeDashoffset = offset;
+  }, 200);
+
+  var lostMonth = answers['lostRevMonth'] || 0;
+  document.getElementById('r-lost').textContent = lostMonth > 0 ? '$' + lostMonth.toLocaleString() + '/mo' : 'Enter visit charge above';
+  document.getElementById('r-annual').textContent = lostMonth > 0 ? '$' + Math.round(lostMonth * 12 * 0.3).toLocaleString() + '/yr' : '—';
+  var convRate = answers['convRate'];
+  document.getElementById('r-conv').textContent = convRate !== undefined ? convRate + '%' : '—';
+
+  document.getElementById('r-insights').innerHTML = insights.map(function(i) {
+    return '<div class="ins-item"><div class="ins-dot ' + i.dot + '"></div><div>' + i.text + '</div></div>';
+  }).join('');
+
+  document.getElementById('r-summary').innerHTML = buildSummary();
+  updateProgress(TOTAL_SECTIONS);
+
+  // Send to Formspree -> viveapr@gmail.com
+  var phone = document.getElementById('fphone').value.trim();
+  var q8val = document.getElementById('q8').value.trim();
+  var q20val = document.getElementById('q20').value.trim();
+
+  var payload = {
+    _subject: 'New PURA Assessment - ' + name + ' | Score: ' + score + '/100',
+    Name: name,
+    Practice: practice,
+    Email: email,
+    Phone: phone || 'not provided',
+    Score: score + ' / 100',
+    Grade: grade.label,
+    BetaFit: getFit(score),
+    ConversionRate: convRate !== undefined ? convRate + '%' : 'not calculated',
+    MonthlyRevenueAtRisk: lostMonth > 0 ? '$' + lostMonth.toLocaleString() : 'not calculated',
+    AnnualRecoveryPotential: lostMonth > 0 ? '$' + Math.round(lostMonth * 12 * 0.3).toLocaleString() : 'not calculated',
+    BetweenVisitInsight: q8val || 'not answered',
+    AdditionalNotes: q20val || 'none',
+    YearsInPractice: answers['q1'] ? answers['q1'].text : 'not answered',
+    MonthlyPatients: answers['q2'] ? answers['q2'].text : 'not answered',
+    CarePlanCompletion: answers['q5'] ? answers['q5'].text : 'not answered',
+    BetweenVisitMonitoring: answers['q7'] ? answers['q7'].text : 'not answered',
+    TechComfort: answers['q14'] ? answers['q14'].text : 'not answered',
+    PersonalWearable: answers['q15'] ? answers['q15'].text : 'not answered',
+    BetaInterest: answers['q18'] ? answers['q18'].text : 'not answered',
+    DevicesUsed: Array.isArray(answers['q3']) ? answers['q3'].join(', ') : 'not selected'
+  };
+
+  payload.access_key = 'c86e97a1-9a78-45ce-94f2-eb96113d260f';
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify(payload)
+  }).catch(function(err) { console.log('Web3Forms error:', err); });
+});
+</script>
+</body>
+</html>
