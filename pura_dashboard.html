@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURA — Optimize Health Chiropractic</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07100E;
+  --surface: #0D1A16;
+  --surface2: #122018;
+  --surface3: #172820;
+  --border: rgba(82,183,136,.12);
+  --border2: rgba(82,183,136,.2);
+  --sage: #52B788;
+  --sage-d: #2D6A4F;
+  --sage-xl: rgba(82,183,136,.08);
+  --gold: #E6B86A;
+  --gold-xl: rgba(230,184,106,.08);
+  --rose: #F08080;
+  --rose-xl: rgba(240,128,128,.08);
+  --blue: #7EB8D4;
+  --purple: #A78BFA;
+  --white: #F0EDE8;
+  --muted: rgba(240,237,232,.35);
+  --muted2: rgba(240,237,232,.15);
+  --radius: 10px;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Fraunces', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed; left:0; top:0; bottom:0; width:220px;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; z-index: 50; padding: 0;
+}
+.sidebar-top { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); }
+.sidebar-brand { font-family: var(--font-display); font-size: 22px; color: var(--sage); font-style: italic; letter-spacing: 1px; }
+.sidebar-clinic { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 3px; font-family: var(--font-mono); }
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted2); padding: 10px 18px 4px; font-family: var(--font-mono); }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; cursor: pointer; transition: all .2s; font-size: 13px; color: var(--muted); border-left: 2px solid transparent; }
+.nav-item:hover, .nav-item.active { color: var(--sage); border-left-color: var(--sage); background: var(--sage-xl); }
+.nav-item .ni { font-size: 15px; }
+.sidebar-bottom { padding: 16px 18px; border-top: 1px solid var(--border); }
+.dc-pill { display: flex; align-items: center; gap: 8px; }
+.dc-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--sage-d); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 13px; color: var(--sage); font-style: italic; flex-shrink: 0; }
+.dc-name { font-size: 12px; font-weight: 600; color: var(--white); }
+.dc-role { font-size: 10px; color: var(--muted); }
+
+/* MAIN */
+.main { margin-left: 220px; min-height: 100vh; }
+.topbar { padding: 16px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(7,16,14,.8); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 40; }
+.topbar-left h1 { font-family: var(--font-display); font-size: 22px; color: var(--white); font-weight: 700; }
+.topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.badge-live { display: flex; align-items: center; gap: 6px; background: rgba(82,183,136,.1); border: 1px solid var(--border2); border-radius: 20px; padding: 5px 12px; font-size: 11px; color: var(--sage); font-family: var(--font-mono); }
+.badge-live::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--sage); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.ai-btn { background: linear-gradient(135deg, var(--sage-d), var(--sage)); border: none; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all .2s; }
+.ai-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(82,183,136,.3); }
+
+/* CONTENT */
+.content { padding: 24px 28px; }
+
+/* STAT CARDS */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; position: relative; overflow: hidden; transition: border-color .2s; }
+.stat-card:hover { border-color: var(--border2); }
+.stat-card::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, transparent 60%, rgba(82,183,136,.03)); }
+.sc-icon { font-size: 18px; margin-bottom: 10px; }
+.sc-num { font-family: var(--font-display); font-size: 32px; color: var(--white); font-weight: 900; line-height: 1; }
+.sc-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .8px; font-family: var(--font-mono); }
+.sc-delta { font-size: 11px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+.delta-up { color: var(--sage); }
+.delta-down { color: var(--rose); }
+
+/* SECTION TITLE */
+.section-title { font-family: var(--font-display); font-size: 16px; color: var(--white); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+.section-title span { font-size: 11px; color: var(--muted); font-family: var(--font-mono); font-style: normal; font-weight: 400; cursor: pointer; }
+
+/* PATIENT GRID */
+.patient-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.patient-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; cursor: pointer; transition: all .25s; position: relative; }
+.patient-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,.3); }
+.patient-card.risk-red { border-color: rgba(240,128,128,.3); }
+.patient-card.risk-yellow { border-color: rgba(230,184,106,.3); }
+.patient-card.risk-green { border-color: rgba(82,183,136,.3); }
+
+.pc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.pc-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 16px; font-style: italic; flex-shrink: 0; }
+.av-green { background: rgba(82,183,136,.15); color: var(--sage); }
+.av-yellow { background: rgba(230,184,106,.15); color: var(--gold); }
+.av-red { background: rgba(240,128,128,.15); color: var(--rose); }
+.pc-info { flex: 1; margin-left: 10px; }
+.pc-name { font-size: 14px; font-weight: 600; color: var(--white); }
+.pc-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.risk-badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 10px; font-family: var(--font-mono); }
+.rb-green { background: rgba(82,183,136,.15); color: var(--sage); }
+.rb-yellow { background: rgba(230,184,106,.15); color: var(--gold); }
+.rb-red { background: rgba(240,128,128,.15); color: var(--rose); }
+
+/* MINI CHART */
+.mini-chart { height: 40px; margin: 10px 0; display: flex; align-items: flex-end; gap: 3px; }
+.mc-bar { flex: 1; border-radius: 3px 3px 0 0; transition: height .3s; min-height: 4px; }
+
+.pc-score-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.pc-score { font-family: var(--font-display); font-size: 28px; font-weight: 900; line-height: 1; }
+.pc-score-label { font-size: 9px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px; }
+.pc-trend { font-size: 11px; font-weight: 600; }
+
+.pc-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 12px; }
+.pcm { background: var(--surface2); border-radius: 6px; padding: 7px 8px; text-align: center; }
+.pcm-val { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--white); }
+.pcm-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+.pc-device { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+
+/* AI PANEL */
+.ai-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+.ai-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.ai-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--sage-d), var(--sage)); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.ai-title { font-family: var(--font-display); font-size: 16px; color: var(--white); }
+.ai-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.ai-output { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-size: 13px; color: rgba(240,237,232,.8); line-height: 1.8; min-height: 80px; position: relative; }
+.ai-output.loading::after { content: ''; display: inline-block; width: 8px; height: 16px; background: var(--sage); animation: blink .8s infinite; margin-left: 4px; vertical-align: middle; border-radius: 1px; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.ai-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.action-btn { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; border: none; font-family: var(--font-body); }
+.btn-primary { background: var(--sage); color: #fff; }
+.btn-primary:hover { background: var(--sage-d); }
+.btn-secondary { background: var(--surface3); border: 1px solid var(--border2); color: var(--white); }
+.btn-secondary:hover { border-color: var(--sage); color: var(--sage); }
+.btn-gold { background: rgba(230,184,106,.15); border: 1px solid rgba(230,184,106,.3); color: var(--gold); }
+.btn-rose { background: rgba(240,128,128,.15); border: 1px solid rgba(240,128,128,.3); color: var(--rose); }
+
+/* MESSAGE PANEL */
+.msg-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+.msg-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+.msg-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.msg-patient { font-size: 13px; font-weight: 600; color: var(--white); display: flex; align-items: center; gap: 8px; }
+.msg-type { font-size: 9px; background: var(--sage-xl); color: var(--sage); border: 1px solid var(--border2); border-radius: 10px; padding: 2px 8px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .5px; }
+.msg-body { font-size: 12px; color: rgba(240,237,232,.7); line-height: 1.6; background: var(--surface); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-style: italic; }
+.msg-actions { display: flex; gap: 8px; }
+.msg-btn { padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; font-family: var(--font-body); transition: all .2s; }
+.mbtn-send { background: var(--sage); color: #fff; }
+.mbtn-send:hover { background: var(--sage-d); }
+.mbtn-edit { background: var(--surface3); border: 1px solid var(--border2); color: var(--muted); }
+.mbtn-skip { background: transparent; color: var(--muted2); }
+.mbtn-sent { background: rgba(82,183,136,.1); color: var(--sage); border: 1px solid var(--border2); cursor: default; }
+
+/* PATIENT DETAIL MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; width: 100%; max-width: 680px; max-height: 85vh; overflow-y: auto; padding: 28px; position: relative; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.modal-name { font-family: var(--font-display); font-size: 24px; color: var(--white); margin-bottom: 4px; }
+.modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.modal-score-row { display: flex; align-items: center; gap: 20px; background: var(--surface2); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+.modal-score-big { font-family: var(--font-display); font-size: 52px; font-weight: 900; line-height: 1; }
+.modal-score-info { flex: 1; }
+.modal-score-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-mono); margin-bottom: 4px; }
+.modal-score-grade { font-size: 15px; font-weight: 600; }
+.modal-score-trend { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.modal-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.mm { background: var(--surface2); border-radius: 8px; padding: 12px; text-align: center; }
+.mm-val { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.mm-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; font-family: var(--font-mono); }
+.chart-container { background: var(--surface2); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+.chart-title { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-mono); margin-bottom: 12px; }
+.chart-bars { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+.chart-bar { flex: 1; border-radius: 4px 4px 0 0; position: relative; min-height: 4px; transition: all .3s; }
+.chart-bar:hover { opacity: .8; }
+.chart-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 9px; color: var(--muted2); font-family: var(--font-mono); }
+.modal-ai { background: linear-gradient(135deg, rgba(45,106,79,.2), rgba(82,183,136,.05)); border: 1px solid rgba(82,183,136,.2); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.modal-ai-label { font-size: 10px; color: var(--sage); text-transform: uppercase; letter-spacing: 1.5px; font-family: var(--font-mono); margin-bottom: 8px; }
+.modal-ai-text { font-size: 13px; color: rgba(240,237,232,.85); line-height: 1.7; }
+.modal-last-note { background: var(--surface2); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--muted); font-style: italic; line-height: 1.6; }
+.modal-note-label { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-mono); margin-bottom: 6px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 18px; font-size: 13px; color: var(--white); z-index: 999; transform: translateY(80px); opacity: 0; transition: all .3s; display: flex; align-items: center; gap: 8px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 16px; }
+
+/* ALERT BANNER */
+.alert-banner { background: rgba(240,128,128,.08); border: 1px solid rgba(240,128,128,.2); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px; }
+.ab-icon { font-size: 18px; flex-shrink: 0; }
+.ab-text { font-size: 13px; color: rgba(240,237,232,.8); line-height: 1.6; }
+.ab-text strong { color: var(--rose); }
+
+@media(max-width:900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .patient-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="sidebar-brand">PURA</div>
+    <div class="sidebar-clinic">Optimize Health Chiro</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Clinical</div>
+    <div class="nav-item active" onclick="setNav(this)"><span class="ni">⚡</span> Dashboard</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="ni">👥</span> All Patients</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="ni">📊</span> Vitality Trends</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="ni">🚨</span> Alerts <span style="background:var(--rose-xl);color:var(--rose);border-radius:10px;padding:1px 7px;font-size:10px;margin-left:auto;">1</span></div>
+    <div class="nav-label">Messages</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="ni">💬</span> AI Messages</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="ni">📧</span> Email Queue</div>
+    <div class="nav-label">Practice</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="ni">📈</span> Outcomes</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="ni">⚙️</span> Settings</div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="dc-pill">
+      <div class="dc-avatar">DC</div>
+      <div>
+        <div class="dc-name">Dr. Denis Chang</div>
+        <div class="dc-role">Optimize Health Chiro</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Good morning, Dr. Chang 👋</h1>
+      <p>Tuesday, March 11 · 3 active patients · 1 alert requires attention</p>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-live">Live Data</div>
+      <button class="ai-btn" onclick="runMorningBriefing()">✦ AI Morning Briefing</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ALERT -->
+    <div class="alert-banner">
+      <div class="ab-icon">⚠️</div>
+      <div class="ab-text"><strong>Carlos Mendoza</strong> — Vitality Score dropped 24 points in 48 hours. HRV below personal baseline. Pain score elevated to 7/10. Last adjustment was 6 days ago. <strong>Recommend early visit or intervention.</strong> AI message drafted and ready to send below.</div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="sc-icon">👥</div>
+        <div class="sc-num">3</div>
+        <div class="sc-label">Active Beta Patients</div>
+        <div class="sc-delta delta-up">↑ All check-ins current</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon">⚡</div>
+        <div class="sc-num">71</div>
+        <div class="sc-label">Avg Vitality Score</div>
+        <div class="sc-delta delta-up">↑ +6 pts from last week</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon">✅</div>
+        <div class="sc-num">94%</div>
+        <div class="sc-label">Check-in Rate</div>
+        <div class="sc-delta delta-up">↑ 16/17 days completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon">💰</div>
+        <div class="sc-num">$0</div>
+        <div class="sc-label">Revenue at Risk</div>
+        <div class="sc-delta delta-up">↑ No dropout signals (2)</div>
+      </div>
+    </div>
+
+    <!-- AI BRIEFING PANEL -->
+    <div class="ai-panel">
+      <div class="ai-header">
+        <div class="ai-icon">✦</div>
+        <div>
+          <div class="ai-title">PURA Intelligence — Morning Briefing</div>
+          <div class="ai-sub">AI-generated clinical summary · Updates daily at 7:00 AM</div>
+        </div>
+      </div>
+      <div class="ai-output" id="aiOutput">Click "AI Morning Briefing" above to generate today's clinical summary for your patient panel.</div>
+      <div class="ai-actions">
+        <button class="action-btn btn-primary" onclick="runMorningBriefing()">✦ Generate Briefing</button>
+        <button class="action-btn btn-secondary" onclick="runInsight('retention')">📊 Retention Analysis</button>
+        <button class="action-btn btn-gold" onclick="runInsight('carlos')">🚨 Carlos Deep Dive</button>
+        <button class="action-btn btn-secondary" onclick="runInsight('outcomes')">📈 Outcomes Summary</button>
+      </div>
+    </div>
+
+    <!-- PATIENTS -->
+    <div class="section-title">
+      <span style="font-family:var(--font-display);font-size:16px;">Patient Panel</span>
+      <span>View all →</span>
+    </div>
+    <div class="patient-grid">
+
+      <!-- PATIENT 1 — RED -->
+      <div class="patient-card risk-red" onclick="openModal('carlos')">
+        <div class="pc-top">
+          <div class="pc-avatar av-red">CM</div>
+          <div class="pc-info">
+            <div class="pc-name">Carlos Mendoza</div>
+            <div class="pc-detail">Day 18 · Lower back pain · Apple Watch</div>
+          </div>
+          <span class="risk-badge rb-red">⚠ Alert</span>
+        </div>
+        <div class="mini-chart" id="chart-carlos"></div>
+        <div class="pc-score-row">
+          <div>
+            <div class="pc-score" style="color:var(--rose)">52</div>
+            <div class="pc-score-label">Vitality Score</div>
+          </div>
+          <div class="pc-trend" style="color:var(--rose)">↓ −24 pts</div>
+        </div>
+        <div class="pc-metrics">
+          <div class="pcm"><div class="pcm-val" style="color:var(--rose)">7</div><div class="pcm-label">Pain</div></div>
+          <div class="pcm"><div class="pcm-val" style="color:var(--gold)">5.5h</div><div class="pcm-label">Sleep</div></div>
+          <div class="pcm"><div class="pcm-val" style="color:var(--rose)">31ms</div><div class="pcm-label">HRV</div></div>
+        </div>
+        <div class="pc-device">⌚ Apple Watch Series 9 · Last check-in: Today 7:14 AM</div>
+      </div>
+
+      <!-- PATIENT 2 — YELLOW -->
+      <div class="patient-card risk-yellow" onclick="openModal('sofia')">
+        <div class="pc-top">
+          <div class="pc-avatar av-yellow">SR</div>
+          <div class="pc-info">
+            <div class="pc-name">Sofia Reyes</div>
+            <div class="pc-detail">Day 11 · Neck pain / headaches · Oura Ring</div>
+          </div>
+          <span class="risk-badge rb-yellow">Monitor</span>
+        </div>
+        <div class="mini-chart" id="chart-sofia"></div>
+        <div class="pc-score-row">
+          <div>
+            <div class="pc-score" style="color:var(--gold)">68</div>
+            <div class="pc-score-label">Vitality Score</div>
+          </div>
+          <div class="pc-trend" style="color:var(--gold)">→ Plateau</div>
+        </div>
+        <div class="pc-metrics">
+          <div class="pcm"><div class="pcm-val" style="color:var(--gold)">4</div><div class="pcm-label">Pain</div></div>
+          <div class="pcm"><div class="pcm-val" style="color:var(--sage)">7.2h</div><div class="pcm-label">Sleep</div></div>
+          <div class="pcm"><div class="pcm-val" style="color:var(--gold)">44ms</div><div class="pcm-label">HRV</div></div>
+        </div>
+        <div class="pc-device">💍 Oura Ring Gen 3 · Last check-in: Today 8:02 AM</div>
+      </div>
+
+      <!-- PATIENT 3 — GREEN -->
+      <div class="patient-card risk-green" onclick="openModal('marcus')">
+        <div class="pc-top">
+          <div class="pc-avatar av-green">MJ</div>
+          <div class="pc-info">
+            <div class="pc-name">Marcus Johnson</div>
+            <div class="pc-detail">Day 24 · Sports injury / shoulder · WHOOP 4.0</div>
+          </div>
+          <span class="risk-badge rb-green">✓ On Track</span>
+        </div>
+        <div class="mini-chart" id="chart-marcus"></div>
+        <div class="pc-score-row">
+          <div>
+            <div class="pc-score" style="color:var(--sage)">84</div>
+            <div class="pc-score-label">Vitality Score</div>
+          </div>
+          <div class="pc-trend" style="color:var(--sage)">↑ +18 pts</div>
+        </div>
+        <div class="pc-metrics">
+          <div class="pcm"><div class="pcm-val" style="color:var(--sage)">2</div><div class="pcm-label">Pain</div></div>
+          <div class="pcm"><div class="pcm-val" style="color:var(--sage)">7.8h</div><div class="pcm-label">Sleep</div></div>
+          <div class="pcm"><div class="pcm-val" style="color:var(--sage)">58ms</div><div class="pcm-label">HRV</div></div>
+        </div>
+        <div class="pc-device">💪 WHOOP 4.0 · Last check-in: Yesterday 9:30 PM</div>
+      </div>
+    </div>
+
+    <!-- AI MESSAGE QUEUE -->
+    <div class="section-title">
+      <span style="font-family:var(--font-display);font-size:16px;">AI Message Queue</span>
+      <span>3 messages ready</span>
+    </div>
+    <div class="msg-panel">
+
+      <div class="msg-item">
+        <div class="msg-top">
+          <div class="msg-patient">
+            <span style="color:var(--rose)">⚠</span> Carlos Mendoza
+            <span class="msg-type">🚨 Alert Text</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Ready to send</div>
+        </div>
+        <div class="msg-body">"Hey Carlos, Dr. Chang here — I noticed your recovery data is showing some extra stress on your body this week. Your pain score went up and your sleep has been shorter than usual. I have an opening Thursday at 2pm if you'd like to come in sooner than scheduled. How are you feeling? 🙏"</div>
+        <div class="msg-actions">
+          <button class="msg-btn mbtn-send" onclick="sendMessage(this, 'Carlos')">📱 Approve & Send Text</button>
+          <button class="msg-btn mbtn-edit" onclick="editMessage(this)">✏ Edit</button>
+          <button class="msg-btn mbtn-skip" onclick="skipMessage(this)">Skip</button>
+        </div>
+      </div>
+
+      <div class="msg-item">
+        <div class="msg-top">
+          <div class="msg-patient">
+            <span style="color:var(--gold)">→</span> Sofia Reyes
+            <span class="msg-type">📧 Check-in Email</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Weekly follow-up</div>
+        </div>
+        <div class="msg-body">"Hi Sofia! Your Vitality Score has been steady this week — great consistency with your check-ins. One thing I noticed: your HRV tends to dip on days after late nights. Worth experimenting with a consistent bedtime this week. See you at your next visit! — Dr. Chang & the Optimize Health team 💚"</div>
+        <div class="msg-actions">
+          <button class="msg-btn mbtn-send" onclick="sendMessage(this, 'Sofia')">📧 Approve & Send Email</button>
+          <button class="msg-btn mbtn-edit" onclick="editMessage(this)">✏ Edit</button>
+          <button class="msg-btn mbtn-skip" onclick="skipMessage(this)">Skip</button>
+        </div>
+      </div>
+
+      <div class="msg-item">
+        <div class="msg-top">
+          <div class="msg-patient">
+            <span style="color:var(--sage)">✓</span> Marcus Johnson
+            <span class="msg-type">🎉 Progress Text</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Milestone reached</div>
+        </div>
+        <div class="msg-body">"Marcus! Big win — your Vitality Score hit 84 today, up 18 points from when you started. Your HRV is tracking above your baseline and your pain is at a 2. This is real progress. Keep doing what you're doing. Dr. Chang is proud of the work you're putting in 💪🏽"</div>
+        <div class="msg-actions">
+          <button class="msg-btn mbtn-send" onclick="sendMessage(this, 'Marcus')">📱 Approve & Send Text</button>
+          <button class="msg-btn mbtn-edit" onclick="editMessage(this)">✏ Edit</button>
+          <button class="msg-btn mbtn-skip" onclick="skipMessage(this)">Skip</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PATIENT MODALS -->
+<div class="modal-overlay" id="modal-carlos">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('carlos')">✕</button>
+    <div class="modal-name">Carlos Mendoza</div>
+    <div class="modal-sub">Day 18 of care · Lower back pain / L4-L5 · Apple Watch Series 9 · Miami Lakes, FL</div>
+    <div class="modal-score-row">
+      <div class="modal-score-big" style="color:var(--rose)">52</div>
+      <div class="modal-score-info">
+        <div class="modal-score-label">Vitality Score Today</div>
+        <div class="modal-score-grade" style="color:var(--rose)">Needs Immediate Attention</div>
+        <div class="modal-score-trend">⬇ Down 24 points in 48 hours · Baseline was 76</div>
+      </div>
+    </div>
+    <div class="modal-metrics">
+      <div class="mm"><div class="mm-val" style="color:var(--rose)">7/10</div><div class="mm-label">Pain</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--gold)">5.5h</div><div class="mm-label">Sleep</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--rose)">31ms</div><div class="mm-label">HRV</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--gold)">4/10</div><div class="mm-label">Energy</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--rose)">8/10</div><div class="mm-label">Stress</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--gold)">72bpm</div><div class="mm-label">Rest HR</div></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">14-Day Vitality Score</div>
+      <div class="chart-bars" id="modal-chart-carlos"></div>
+      <div class="chart-labels"><span>Day 5</span><span>Day 8</span><span>Day 11</span><span>Day 14</span><span>Day 17</span><span>Today</span></div>
+    </div>
+    <div class="modal-ai">
+      <div class="modal-ai-label">✦ PURA Clinical Intelligence</div>
+      <div class="modal-ai-text" id="modal-ai-carlos">Loading analysis...</div>
+    </div>
+    <div class="modal-note-label">Patient's Note — Today</div>
+    <div class="modal-last-note">"Slept really bad the last two nights, had to move furniture at my sister's house on Sunday. Back is definitely flaring up. Trying to ice it."</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-sofia">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('sofia')">✕</button>
+    <div class="modal-name">Sofia Reyes</div>
+    <div class="modal-sub">Day 11 of care · Cervicogenic headaches / neck pain · Oura Ring Gen 3 · Miami, FL</div>
+    <div class="modal-score-row">
+      <div class="modal-score-big" style="color:var(--gold)">68</div>
+      <div class="modal-score-info">
+        <div class="modal-score-label">Vitality Score Today</div>
+        <div class="modal-score-grade" style="color:var(--gold)">Moderate Recovery — Plateau</div>
+        <div class="modal-score-trend">→ Score stable for 5 days · Baseline was 61 · Improving overall</div>
+      </div>
+    </div>
+    <div class="modal-metrics">
+      <div class="mm"><div class="mm-val" style="color:var(--gold)">4/10</div><div class="mm-label">Pain</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">7.2h</div><div class="mm-label">Sleep</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--gold)">44ms</div><div class="mm-label">HRV</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">6/10</div><div class="mm-label">Energy</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--gold)">5/10</div><div class="mm-label">Stress</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">62bpm</div><div class="mm-label">Rest HR</div></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">11-Day Vitality Score</div>
+      <div class="chart-bars" id="modal-chart-sofia"></div>
+      <div class="chart-labels"><span>Day 1</span><span>Day 3</span><span>Day 5</span><span>Day 7</span><span>Day 9</span><span>Today</span></div>
+    </div>
+    <div class="modal-ai">
+      <div class="modal-ai-label">✦ PURA Clinical Intelligence</div>
+      <div class="modal-ai-text" id="modal-ai-sofia">Loading analysis...</div>
+    </div>
+    <div class="modal-note-label">Patient's Note — Yesterday</div>
+    <div class="modal-last-note">"Headaches were better this week but I've been working late — screen time is up a lot. Neck still stiff in the morning but loosens up faster than before."</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-marcus">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('marcus')">✕</button>
+    <div class="modal-name">Marcus Johnson</div>
+    <div class="modal-sub">Day 24 of care · Right shoulder impingement / sports · WHOOP 4.0 · Miami Lakes, FL</div>
+    <div class="modal-score-row">
+      <div class="modal-score-big" style="color:var(--sage)">84</div>
+      <div class="modal-score-info">
+        <div class="modal-score-label">Vitality Score Today</div>
+        <div class="modal-score-grade" style="color:var(--sage)">Strong Recovery — On Track</div>
+        <div class="modal-score-trend">⬆ Up 18 points from intake · Baseline was 66 · Trending excellent</div>
+      </div>
+    </div>
+    <div class="modal-metrics">
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">2/10</div><div class="mm-label">Pain</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">7.8h</div><div class="mm-label">Sleep</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">58ms</div><div class="mm-label">HRV</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">8/10</div><div class="mm-label">Energy</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">3/10</div><div class="mm-label">Stress</div></div>
+      <div class="mm"><div class="mm-val" style="color:var(--sage)">58bpm</div><div class="mm-label">Rest HR</div></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">24-Day Vitality Score</div>
+      <div class="chart-bars" id="modal-chart-marcus"></div>
+      <div class="chart-labels"><span>Day 4</span><span>Day 8</span><span>Day 12</span><span>Day 16</span><span>Day 20</span><span>Today</span></div>
+    </div>
+    <div class="modal-ai">
+      <div class="modal-ai-label">✦ PURA Clinical Intelligence</div>
+      <div class="modal-ai-text" id="modal-ai-marcus">Loading analysis...</div>
+    </div>
+    <div class="modal-note-label">Patient's Note — Yesterday</div>
+    <div class="modal-last-note">"Played pickup basketball for the first time since the injury. Shoulder held up great — just a little soreness after but nothing like before. Feeling really good about the progress."</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✅</span>
+  <span id="toast-text">Message sent successfully</span>
+</div>
+
+<script>
+// Draw mini charts
+function drawMiniChart(id, data, color) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var max = Math.max.apply(null, data);
+  el.innerHTML = data.map(function(v) {
+    return '<div class="mc-bar" style="height:' + Math.round((v/max)*100) + '%;background:' + color + ';opacity:' + (0.3 + (v/max)*0.7) + '"></div>';
+  }).join('');
+}
+
+function drawModalChart(id, data, color) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var max = Math.max.apply(null, data);
+  el.innerHTML = data.map(function(v) {
+    return '<div class="chart-bar" style="height:' + Math.round((v/max)*100) + '%;background:' + color + ';opacity:' + (0.3 + (v/max)*0.7) + '" title="' + v + '"></div>';
+  }).join('');
+}
+
+// Patient data
+var carlosData = [70,72,76,74,73,75,71,68,62,58,55,52];
+var sofiaData  = [52,55,58,60,62,65,67,68,68,67,68,68];
+var marcusData = [66,68,70,72,71,74,75,76,78,80,82,84];
+
+drawMiniChart('chart-carlos', carlosData, '#F08080');
+drawMiniChart('chart-sofia',  sofiaData,  '#E6B86A');
+drawMiniChart('chart-marcus', marcusData, '#52B788');
+
+// Nav
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+// Toast
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
+// Messages
+function sendMessage(btn, name) {
+  btn.textContent = '✓ Sent to ' + name;
+  btn.className = 'msg-btn mbtn-sent';
+  btn.parentElement.querySelectorAll('.mbtn-edit,.mbtn-skip').forEach(function(b){ b.style.display='none'; });
+  showToast('Message sent to ' + name + ' successfully');
+}
+function editMessage(btn) { showToast('Edit mode — coming in full platform'); }
+function skipMessage(btn) {
+  btn.closest('.msg-item').style.opacity = '0.4';
+  showToast('Message skipped');
+}
+
+// Modal charts
+var modalInsights = {
+  carlos: "Carlos is showing a significant recovery setback — Vitality Score dropped from 76 to 52 in 48 hours. HRV at 31ms is 19% below his personal baseline of 38ms, indicating elevated sympathetic nervous system activity. Sleep deprivation (5.5h vs his 7.5h baseline) is likely compounding the inflammatory response from physical overexertion. Recommend: schedule an earlier appointment this week, consider gentler adjustment technique given elevated sympathetic tone, and address sleep hygiene. High dropout risk if not contacted within 24 hours.",
+  sofia: "Sofia is showing steady improvement overall — Vitality Score has climbed 16 points from intake baseline of 52. However, a 5-day plateau at 67-68 suggests her recovery may be hitting a ceiling with current care frequency. Oura Ring data shows consistent sleep quality (7.2h average) which is positive. The HRV of 44ms is approaching her improving baseline. Consider discussing care plan compliance and whether increased visit frequency for the next 2 weeks could break through the plateau. Low dropout risk — engagement is strong.",
+  marcus: "Marcus is the strongest responder in your current panel — 18-point Vitality Score improvement over 24 days of care. WHOOP data shows HRV at 58ms, which is 12% above his established baseline of 52ms. Sleep averaging 7.8h with high recovery scores. Pain has declined from 8/10 at intake to 2/10 today. His return to basketball activity with only minor soreness is a strong functional outcome indicator. This patient is an excellent candidate for a written case study and a referral ask. Consider documenting this outcome formally."
+};
+
+function openModal(patient) {
+  var modal = document.getElementById('modal-' + patient);
+  modal.classList.add('open');
+  var data = patient === 'carlos' ? carlosData : patient === 'sofia' ? sofiaData : marcusData;
+  var color = patient === 'carlos' ? '#F08080' : patient === 'sofia' ? '#E6B86A' : '#52B788';
+  setTimeout(function(){ drawModalChart('modal-chart-' + patient, data, color); }, 100);
+  document.getElementById('modal-ai-' + patient).textContent = modalInsights[patient];
+}
+
+function closeModal(patient) {
+  document.getElementById('modal-' + patient).classList.remove('open');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// AI Briefing via Anthropic API
+async function callAI(prompt) {
+  var out = document.getElementById('aiOutput');
+  out.textContent = '';
+  out.classList.add('loading');
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: "You are PURA, a clinical intelligence assistant for chiropractors. You speak in clear, professional clinical language that a DC can act on immediately. Be specific, data-driven, and concise. No more than 4-5 sentences per insight. Always tie observations back to clinical action.",
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await res.json();
+    out.classList.remove('loading');
+    var text = data.content && data.content[0] ? data.content[0].text : 'Analysis complete.';
+    out.textContent = '';
+    var i = 0;
+    var interval = setInterval(function() {
+      out.textContent += text[i];
+      i++;
+      if (i >= text.length) clearInterval(interval);
+    }, 18);
+  } catch(e) {
+    out.classList.remove('loading');
+    out.textContent = "Today's panel summary: Carlos Mendoza requires immediate attention — Vitality Score dropped 24 points in 48 hours, HRV at 31ms is 19% below his personal baseline, and pain is elevated to 7/10 following physical overexertion on Sunday. Recommend contacting him today with an early visit offer. Sofia Reyes is stable at 68 — her recovery has plateaued for 5 days, suggesting a potential inflection point worth discussing at her next visit. Marcus Johnson is your strongest responder this week — 18-point improvement, HRV above baseline, and he returned to sports activity with minimal symptoms. He's ready for a case study and a referral ask.";
+  }
+}
+
+function runMorningBriefing() {
+  callAI("Generate a morning clinical briefing for Dr. Denis Chang at Optimize Health Chiropractic in Miami Lakes. His 3 active PURA beta patients are: (1) Carlos Mendoza, Day 18, lower back pain, Vitality Score dropped from 76 to 52 in 48hrs, HRV 31ms (19% below baseline), pain 7/10, sleep 5.5h, overexerted moving furniture. (2) Sofia Reyes, Day 11, cervicogenic headaches, Vitality Score 68 and plateaued for 5 days, HRV 44ms, sleep 7.2h, improving but stalled. (3) Marcus Johnson, Day 24, shoulder impingement, Vitality Score 84 (up 18pts), HRV 58ms (above baseline), pain 2/10, returned to basketball. Provide a concise morning briefing with the most important clinical actions for today.");
+}
+
+function runInsight(type) {
+  var prompts = {
+    retention: "Analyze the dropout risk across Dr. Chang's 3 PURA beta patients at Optimize Health Chiropractic. Carlos: Day 18, score dropped to 52, high pain. Sofia: Day 11, plateaued at 68. Marcus: Day 24, score 84, thriving. Based on these patterns, which patient is at highest dropout risk and what specific intervention would most likely prevent it? Be specific about timing.",
+    carlos: "Provide a deep clinical analysis of Carlos Mendoza, Day 18 of chiropractic care for lower back pain at Optimize Health Chiropractic. His Vitality Score dropped from 76 to 52 in 48 hours. HRV is 31ms (baseline 38ms). Sleep dropped to 5.5h. Pain is 7/10. He reported moving heavy furniture on Sunday. What does this biometric pattern suggest clinically, and what should Dr. Chang do at the next visit?",
+    outcomes: "Generate an outcomes summary for Dr. Denis Chang's first PURA beta at Optimize Health Chiropractic. Three patients across 11-24 days of monitoring. Average Vitality Score improvement across the panel. Check-in completion rate 94%. One patient (Marcus) returned to sports. One patient (Sofia) showing plateau requiring intervention. One patient (Carlos) showing setback from external stressor. Frame this as a 30-day beta outcomes report suitable for sharing with other DCs considering PURA."
+  };
+  callAI(prompts[type]);
+}
+</script>
+</body>
+</html>
