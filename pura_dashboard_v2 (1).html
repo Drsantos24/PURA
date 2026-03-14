@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PURA — Clinical Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060E0A;--s1:#0A1510;--s2:#0F1D14;--s3:#142219;--s4:#192A1E;
+  --sage:#4CAF85;--sage-d:#2A6349;--sage-xl:rgba(76,175,133,.09);--sage-glow:rgba(76,175,133,.15);
+  --gold:#D4A84B;--gold-xl:rgba(212,168,75,.08);
+  --rose:#E07070;--rose-xl:rgba(224,112,112,.08);
+  --sky:#6BA8C4;--purple:#9B8AE8;
+  --bone:#E8E4DC;--muted:rgba(232,228,220,.38);--muted2:rgba(232,228,220,.16);--muted3:rgba(232,228,220,.07);
+  --border:rgba(76,175,133,.1);--border2:rgba(76,175,133,.22);--border3:rgba(232,228,220,.06);
+  --r:10px;--r2:14px;
+  --fd:'Fraunces',serif;--fb:'Instrument Sans',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;height:100%;}
+body{font-family:var(--fb);background:var(--bg);color:var(--bone);min-height:100vh;overflow-x:hidden;}
+
+/* NOISE OVERLAY */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4;}
+
+/* LAYOUT */
+.app{display:flex;height:100vh;position:relative;z-index:1;}
+.sidebar{width:230px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{flex-shrink:0;padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(6,14,10,.85);backdrop-filter:blur(16px);}
+.content-area{flex:1;overflow-y:auto;padding:22px 24px;}
+.content-area::-webkit-scrollbar{width:4px;}
+.content-area::-webkit-scrollbar-track{background:transparent;}
+.content-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* SIDEBAR */
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
+.sb-brand{font-family:var(--fd);font-size:24px;color:var(--sage);font-style:italic;letter-spacing:.5px;}
+.sb-clinic{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-top:2px;font-family:var(--fm);}
+.sb-status{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:10px;color:var(--sage);font-family:var(--fm);}
+.sb-status::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--sage);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+
+.sb-nav{flex:1;padding:10px 0;overflow-y:auto;}
+.nav-sec{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted2);padding:12px 16px 4px;font-family:var(--fm);}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;font-size:12px;color:var(--muted);border-left:2px solid transparent;transition:all .18s;position:relative;}
+.nav-item:hover{color:var(--bone);background:var(--muted3);}
+.nav-item.active{color:var(--sage);border-left-color:var(--sage);background:var(--sage-xl);}
+.nav-icon{font-size:14px;width:18px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--rose-xl);color:var(--rose);border:1px solid rgba(224,112,112,.2);border-radius:10px;padding:1px 6px;font-size:9px;font-family:var(--fm);}
+
+.sb-bot{padding:14px 16px;border-top:1px solid var(--border);}
+.dc-row{display:flex;align-items:center;gap:9px;}
+.dc-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--sage-d),var(--sage));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:13px;color:var(--bg);font-style:italic;font-weight:700;flex-shrink:0;}
+.dc-name{font-size:12px;font-weight:600;color:var(--bone);}
+.dc-role{font-size:10px;color:var(--muted);margin-top:1px;}
+
+/* TOPBAR */
+.tb-left h1{font-family:var(--fd);font-size:20px;color:var(--bone);font-weight:700;}
+.tb-left p{font-size:11px;color:var(--muted);margin-top:2px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.live-badge{display:flex;align-items:center;gap:5px;background:var(--sage-xl);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;font-size:10px;color:var(--sage);font-family:var(--fm);}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--sage);animation:pulse 2s infinite;}
+.ai-btn{background:linear-gradient(135deg,var(--sage-d),var(--sage));border:none;color:var(--bg);padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fb);transition:all .2s;letter-spacing:.3px;}
+.ai-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px var(--sage-glow);}
+
+/* ALERT BANNER */
+.alert-banner{background:var(--rose-xl);border:1px solid rgba(224,112,112,.2);border-radius:var(--r);padding:12px 16px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;animation:slideIn .4s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.ab-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.ab-txt{font-size:12px;color:rgba(232,228,220,.85);line-height:1.6;}
+.ab-txt strong{color:var(--rose);}
+.ab-action{margin-left:auto;flex-shrink:0;}
+.ab-btn{background:var(--rose);color:var(--bg);border:none;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--fb);transition:all .2s;white-space:nowrap;}
+.ab-btn:hover{opacity:.85;}
+
+/* STATS */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;transition:border-color .2s;position:relative;overflow:hidden;}
+.stat:hover{border-color:var(--border2);}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--sage),transparent);opacity:0;transition:opacity .3s;}
+.stat:hover::after{opacity:1;}
+.stat-icon{font-size:16px;margin-bottom:8px;}
+.stat-num{font-family:var(--fd);font-size:28px;color:var(--bone);font-weight:900;line-height:1;}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.8px;font-family:var(--fm);}
+.stat-d{font-size:11px;margin-top:5px;}
+.up{color:var(--sage);}
+.dn{color:var(--rose);}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--s2);border-radius:10px;padding:3px;margin-bottom:18px;border:1px solid var(--border);}
+.tab{flex:1;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;color:var(--muted);border:none;background:transparent;font-family:var(--fb);}
+.tab.active{background:var(--sage);color:var(--bg);}
+.tab:hover:not(.active){color:var(--bone);background:var(--muted3);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* AI PANEL */
+.ai-panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:18px;}
+.ai-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.ai-ico{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--sage-d),var(--sage));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.ai-title{font-family:var(--fd);font-size:15px;color:var(--bone);}
+.ai-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+.ai-out{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:rgba(232,228,220,.8);line-height:1.85;min-height:70px;position:relative;}
+.ai-out.loading::after{content:'';display:inline-block;width:7px;height:14px;background:var(--sage);animation:blink .7s infinite;margin-left:3px;vertical-align:middle;border-radius:1px;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.ai-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.abt{padding:7px 14px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;border:none;font-family:var(--fb);}
+.abt-p{background:var(--sage);color:var(--bg);}
+.abt-p:hover{background:var(--sage-d);}
+.abt-s{background:var(--s3);border:1px solid var(--border2);color:var(--bone);}
+.abt-s:hover{border-color:var(--sage);color:var(--sage);}
+.abt-g{background:var(--gold-xl);border:1px solid rgba(212,168,75,.25);color:var(--gold);}
+.abt-r{background:var(--rose-xl);border:1px solid rgba(224,112,112,.25);color:var(--rose);}
+
+/* PATIENT CARDS */
+.pt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.pc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:16px;cursor:pointer;transition:all .22s;}
+.pc:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.35);}
+.pc.r-red{border-color:rgba(224,112,112,.25);}
+.pc.r-yellow{border-color:rgba(212,168,75,.25);}
+.pc.r-green{border-color:rgba(76,175,133,.25);}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.pav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:14px;font-style:italic;flex-shrink:0;}
+.pav-g{background:rgba(76,175,133,.15);color:var(--sage);}
+.pav-y{background:rgba(212,168,75,.15);color:var(--gold);}
+.pav-r{background:rgba(224,112,112,.15);color:var(--rose);}
+.pi{flex:1;margin-left:9px;}
+.pi-name{font-size:13px;font-weight:600;color:var(--bone);}
+.pi-det{font-size:10px;color:var(--muted);margin-top:2px;}
+.rbadge{font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:8px;font-family:var(--fm);white-space:nowrap;}
+.rb-g{background:rgba(76,175,133,.12);color:var(--sage);}
+.rb-y{background:rgba(212,168,75,.12);color:var(--gold);}
+.rb-r{background:rgba(224,112,112,.12);color:var(--rose);}
+.mc{height:36px;display:flex;align-items:flex-end;gap:2px;margin:8px 0;}
+.mcb{flex:1;border-radius:2px 2px 0 0;min-height:3px;}
+.sc-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+.sc-num{font-family:var(--fd);font-size:26px;font-weight:900;line-height:1;}
+.sc-lbl{font-size:8px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;letter-spacing:.8px;}
+.sc-trend{font-size:10px;font-weight:600;}
+.pm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:10px;}
+.pmv{background:var(--s2);border-radius:5px;padding:6px;text-align:center;}
+.pmv-n{font-family:var(--fm);font-size:12px;font-weight:500;}
+.pmv-l{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
+.pc-dev{display:flex;align-items:center;gap:5px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);}
+
+/* NEW METRICS ROW */
+.metrics-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;}
+.mcard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+.mc-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;font-family:var(--fm);}
+.wearable-list{display:flex;flex-direction:column;gap:6px;}
+.wl-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;}
+.wl-bar-wrap{flex:1;height:4px;background:var(--s3);border-radius:2px;margin:0 10px;}
+.wl-bar{height:100%;border-radius:2px;background:var(--sage);}
+.wl-n{font-size:10px;color:var(--muted);font-family:var(--fm);min-width:20px;text-align:right;}
+.rtm-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.rtm-item:last-child{border-bottom:none;}
+.rtm-badge{font-size:9px;padding:2px 7px;border-radius:8px;font-family:var(--fm);}
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.tech-item{background:var(--s2);border-radius:6px;padding:8px;font-size:10px;text-align:center;color:var(--muted);border:1px solid var(--border);}
+.tech-item.active{border-color:var(--border2);color:var(--sage);}
+.tech-item .te{font-size:16px;margin-bottom:3px;}
+
+/* MESSAGE CENTER */
+.msg-center{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:18px;}
+.msg-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.mtab{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--muted);background:transparent;font-family:var(--fb);transition:all .2s;}
+.mtab.active{background:var(--sage);color:var(--bg);border-color:var(--sage);}
+.compose-box{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
+.compose-row{display:flex;gap:10px;margin-bottom:10px;align-items:center;}
+.compose-label{font-size:10px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;letter-spacing:.8px;min-width:50px;}
+.compose-inp{flex:1;background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--bone);font-family:var(--fb);outline:none;transition:border .2s;}
+.compose-inp:focus{border-color:var(--border2);}
+.compose-sel{flex:1;background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--bone);font-family:var(--fb);outline:none;}
+.compose-ta{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;color:var(--bone);font-family:var(--fb);outline:none;resize:vertical;min-height:80px;transition:border .2s;}
+.compose-ta:focus{border-color:var(--border2);}
+.compose-actions{display:flex;gap:8px;margin-top:10px;align-items:center;}
+.send-btn{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:var(--fb);transition:all .2s;}
+.send-email{background:var(--sky);color:var(--bg);}
+.send-email:hover{opacity:.85;}
+.send-sms{background:var(--sage);color:var(--bg);}
+.send-sms:hover{background:var(--sage-d);}
+.send-ai{background:var(--s3);border:1px solid var(--border2);color:var(--sage);}
+.send-ai:hover{background:var(--sage-xl);}
+.char-count{font-size:10px;color:var(--muted);font-family:var(--fm);margin-left:auto;}
+
+.msg-item{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;}
+.mi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.mi-who{font-size:12px;font-weight:600;color:var(--bone);display:flex;align-items:center;gap:7px;}
+.mi-type{font-size:8px;background:var(--sage-xl);color:var(--sage);border:1px solid var(--border2);border-radius:8px;padding:2px 7px;font-family:var(--fm);text-transform:uppercase;}
+.mi-type.sms{background:rgba(107,168,196,.1);color:var(--sky);border-color:rgba(107,168,196,.2);}
+.mi-type.alert{background:var(--rose-xl);color:var(--rose);border-color:rgba(224,112,112,.2);}
+.mi-time{font-size:9px;color:var(--muted);font-family:var(--fm);}
+.mi-body{font-size:11px;color:rgba(232,228,220,.7);line-height:1.6;background:var(--s1);border-radius:5px;padding:8px 10px;margin-bottom:8px;font-style:italic;}
+.mi-acts{display:flex;gap:6px;}
+.mb{padding:5px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:none;font-family:var(--fb);transition:all .2s;}
+.mb-send{background:var(--sage);color:var(--bg);}
+.mb-send:hover{background:var(--sage-d);}
+.mb-sms{background:var(--sky);color:var(--bg);}
+.mb-sms:hover{opacity:.85;}
+.mb-edit{background:var(--s3);border:1px solid var(--border2);color:var(--muted);}
+.mb-skip{background:transparent;color:var(--muted2);}
+.mb-sent{background:rgba(76,175,133,.1);color:var(--sage);border:1px solid var(--border2);cursor:default;}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);}
+.ov.open{display:flex;}
+.modal{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r2);width:100%;max-width:660px;max-height:88vh;overflow-y:auto;padding:24px;position:relative;}
+.modal::-webkit-scrollbar{width:3px;}
+.modal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.mcls{position:absolute;top:14px;right:14px;background:var(--s2);border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;}
+.mcls:hover{color:var(--bone);border-color:var(--border2);}
+.m-name{font-family:var(--fd);font-size:22px;color:var(--bone);margin-bottom:3px;}
+.m-sub{font-size:11px;color:var(--muted);margin-bottom:16px;}
+.m-score-row{display:flex;align-items:center;gap:16px;background:var(--s2);border-radius:10px;padding:14px 18px;margin-bottom:16px;}
+.m-big{font-family:var(--fd);font-size:48px;font-weight:900;line-height:1;}
+.m-si{flex:1;}
+.m-si-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:var(--fm);margin-bottom:3px;}
+.m-si-g{font-size:13px;font-weight:700;}
+.m-si-t{font-size:11px;color:var(--muted);margin-top:2px;}
+.m-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.mm{background:var(--s2);border-radius:7px;padding:10px;text-align:center;}
+.mm-v{font-family:var(--fd);font-size:20px;font-weight:700;}
+.mm-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;font-family:var(--fm);}
+/* NEW: extended metrics in modal */
+.m-metrics-ext{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.chart-c{background:var(--s2);border-radius:8px;padding:14px;margin-bottom:14px;}
+.chart-t{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:var(--fm);margin-bottom:10px;}
+.chart-bs{display:flex;align-items:flex-end;gap:3px;height:72px;}
+.cbar{flex:1;border-radius:3px 3px 0 0;min-height:3px;cursor:pointer;transition:opacity .15s;}
+.cbar:hover{opacity:.75;}
+.chart-ls{display:flex;justify-content:space-between;margin-top:5px;font-size:8px;color:var(--muted2);font-family:var(--fm);}
+.m-ai{background:linear-gradient(135deg,rgba(42,99,73,.18),rgba(76,175,133,.05));border:1px solid rgba(76,175,133,.18);border-radius:8px;padding:14px;margin-bottom:12px;}
+.m-ai-l{font-size:9px;color:var(--sage);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--fm);margin-bottom:7px;}
+.m-ai-t{font-size:12px;color:rgba(232,228,220,.85);line-height:1.75;}
+.m-note-l{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;font-family:var(--fm);margin-bottom:5px;}
+.m-note{background:var(--s2);border-radius:7px;padding:10px 12px;font-size:11px;color:var(--muted);font-style:italic;line-height:1.6;margin-bottom:12px;}
+/* Quick message from modal */
+.m-msg-quick{background:var(--s3);border-radius:8px;padding:12px;}
+.m-msg-title{font-size:10px;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.8px;font-family:var(--fm);margin-bottom:8px;}
+.m-msg-ta{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--bone);font-family:var(--fb);outline:none;resize:none;height:60px;transition:border .2s;}
+.m-msg-ta:focus{border-color:var(--border2);}
+.m-msg-acts{display:flex;gap:6px;margin-top:7px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s1);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:12px;color:var(--bone);z-index:999;transform:translateY(70px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:7px;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* SECTION HEADER */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-t{font-family:var(--fd);font-size:15px;color:var(--bone);}
+.sec-sub{font-size:10px;color:var(--muted);font-family:var(--fm);cursor:pointer;}
+.sec-sub:hover{color:var(--sage);}
+
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .pt-grid{grid-template-columns:1fr;}
+  .stat-row{grid-template-columns:1fr 1fr;}
+  .metrics-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="sb-brand">PURA</div>
+    <div class="sb-clinic">Optimize Health Chiro</div>
+    <div class="sb-status">Live · 3 patients active</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">Clinical</div>
+    <div class="nav-item active" onclick="setNav(this)"><span class="nav-icon">⚡</span>Dashboard</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">👥</span>All Patients</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">📊</span>Vitality Trends</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">🚨</span>Alerts<span class="nav-badge">1</span></div>
+    <div class="nav-sec">Messaging</div>
+    <div class="nav-item" onclick="setNav(this);switchTab('messages')"><span class="nav-icon">💬</span>AI Messages<span class="nav-badge" style="background:var(--sage-xl);color:var(--sage);border-color:var(--border2);">3</span></div>
+    <div class="nav-item" onclick="setNav(this);switchTab('messages')"><span class="nav-icon">📱</span>SMS Queue</div>
+    <div class="nav-item" onclick="setNav(this);switchTab('messages')"><span class="nav-icon">📧</span>Email Queue</div>
+    <div class="nav-sec">Intelligence</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">🧬</span>Wearable Data</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">💊</span>RTM Billing</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">📈</span>Outcomes</div>
+    <div class="nav-sec">Practice</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">🤝</span>ChiroTeq Sync</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="nav-icon">⚙️</span>Settings</div>
+  </nav>
+  <div class="sb-bot">
+    <div class="dc-row">
+      <div class="dc-av">DC</div>
+      <div><div class="dc-name">Dr. Denis Chang</div><div class="dc-role">Optimize Health Chiro · Miami Lakes</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <h1>Good morning, Dr. Chang 👋</h1>
+      <p id="todayLine">Loading...</p>
+    </div>
+    <div class="tb-right">
+      <div class="live-badge"><div class="live-dot"></div>Live</div>
+      <button class="ai-btn" onclick="runBriefing()">✦ AI Briefing</button>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ALERT -->
+    <div class="alert-banner">
+      <div class="ab-icon">⚠️</div>
+      <div class="ab-txt"><strong>Carlos Mendoza</strong> — Vitality Score dropped 24pts in 48hrs. HRV 19% below baseline. Pain 7/10. Last adjustment 6 days ago. <strong>High dropout risk.</strong> AI message drafted.</div>
+      <div class="ab-action"><button class="ab-btn" onclick="quickAlert()">Send Alert Now</button></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-row">
+      <div class="stat"><div class="stat-icon">👥</div><div class="stat-num">3</div><div class="stat-lbl">Active Patients</div><div class="stat-d up">↑ All check-ins current</div></div>
+      <div class="stat"><div class="stat-icon">⚡</div><div class="stat-num">71</div><div class="stat-lbl">Avg Vitality Score</div><div class="stat-d up">↑ +6 pts this week</div></div>
+      <div class="stat"><div class="stat-icon">✅</div><div class="stat-num">94%</div><div class="stat-lbl">Check-in Rate</div><div class="stat-d up">↑ 16/17 days</div></div>
+      <div class="stat"><div class="stat-icon">💰</div><div class="stat-num">$0</div><div class="stat-lbl">Revenue at Risk</div><div class="stat-d up">↑ 0 dropout signals</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab" onclick="switchTab('messages')">Messages & AI</button>
+      <button class="tab" onclick="switchTab('intel')">Health Intel</button>
+      <button class="tab" onclick="switchTab('rtm')">RTM Billing</button>
+    </div>
+
+    <!-- TAB: OVERVIEW -->
+    <div class="tab-content active" id="tab-overview">
+      <!-- AI PANEL -->
+      <div class="ai-panel">
+        <div class="ai-hdr">
+          <div class="ai-ico">✦</div>
+          <div><div class="ai-title">PURA Intelligence</div><div class="ai-sub">AI clinical summary · powered by Claude · updates 7AM daily</div></div>
+        </div>
+        <div class="ai-out" id="aiOut">Click "AI Briefing" to generate today's clinical summary for your patient panel.</div>
+        <div class="ai-acts">
+          <button class="abt abt-p" onclick="runBriefing()">✦ Morning Briefing</button>
+          <button class="abt abt-s" onclick="runInsight('retention')">📊 Retention Risk</button>
+          <button class="abt abt-g" onclick="runInsight('carlos')">🚨 Carlos Alert</button>
+          <button class="abt abt-s" onclick="runInsight('outcomes')">📈 Beta Outcomes</button>
+          <button class="abt abt-g" onclick="runInsight('whoop')">🩸 WHOOP Intel</button>
+        </div>
+      </div>
+
+      <!-- PATIENTS -->
+      <div class="sec-hdr"><div class="sec-t">Patient Panel</div><div class="sec-sub">View all →</div></div>
+      <div class="pt-grid">
+
+        <div class="pc r-red" onclick="openModal('carlos')">
+          <div class="pc-top">
+            <div class="pav pav-r">CM</div>
+            <div class="pi"><div class="pi-name">Carlos Mendoza</div><div class="pi-det">Day 18 · Lower back L4-L5 · Apple Watch</div></div>
+            <span class="rbadge rb-r">⚠ Alert</span>
+          </div>
+          <div class="mc" id="mc-carlos"></div>
+          <div class="sc-row">
+            <div><div class="sc-num" style="color:var(--rose)">52</div><div class="sc-lbl">Vitality Score</div></div>
+            <div class="sc-trend" style="color:var(--rose)">↓ −24 pts</div>
+          </div>
+          <div class="pm">
+            <div class="pmv"><div class="pmv-n" style="color:var(--rose)">7</div><div class="pmv-l">Pain</div></div>
+            <div class="pmv"><div class="pmv-n" style="color:var(--gold)">5.5h</div><div class="pmv-l">Sleep</div></div>
+            <div class="pmv"><div class="pmv-n" style="color:var(--rose)">31ms</div><div class="pmv-l">HRV</div></div>
+          </div>
+          <div class="pc-dev">⌚ Apple Watch S9 · Today 7:14 AM</div>
+        </div>
+
+        <div class="pc r-yellow" onclick="openModal('sofia')">
+          <div class="pc-top">
+            <div class="pav pav-y">SR</div>
+            <div class="pi"><div class="pi-name">Sofia Reyes</div><div class="pi-det">Day 11 · Cervicogenic headaches · Oura Ring</div></div>
+            <span class="rbadge rb-y">Monitor</span>
+          </div>
+          <div class="mc" id="mc-sofia"></div>
+          <div class="sc-row">
+            <div><div class="sc-num" style="color:var(--gold)">68</div><div class="sc-lbl">Vitality Score</div></div>
+            <div class="sc-trend" style="color:var(--gold)">→ Plateau</div>
+          </div>
+          <div class="pm">
+            <div class="pmv"><div class="pmv-n" style="color:var(--gold)">4</div><div class="pmv-l">Pain</div></div>
+            <div class="pmv"><div class="pmv-n" style="color:var(--sage)">7.2h</div><div class="pmv-l">Sleep</div></div>
+            <div class="pmv"><div class="pmv-n" style="color:var(--gold)">44ms</div><div class="pmv-l">HRV</div></div>
+          </div>
+          <div class="pc-dev">💍 Oura Ring G3 · Today 8:02 AM</div>
+        </div>
+
+        <div class="pc r-green" onclick="openModal('marcus')">
+          <div class="pc-top">
+            <div class="pav pav-g">MJ</div>
+            <div class="pi"><div class="pi-name">Marcus Johnson</div><div class="pi-det">Day 24 · Shoulder impingement · WHOOP 4.0</div></div>
+            <span class="rbadge rb-g">✓ On Track</span>
+          </div>
+          <div class="mc" id="mc-marcus"></div>
+          <div class="sc-row">
+            <div><div class="sc-num" style="color:var(--sage)">84</div><div class="sc-lbl">Vitality Score</div></div>
+            <div class="sc-trend" style="color:var(--sage)">↑ +18 pts</div>
+          </div>
+          <div class="pm">
+            <div class="pmv"><div class="pmv-n" style="color:var(--sage)">2</div><div class="pmv-l">Pain</div></div>
+            <div class="pmv"><div class="pmv-n" style="color:var(--sage)">7.8h</div><div class="pmv-l">Sleep</div></div>
+            <div class="pmv"><div class="pmv-n" style="color:var(--sage)">58ms</div><div class="pmv-l">HRV</div></div>
+          </div>
+          <div class="pc-dev">💪 WHOOP 4.0 · Yesterday 9:30 PM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MESSAGES -->
+    <div class="tab-content" id="tab-messages">
+      <div class="msg-center">
+        <div class="ai-hdr" style="margin-bottom:12px;">
+          <div class="ai-ico">✉</div>
+          <div><div class="ai-title">Message Center</div><div class="ai-sub">AI-drafted · approve before sending · email + SMS</div></div>
+        </div>
+
+        <!-- COMPOSE -->
+        <div class="compose-box">
+          <div style="font-size:11px;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.8px;font-family:var(--fm);margin-bottom:10px;">✦ Compose New Message</div>
+          <div class="compose-row">
+            <div class="compose-label">To</div>
+            <select class="compose-sel" id="comp-to">
+              <option value="">Select patient...</option>
+              <option value="carlos">Carlos Mendoza — carlos@test.com · (305) 555-0101</option>
+              <option value="sofia">Sofia Reyes — sofia@test.com · (305) 555-0202</option>
+              <option value="marcus">Marcus Johnson — marcus@test.com · (305) 555-0303</option>
+            </select>
+          </div>
+          <div class="compose-row">
+            <div class="compose-label">Subject</div>
+            <input class="compose-inp" id="comp-subj" placeholder="Your PURA Recovery Update — This Week">
+          </div>
+          <textarea class="compose-ta" id="comp-body" placeholder="Type your message here, or click 'AI Draft' to generate one automatically..." oninput="updateCharCount()"></textarea>
+          <div class="compose-actions">
+            <button class="send-btn send-ai" onclick="aiDraftMessage()">✦ AI Draft</button>
+            <button class="send-btn send-email" onclick="sendComposed('email')">📧 Send Email</button>
+            <button class="send-btn send-sms" onclick="sendComposed('sms')">📱 Send SMS</button>
+            <div class="char-count" id="charCount">0 / 160 SMS chars</div>
+          </div>
+        </div>
+
+        <!-- QUEUE TABS -->
+        <div class="msg-tabs">
+          <button class="mtab active" onclick="setMsgTab(this,'all')">All (3)</button>
+          <button class="mtab" onclick="setMsgTab(this,'alerts')">🚨 Alerts (1)</button>
+          <button class="mtab" onclick="setMsgTab(this,'followup')">Follow-ups (2)</button>
+          <button class="mtab" onclick="setMsgTab(this,'sent')">Sent (0)</button>
+        </div>
+
+        <div id="msgQueue">
+          <div class="msg-item" data-cat="alerts">
+            <div class="mi-top">
+              <div class="mi-who"><span style="color:var(--rose)">⚠</span> Carlos Mendoza <span class="mi-type alert">🚨 Alert</span></div>
+              <div class="mi-time">Ready · High priority</div>
+            </div>
+            <div class="mi-body">"Hey Carlos, Dr. Chang here — I noticed your recovery data is showing some extra stress on your body this week. Your pain score went up and your sleep has been shorter than usual. I have an opening Thursday at 2pm if you'd like to come in sooner than scheduled. How are you feeling? 🙏"</div>
+            <div class="mi-acts">
+              <button class="mb mb-sms" onclick="sendMsg(this,'Carlos','sms')">📱 Send SMS</button>
+              <button class="mb mb-send" onclick="sendMsg(this,'Carlos','email')">📧 Send Email</button>
+              <button class="mb mb-edit" onclick="editMsg(this)">✏ Edit</button>
+              <button class="mb mb-skip" onclick="skipMsg(this)">Skip</button>
+            </div>
+          </div>
+
+          <div class="msg-item" data-cat="followup">
+            <div class="mi-top">
+              <div class="mi-who"><span style="color:var(--gold)">→</span> Sofia Reyes <span class="mi-type">📧 Weekly</span></div>
+              <div class="mi-time">Ready · Follow-up</div>
+            </div>
+            <div class="mi-body">"Hi Sofia! Your Vitality Score has been steady this week — great consistency with your check-ins. One thing I noticed: your HRV tends to dip on days after late nights. Worth experimenting with a consistent bedtime this week. See you at your next visit! — Dr. Chang & the Optimize Health team 💚"</div>
+            <div class="mi-acts">
+              <button class="mb mb-sms" onclick="sendMsg(this,'Sofia','sms')">📱 Send SMS</button>
+              <button class="mb mb-send" onclick="sendMsg(this,'Sofia','email')">📧 Send Email</button>
+              <button class="mb mb-edit" onclick="editMsg(this)">✏ Edit</button>
+              <button class="mb mb-skip" onclick="skipMsg(this)">Skip</button>
+            </div>
+          </div>
+
+          <div class="msg-item" data-cat="followup">
+            <div class="mi-top">
+              <div class="mi-who"><span style="color:var(--sage)">✓</span> Marcus Johnson <span class="mi-type sms">🎉 Milestone</span></div>
+              <div class="mi-time">Ready · Celebration</div>
+            </div>
+            <div class="mi-body">"Marcus! Big win — your Vitality Score hit 84 today, up 18 points from when you started. Your HRV is tracking above your baseline and your pain is at a 2. This is real progress. Dr. Chang is proud of the work you're putting in 💪🏽"</div>
+            <div class="mi-acts">
+              <button class="mb mb-sms" onclick="sendMsg(this,'Marcus','sms')">📱 Send SMS</button>
+              <button class="mb mb-send" onclick="sendMsg(this,'Marcus','email')">📧 Send Email</button>
+              <button class="mb mb-edit" onclick="editMsg(this)">✏ Edit</button>
+              <button class="mb mb-skip" onclick="skipMsg(this)">Skip</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: HEALTH INTEL -->
+    <div class="tab-content" id="tab-intel">
+      <div class="metrics-row">
+        <div class="mcard">
+          <div class="mc-title">Wearable Distribution</div>
+          <div class="wearable-list">
+            <div class="wl-item"><span>Apple Watch</span><div class="wl-bar-wrap"><div class="wl-bar" style="width:60%"></div></div><span class="wl-n">1</span></div>
+            <div class="wl-item"><span>Oura Ring</span><div class="wl-bar-wrap"><div class="wl-bar" style="width:60%"></div></div><span class="wl-n">1</span></div>
+            <div class="wl-item"><span>WHOOP 4.0</span><div class="wl-bar-wrap"><div class="wl-bar" style="width:60%"></div></div><span class="wl-n">1</span></div>
+            <div class="wl-item" style="opacity:.4"><span>Garmin</span><div class="wl-bar-wrap"><div class="wl-bar" style="width:0%"></div></div><span class="wl-n">0</span></div>
+            <div class="wl-item" style="opacity:.4"><span>Fitbit</span><div class="wl-bar-wrap"><div class="wl-bar" style="width:0%"></div></div><span class="wl-n">0</span></div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--sage);font-family:var(--fm);">100% device coverage · 3/3 patients connected</div>
+        </div>
+        <div class="mcard">
+          <div class="mc-title">Emerging Tech to Watch</div>
+          <div class="tech-grid">
+            <div class="tech-item active"><div class="te">⌚</div>WHOOP Blood Panels</div>
+            <div class="tech-item active"><div class="te">💉</div>CGM (Stelo/Lingo)</div>
+            <div class="tech-item active"><div class="te">🩺</div>Cuffless BP Watch</div>
+            <div class="tech-item"><div class="te">🧠</div>EEG Wearables</div>
+            <div class="tech-item"><div class="te">🩹</div>Biomarker Patches</div>
+            <div class="tech-item"><div class="te">📡</div>IMU Spine Sensors</div>
+          </div>
+        </div>
+        <div class="mcard">
+          <div class="mc-title">RTM Billing Status</div>
+          <div class="wearable-list">
+            <div class="rtm-item"><span>Carlos · Days monitored</span><span class="rtm-badge" style="background:var(--sage-xl);color:var(--sage);">18 days</span></div>
+            <div class="rtm-item"><span>Sofia · Days monitored</span><span class="rtm-badge" style="background:var(--sage-xl);color:var(--sage);">11 days</span></div>
+            <div class="rtm-item"><span>Marcus · Days monitored</span><span class="rtm-badge" style="background:var(--sage-xl);color:var(--sage);">24 days</span></div>
+            <div class="rtm-item"><span>CPT 98975 (setup)</span><span class="rtm-badge" style="background:var(--gold-xl);color:var(--gold);">Ready</span></div>
+            <div class="rtm-item"><span>CPT 98977 (monthly)</span><span class="rtm-badge" style="background:var(--rose-xl);color:var(--rose);">Pending</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-panel">
+        <div class="ai-hdr">
+          <div class="ai-ico">🧬</div>
+          <div><div class="ai-title">Health Intelligence Brief</div><div class="ai-sub">Latest wearable tech + clinical research affecting PURA</div></div>
+        </div>
+        <div class="ai-out" id="aiIntel">Click below to generate your health technology intelligence brief — what's new, what to watch, and how it affects your patients.</div>
+        <div class="ai-acts">
+          <button class="abt abt-p" onclick="runIntel('whoop')">🩸 WHOOP Blood Panels</button>
+          <button class="abt abt-s" onclick="runIntel('cgm')">💉 CGM for Chiro Patients</button>
+          <button class="abt abt-g" onclick="runIntel('rtm')">💊 RTM Reimbursement Update</button>
+          <button class="abt abt-s" onclick="runIntel('longevity')">🏋️ Longevity Clinic Play</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: RTM BILLING -->
+    <div class="tab-content" id="tab-rtm">
+      <div class="ai-panel">
+        <div class="ai-hdr">
+          <div class="ai-ico">💊</div>
+          <div><div class="ai-title">RTM Billing Intelligence</div><div class="ai-sub">Remote Therapeutic Monitoring · CMS CPT 98975–98981</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:var(--fd);font-size:24px;color:var(--sage);font-weight:900;">$180</div>
+            <div style="font-size:9px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;margin-top:3px;">Est. monthly / patient</div>
+          </div>
+          <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:var(--fd);font-size:24px;color:var(--gold);font-weight:900;">$540</div>
+            <div style="font-size:9px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;margin-top:3px;">Total this panel / mo</div>
+          </div>
+          <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:var(--fd);font-size:24px;color:var(--purple);font-weight:900;">Pending</div>
+            <div style="font-size:9px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;margin-top:3px;">Chiro RTM approval</div>
+          </div>
+        </div>
+        <div class="ai-out" id="aiRTM">Generate RTM intelligence to understand the billing pathway for PURA-monitored patients and when chiropractic reimbursement is expected.</div>
+        <div class="ai-acts">
+          <button class="abt abt-p" onclick="runRTM('status')">📋 Current RTM Status</button>
+          <button class="abt abt-s" onclick="runRTM('codes')">💊 CPT Code Breakdown</button>
+          <button class="abt abt-g" onclick="runRTM('timeline')">📅 Chiro RTM Timeline</button>
+          <button class="abt abt-s" onclick="runRTM('revenue')">💰 Revenue Projection</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="ov" id="ov-carlos">
+  <div class="modal">
+    <button class="mcls" onclick="closeModal('carlos')">✕</button>
+    <div class="m-name">Carlos Mendoza</div>
+    <div class="m-sub">Day 18 · Lower back L4-L5 · Apple Watch S9 · Miami Lakes, FL · carlos@test.com · (305) 555-0101</div>
+    <div class="m-score-row">
+      <div class="m-big" style="color:var(--rose)">52</div>
+      <div class="m-si"><div class="m-si-l">Vitality Score Today</div><div class="m-si-g" style="color:var(--rose)">Needs Immediate Attention</div><div class="m-si-t">⬇ Down 24pts in 48hrs · Baseline 76</div></div>
+    </div>
+    <div class="m-metrics">
+      <div class="mm"><div class="mm-v" style="color:var(--rose)">7/10</div><div class="mm-l">Pain</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--gold)">5.5h</div><div class="mm-l">Sleep</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--rose)">31ms</div><div class="mm-l">HRV</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--gold)">4/10</div><div class="mm-l">Energy</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--rose)">8/10</div><div class="mm-l">Stress</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--gold)">72bpm</div><div class="mm-l">Rest HR</div></div>
+    </div>
+    <div class="m-metrics-ext">
+      <div class="mm"><div class="mm-v" style="color:var(--rose)">94%</div><div class="mm-l">SpO2</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--rose)">4,200</div><div class="mm-l">Steps</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--gold)">45min</div><div class="mm-l">Deep Sleep</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--rose)">18</div><div class="mm-l">Resp Rate</div></div>
+    </div>
+    <div class="chart-c">
+      <div class="chart-t">14-Day Vitality Score Trend</div>
+      <div class="chart-bs" id="mc-carlos-modal"></div>
+      <div class="chart-ls"><span>Day 5</span><span>Day 8</span><span>Day 11</span><span>Day 14</span><span>Day 17</span><span>Today</span></div>
+    </div>
+    <div class="m-ai"><div class="m-ai-l">✦ PURA Clinical Intelligence</div><div class="m-ai-t" id="mai-carlos">Carlos is showing a significant recovery setback — Vitality Score dropped from 76 to 52 in 48 hours. HRV at 31ms is 19% below his personal baseline of 38ms, indicating elevated sympathetic tone. Sleep deprivation (5.5h vs 7.5h baseline) is compounding inflammatory response from physical overexertion. Respiratory rate elevated at 18 breaths/min confirms sympathetic dominance. Recommend: schedule earlier this week, use lighter technique, address sleep hygiene directly.</div></div>
+    <div class="m-note-l">Patient Note — Today 7:14 AM</div>
+    <div class="m-note">"Slept really bad the last two nights, had to move furniture at my sister's house on Sunday. Back is definitely flaring up. Trying to ice it."</div>
+    <div class="m-msg-quick">
+      <div class="m-msg-title">✦ Quick Message to Carlos</div>
+      <textarea class="m-msg-ta" id="msg-carlos">"Hey Carlos, Dr. Chang here — I noticed your recovery data is showing some extra stress this week. Pain score up and sleep is down. I have Thursday 2pm open if you'd like to come in sooner. How are you feeling? 🙏"</textarea>
+      <div class="m-msg-acts">
+        <button class="mb mb-sms" onclick="sendQuick('carlos','sms')">📱 Send SMS</button>
+        <button class="mb mb-send" onclick="sendQuick('carlos','email')">📧 Send Email</button>
+        <button class="mb send-ai" style="background:var(--s3);border:1px solid var(--border2);color:var(--sage);padding:5px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;" onclick="aiQuick('carlos')">✦ AI Redraft</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov-sofia">
+  <div class="modal">
+    <button class="mcls" onclick="closeModal('sofia')">✕</button>
+    <div class="m-name">Sofia Reyes</div>
+    <div class="m-sub">Day 11 · Cervicogenic headaches · Oura Ring G3 · Miami, FL · sofia@test.com · (305) 555-0202</div>
+    <div class="m-score-row">
+      <div class="m-big" style="color:var(--gold)">68</div>
+      <div class="m-si"><div class="m-si-l">Vitality Score Today</div><div class="m-si-g" style="color:var(--gold)">Moderate Recovery — Plateau</div><div class="m-si-t">→ Stable 5 days · Baseline 61 · Improving overall</div></div>
+    </div>
+    <div class="m-metrics">
+      <div class="mm"><div class="mm-v" style="color:var(--gold)">4/10</div><div class="mm-l">Pain</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">7.2h</div><div class="mm-l">Sleep</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--gold)">44ms</div><div class="mm-l">HRV</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">6/10</div><div class="mm-l">Energy</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--gold)">5/10</div><div class="mm-l">Stress</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">62bpm</div><div class="mm-l">Rest HR</div></div>
+    </div>
+    <div class="m-metrics-ext">
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">97%</div><div class="mm-l">SpO2</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">6,800</div><div class="mm-l">Steps</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">72min</div><div class="mm-l">Deep Sleep</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">14</div><div class="mm-l">Resp Rate</div></div>
+    </div>
+    <div class="chart-c">
+      <div class="chart-t">11-Day Vitality Score Trend</div>
+      <div class="chart-bs" id="mc-sofia-modal"></div>
+      <div class="chart-ls"><span>Day 1</span><span>Day 3</span><span>Day 5</span><span>Day 7</span><span>Day 9</span><span>Today</span></div>
+    </div>
+    <div class="m-ai"><div class="m-ai-l">✦ PURA Clinical Intelligence</div><div class="m-ai-t">Sofia's recovery has plateaued at 67-68 for 5 consecutive days — a pattern that often precedes either a breakthrough or dropout. Oura Ring data shows consistently good sleep (7.2h, 72min deep sleep) which is positive. HRV at 44ms is improving toward her baseline. The plateau may respond to increased visit frequency for 2 weeks or targeted cervical decompression work. Respiratory rate of 14 is excellent — parasympathetic tone is good. Low dropout risk; high engagement score (6/7 check-ins).</div></div>
+    <div class="m-note-l">Patient Note — Yesterday</div>
+    <div class="m-note">"Headaches were better this week but I've been working late — screen time is up a lot. Neck still stiff in the morning but loosens up faster than before."</div>
+    <div class="m-msg-quick">
+      <div class="m-msg-title">✦ Quick Message to Sofia</div>
+      <textarea class="m-msg-ta" id="msg-sofia">"Hi Sofia! Great consistency with your check-ins this week. Your Oura data shows your sleep quality is strong — that's helping your recovery. One thing to try: a consistent bedtime, even 15min earlier. See you soon! — Dr. Chang 💚"</textarea>
+      <div class="m-msg-acts">
+        <button class="mb mb-sms" onclick="sendQuick('sofia','sms')">📱 Send SMS</button>
+        <button class="mb mb-send" onclick="sendQuick('sofia','email')">📧 Send Email</button>
+        <button class="mb send-ai" style="background:var(--s3);border:1px solid var(--border2);color:var(--sage);padding:5px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;" onclick="aiQuick('sofia')">✦ AI Redraft</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov-marcus">
+  <div class="modal">
+    <button class="mcls" onclick="closeModal('marcus')">✕</button>
+    <div class="m-name">Marcus Johnson</div>
+    <div class="m-sub">Day 24 · Shoulder impingement / sports · WHOOP 4.0 · Miami Lakes, FL · marcus@test.com · (305) 555-0303</div>
+    <div class="m-score-row">
+      <div class="m-big" style="color:var(--sage)">84</div>
+      <div class="m-si"><div class="m-si-l">Vitality Score Today</div><div class="m-si-g" style="color:var(--sage)">Strong Recovery — On Track</div><div class="m-si-t">⬆ Up 18pts from intake · Baseline 66 · Trending excellent</div></div>
+    </div>
+    <div class="m-metrics">
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">2/10</div><div class="mm-l">Pain</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">7.8h</div><div class="mm-l">Sleep</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">58ms</div><div class="mm-l">HRV</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">8/10</div><div class="mm-l">Energy</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">3/10</div><div class="mm-l">Stress</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">58bpm</div><div class="mm-l">Rest HR</div></div>
+    </div>
+    <div class="m-metrics-ext">
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">98%</div><div class="mm-l">SpO2</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">9,400</div><div class="mm-l">Steps</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">95min</div><div class="mm-l">Deep Sleep</div></div>
+      <div class="mm"><div class="mm-v" style="color:var(--sage)">13</div><div class="mm-l">Resp Rate</div></div>
+    </div>
+    <div class="chart-c">
+      <div class="chart-t">24-Day Vitality Score Trend</div>
+      <div class="chart-bs" id="mc-marcus-modal"></div>
+      <div class="chart-ls"><span>Day 4</span><span>Day 8</span><span>Day 12</span><span>Day 16</span><span>Day 20</span><span>Today</span></div>
+    </div>
+    <div class="m-ai"><div class="m-ai-l">✦ PURA Clinical Intelligence</div><div class="m-ai-t">Marcus is your strongest responder — 18-point improvement across 24 days. WHOOP data shows HRV at 58ms, 12% above his personal baseline of 52ms. Deep sleep averaging 95min indicates excellent tissue repair capacity. Respiratory rate of 13 breaths/min confirms strong parasympathetic tone — exactly what chiropractic care optimizes. His return to basketball with minimal soreness is a landmark functional outcome. This patient is ready for a formal case study, a referral ask, and a care plan renewal conversation.</div></div>
+    <div class="m-note-l">Patient Note — Yesterday</div>
+    <div class="m-note">"Played pickup basketball for the first time since the injury. Shoulder held up great — just a little soreness after but nothing like before. Feeling really good about the progress."</div>
+    <div class="m-msg-quick">
+      <div class="m-msg-title">✦ Quick Message to Marcus</div>
+      <textarea class="m-msg-ta" id="msg-marcus">"Marcus! Big milestone — Vitality Score 84, up 18 points. HRV above your baseline. Pain at 2/10. And you're back on the basketball court 🏀 This is exactly what we aimed for. Dr. Chang is proud of your commitment. Let's talk about what comes next 💪🏽"</textarea>
+      <div class="m-msg-acts">
+        <button class="mb mb-sms" onclick="sendQuick('marcus','sms')">📱 Send SMS</button>
+        <button class="mb mb-send" onclick="sendQuick('marcus','email')">📧 Send Email</button>
+        <button class="mb send-ai" style="background:var(--s3);border:1px solid var(--border2);color:var(--sage);padding:5px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;" onclick="aiQuick('marcus')">✦ AI Redraft</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="t-icon">✅</span><span id="t-txt">Done</span></div>
+
+<script>
+// ── DATE ──
+var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var now=new Date();
+document.getElementById('todayLine').textContent=days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate()+' · 3 active patients · 1 alert';
+
+// ── CHARTS ──
+var pData={carlos:[70,72,76,74,73,75,71,68,62,58,55,52],sofia:[52,55,58,60,62,65,67,68,68,67,68,68],marcus:[66,68,70,72,71,74,75,76,78,80,82,84]};
+var pColors={carlos:'#E07070',sofia:'#D4A84B',marcus:'#4CAF85'};
+
+function drawMini(id,data,color){var el=document.getElementById(id);if(!el)return;var mx=Math.max.apply(null,data);el.innerHTML=data.map(function(v){return'<div class="mcb" style="height:'+Math.round((v/mx)*100)+'%;background:'+color+';opacity:'+(0.25+(v/mx)*0.75)+'"></div>';}).join('');}
+
+function drawModal(id,data,color){var el=document.getElementById(id);if(!el)return;var mx=Math.max.apply(null,data);el.innerHTML=data.map(function(v){return'<div class="cbar" style="height:'+Math.round((v/mx)*100)+'%;background:'+color+';opacity:'+(0.25+(v/mx)*0.75)+'" title="Score: '+v+'"></div>';}).join('');}
+
+['carlos','sofia','marcus'].forEach(function(p){drawMini('mc-'+p,pData[p],pColors[p]);});
+
+// ── NAV ──
+function setNav(el){document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});el.classList.add('active');}
+
+// ── TABS ──
+function switchTab(id){document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});document.getElementById('tab-'+id).classList.add('active');var tabs=document.querySelectorAll('.tab');var map={overview:0,messages:1,intel:2,rtm:3};if(map[id]!==undefined)tabs[map[id]].classList.add('active');}
+
+// ── MSG TABS ──
+function setMsgTab(el,cat){document.querySelectorAll('.mtab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');var items=document.querySelectorAll('.msg-item');items.forEach(function(i){if(cat==='all'){i.style.display='block';}else{i.style.display=(i.dataset.cat===cat)?'block':'none';}});}
+
+// ── TOAST ──
+function toast(msg,icon){icon=icon||'✅';document.getElementById('t-icon').textContent=icon;document.getElementById('t-txt').textContent=msg;var t=document.getElementById('toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3800);}
+
+// ── MODAL ──
+function openModal(p){var ov=document.getElementById('ov-'+p);ov.classList.add('open');setTimeout(function(){drawModal('mc-'+p+'-modal',pData[p],pColors[p]);},120);}
+function closeModal(p){document.getElementById('ov-'+p).classList.remove('open');}
+document.querySelectorAll('.ov').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('open');});});
+
+// ── MESSAGES ──
+function sendMsg(btn,name,type){
+  var label=type==='sms'?'SMS sent to '+name+' 📱':'Email sent to '+name+' 📧';
+  btn.textContent='✓ '+label;btn.className='mb mb-sent';
+  btn.parentElement.querySelectorAll('.mb-sms,.mb-send,.mb-edit,.mb-skip').forEach(function(b){if(b!==btn)b.style.display='none';});
+  sendViaWeb3(name,type,btn.closest('.msg-item').querySelector('.mi-body').textContent);
+  toast(label,'✅');
+}
+function skipMsg(btn){btn.closest('.msg-item').style.opacity='0.35';toast('Message skipped','⏭');}
+function editMsg(btn){toast('Edit mode — click message body to modify','✏');}
+
+function sendQuick(patient,type){
+  var msg=document.getElementById('msg-'+patient).value;
+  var names={carlos:'Carlos Mendoza',sofia:'Sofia Reyes',marcus:'Marcus Johnson'};
+  sendViaWeb3(names[patient],type,msg);
+  toast((type==='sms'?'SMS':'Email')+' sent to '+names[patient],'✅');
+  closeModal(patient);
+}
+
+function sendViaWeb3(name,type,body){
+  fetch('https://api.web3forms.com/submit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      access_key:'c86e97a1-9a78-45ce-94f2-eb96113d260f',
+      subject:'PURA Dashboard — '+type.toUpperCase()+' sent to '+name,
+      from_name:'PURA Clinical Platform',
+      Patient:name,
+      MessageType:type.toUpperCase(),
+      Clinic:'Optimize Health Chiropractic — Dr. Denis Chang',
+      Message:body,
+      SentAt:new Date().toLocaleString()
+    })
+  }).catch(function(){});
+}
+
+function quickAlert(){openModal('carlos');}
+
+// ── COMPOSE ──
+function updateCharCount(){var v=document.getElementById('comp-body').value;document.getElementById('charCount').textContent=v.length+' / 160 SMS chars';}
+
+function sendComposed(type){
+  var to=document.getElementById('comp-to').value;
+  var subj=document.getElementById('comp-subj').value;
+  var body=document.getElementById('comp-body').value;
+  if(!to||!body){toast('Select a patient and write a message first','⚠');return;}
+  var names={carlos:'Carlos Mendoza',sofia:'Sofia Reyes',marcus:'Marcus Johnson'};
+  sendViaWeb3(names[to],type,body);
+  toast((type==='email'?'Email':'SMS')+' sent to '+names[to],'✅');
+  document.getElementById('comp-body').value='';
+  document.getElementById('comp-subj').value='';
+}
+
+// ── AI CALLS ──
+async function callAI(prompt,outId,system){
+  var out=document.getElementById(outId);
+  out.textContent='';out.classList.add('loading');
+  var sys=system||'You are PURA, a clinical intelligence assistant for chiropractors. Speak in clear, data-driven clinical language. Be specific and actionable. 4-5 sentences max per insight.';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:prompt}]})
+    });
+    var data=await res.json();
+    out.classList.remove('loading');
+    var text=data.content&&data.content[0]?data.content[0].text:'Analysis complete.';
+    out.textContent='';var i=0;
+    var iv=setInterval(function(){out.textContent+=text[i];i++;if(i>=text.length)clearInterval(iv);},16);
+  }catch(e){
+    out.classList.remove('loading');
+    out.textContent=getFallback(outId);
+  }
+}
+
+function getFallback(id){
+  var fb={
+    aiOut:"Today's panel summary: Carlos Mendoza requires immediate attention — Vitality Score dropped 24pts in 48hrs, HRV 19% below baseline, pain 7/10 following physical overexertion. Contact him today with an early visit offer. Sofia Reyes is stable at 68 — 5-day plateau suggests an inflection point worth addressing at her next visit. Marcus Johnson is your strongest responder — 18pt improvement, HRV above baseline, returned to basketball. Ready for a case study and referral ask.",
+    aiIntel:"WHOOP is actively developing blood biomarker integration — expect CRP and cortisol access via their API within 12-18 months. Dexcom Stelo and Abbott Lingo are now OTC CGMs available without prescription, directly relevant to chiropractic patients with inflammatory pain. Cuffless blood pressure monitoring is reaching clinical accuracy on Samsung and Apple Watch — continuous BP will be a PURA Vitality Score input by 2026. RTM chiropractic reimbursement is being actively lobbied by ACA — the precedent is set through PT/OT codes.",
+    aiRTM:"CPT 98975 (RTM device setup) is reimbursable at ~$19 per patient for initial setup. CPT 98977 (monthly monitoring) pays ~$56/patient/month. CPT 98980 (20min provider review) adds ~$50/patient/month. Total potential: ~$125/patient/month in RTM billing once chiropractic is included. At 50 enrolled patients, that's $6,250/month in new revenue for Dr. Chang on top of visit revenue. PURA generates the documentation automatically. Chiropractic ACA lobbying timeline: 18-36 months."
+  };
+  return fb[id]||'Analysis ready. The data shows strong clinical patterns across your panel.';
+}
+
+function runBriefing(){callAI("Generate a morning clinical briefing for Dr. Denis Chang at Optimize Health Chiropractic in Miami Lakes. His 3 PURA beta patients: (1) Carlos Mendoza, Day 18, lower back pain L4-L5, Vitality Score dropped 76→52 in 48hrs, HRV 31ms (baseline 38ms), pain 7/10, sleep 5.5h, SpO2 94%, resp rate 18, overexerted moving furniture. (2) Sofia Reyes, Day 11, cervicogenic headaches, Vitality Score 68 plateaued 5 days, HRV 44ms, sleep 7.2h, SpO2 97%, resp rate 14. (3) Marcus Johnson, Day 24, shoulder impingement, Vitality Score 84 (up 18pts), HRV 58ms above baseline, pain 2/10, sleep 7.8h, SpO2 98%, resp rate 13, returned to basketball. Give the most important clinical actions for today.",'aiOut');}
+
+function runInsight(type){
+  var p={
+    retention:"Analyze dropout risk for Dr. Chang's 3 patients. Carlos: Day 18, score 52, high pain, setback from overexertion. Sofia: Day 11, plateaued at 68. Marcus: Day 24, score 84, thriving. Who is at highest dropout risk and what specific intervention prevents it?",
+    carlos:"Deep clinical analysis of Carlos Mendoza, Day 18 chiropractic care, lower back L4-L5. Vitality Score 76→52 in 48hrs. HRV 31ms (baseline 38ms). Sleep 5.5h. Pain 7/10. SpO2 94%. Resp rate 18. Moved heavy furniture Sunday. What does this biometric pattern suggest and what should Dr. Chang do at the next visit?",
+    outcomes:"Generate a 30-day PURA beta outcomes report for Dr. Denis Chang. 3 patients, 11-24 days monitoring, 94% check-in rate, avg Vitality Score +10pts, one patient returned to sports, one plateaued needing intervention, one setback from external stressor. Frame for sharing with other DCs considering PURA.",
+    whoop:"What are the clinical implications of WHOOP adding blood biomarker panels for chiropractors using PURA? How would CRP, cortisol, and inflammatory marker data change how Dr. Chang treats lower back pain, cervicogenic headaches, and shoulder impingement? What should he look for?"
+  };
+  callAI(p[type],'aiOut');
+}
+
+function runIntel(type){
+  var p={
+    whoop:"Explain what WHOOP blood panel integration means for chiropractic clinical practice. Which blood biomarkers (CRP, cortisol, IL-6, etc.) are most relevant to musculoskeletal recovery? How would this data change the PURA Vitality Score and clinical decision-making for a DC?",
+    cgm:"How should a chiropractor interpret continuous glucose monitor (CGM) data from patients like Dexcom Stelo or Abbott Lingo? What glucose patterns predict inflammation, poor recovery, or flare-ups relevant to lower back pain and cervicogenic headaches? How does PURA use this data?",
+    rtm:"Current status of Remote Therapeutic Monitoring (RTM) reimbursement. CPT codes 98975-98981. What do PT/OT providers currently bill, how much, and what documentation is required? What is the timeline and pathway for chiropractic inclusion? How does PURA's check-in system satisfy RTM documentation requirements today?",
+    longevity:"How should PURA position itself with longevity clinics like Function Health, Fountain Life, and Lifeforce? What is the business model for PURA as the musculoskeletal intelligence layer inside a longevity clinic? What is the pricing and partnership structure? What patient data do these clinics already have that PURA can build on?"
+  };
+  callAI(p[type],'aiIntel','You are a health technology strategist and clinical intelligence expert. Provide specific, actionable intelligence about health technology trends affecting chiropractic and wearable platforms. Be direct and data-specific.');
+}
+
+function runRTM(type){
+  var p={
+    status:"Current RTM reimbursement status 2025. What CPT codes are active, what do they pay, who can bill them, and what documentation is required? What is the current chiropractic exclusion status and what legislative actions are underway?",
+    codes:"Break down CPT codes 98975, 98976, 98977, 98980, 98981 for Remote Therapeutic Monitoring. For each: what it covers, reimbursement rate, billing frequency, documentation required, and how PURA's platform satisfies the requirements.",
+    timeline:"What is the realistic timeline for chiropractic RTM reimbursement? What are the key milestones, who is lobbying, what precedents exist from PT/OT inclusion, and what should PURA do now to be ready when it happens?",
+    revenue:"Model the RTM revenue opportunity for a chiropractic clinic with 50 enrolled PURA patients when reimbursement is approved. Show the monthly and annual revenue impact, documentation burden, PURA's role, and how this changes the value proposition for DCs."
+  };
+  callAI(p[type],'aiRTM','You are a healthcare reimbursement specialist with expertise in CMS billing, remote therapeutic monitoring, and digital health policy. Provide specific billing codes, dollar amounts, and regulatory timelines.');
+}
+
+async function aiDraftMessage(){
+  var to=document.getElementById('comp-to').value;
+  if(!to){toast('Select a patient first','⚠');return;}
+  var ctx={carlos:'lower back pain, Day 18, Vitality Score 52 (down 24pts), pain 7/10, needs early visit',sofia:'cervicogenic headaches, Day 11, Vitality Score 68 plateaued, sleep improving, needs encouragement',marcus:'shoulder impingement, Day 24, Vitality Score 84 (up 18pts), returned to basketball, milestone achieved'};
+  var names={carlos:'Carlos Mendoza',sofia:'Sofia Reyes',marcus:'Marcus Johnson'};
+  var ta=document.getElementById('comp-body');
+  ta.value='Generating...';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,system:'You write short, warm, personal patient messages for Dr. Denis Chang at Optimize Health Chiropractic. Keep under 150 words. Conversational, caring, specific to their data. Include Dr. Chang signature.',messages:[{role:'user',content:'Write a patient message for '+names[to]+' — '+ctx[to]}]})});
+    var d=await res.json();
+    ta.value=d.content&&d.content[0]?d.content[0].text:'Draft generated.';
+    updateCharCount();
+  }catch(e){ta.value='"Hi '+names[to].split(' ')[0]+'! Dr. Chang here — just checking in on your recovery. Your PURA data is looking [see latest metrics]. Keep up the great work and reach out if you need anything before your next visit. — Dr. Chang 💚"';updateCharCount();}
+}
+
+async function aiQuick(patient){
+  var names={carlos:'Carlos Mendoza',sofia:'Sofia Reyes',marcus:'Marcus Johnson'};
+  var ctx={carlos:'Vitality Score dropped 24pts in 48hrs, pain 7/10, needs to come in sooner, overexerted moving furniture',sofia:'Vitality Score 68 plateaued, sleep improving with Oura, headaches better, screen time elevated',marcus:'Vitality Score 84, up 18pts, returned to basketball, HRV above baseline, ready for care plan renewal'};
+  var ta=document.getElementById('msg-'+patient);
+  ta.value='Generating...';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:150,system:'Write a short warm personal patient text/message for Dr. Denis Chang at Optimize Health Chiropractic Miami Lakes. Under 120 words. Caring, specific, ends with Dr. Chang signature.',messages:[{role:'user',content:'Write a message for '+names[patient]+': '+ctx[patient]}]})});
+    var d=await res.json();
+    ta.value=d.content&&d.content[0]?d.content[0].text:ta.value;
+  }catch(e){}
+}
+</script>
+</body>
+</html>
