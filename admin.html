@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURA Admin — Command Dashboard</title>
+<script src="pura-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
+
+  /* AUTH GATE */
+  #auth-gate{position:fixed;inset:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:9999;}
+  .auth-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:48px;width:360px;text-align:center;}
+  .auth-logo{font-size:32px;font-weight:800;color:#6366f1;margin-bottom:8px;}
+  .auth-sub{color:#64748b;font-size:14px;margin-bottom:32px;}
+  .auth-input{width:100%;padding:12px 16px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:15px;margin-bottom:16px;outline:none;}
+  .auth-input:focus{border-color:#6366f1;}
+  .auth-btn{width:100%;padding:12px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;}
+  .auth-btn:hover{background:#4f46e5;}
+  .auth-err{color:#ef4444;font-size:13px;margin-top:8px;display:none;}
+
+  /* LAYOUT */
+  #app{display:none;min-height:100vh;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#1e293b;border-right:1px solid #334155;padding:24px 0;display:flex;flex-direction:column;}
+  .sidebar-logo{padding:0 20px 24px;font-size:20px;font-weight:800;color:#6366f1;border-bottom:1px solid #334155;}
+  .sidebar-logo span{color:#e2e8f0;font-size:12px;display:block;font-weight:400;margin-top:2px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;color:#94a3b8;font-size:14px;font-weight:500;transition:all .15s;}
+  .nav-item:hover,.nav-item.active{background:#0f172a;color:#e2e8f0;}
+  .nav-item.active{border-right:3px solid #6366f1;}
+  .nav-icon{font-size:16px;width:20px;text-align:center;}
+  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid #334155;font-size:12px;color:#475569;}
+
+  .main{margin-left:220px;padding:32px;}
+  .page-header{margin-bottom:28px;}
+  .page-title{font-size:22px;font-weight:700;color:#f1f5f9;}
+  .page-sub{font-size:14px;color:#64748b;margin-top:4px;}
+
+  /* STAT CARDS */
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;}
+  .stat-label{font-size:12px;color:#64748b;font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .stat-value{font-size:28px;font-weight:700;color:#f1f5f9;}
+  .stat-sub{font-size:12px;color:#64748b;margin-top:4px;}
+
+  /* TABS */
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+
+  /* CHART */
+  .chart-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:24px;}
+  .chart-title{font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:16px;}
+  .chart-wrap{height:220px;}
+
+  /* TABLE */
+  .table-card{background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;margin-bottom:20px;}
+  .table-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;}
+  .table-title{font-size:15px;font-weight:600;color:#e2e8f0;}
+  table{width:100%;border-collapse:collapse;}
+  th{padding:10px 16px;text-align:left;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:#0f172a;}
+  td{padding:12px 16px;border-top:1px solid #1e293b;font-size:13px;color:#cbd5e1;}
+  tr:hover td{background:#0f172a22;}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;}
+  .badge-green{background:#14532d;color:#86efac;}
+  .badge-amber{background:#451a03;color:#fcd34d;}
+  .badge-red{background:#450a0a;color:#fca5a5;}
+  .badge-teal{background:#134e4a;color:#5eead4;}
+  .badge-gray{background:#1e293b;color:#94a3b8;border:1px solid #334155;}
+
+  /* SIGNAL PILL */
+  .signal-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;}
+
+  /* FILTERS */
+  .filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+  .filter-select{padding:8px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;}
+  .filter-select:focus{border-color:#6366f1;}
+  .export-btn{padding:8px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .export-btn:hover{border-color:#6366f1;color:#6366f1;}
+
+  /* BETA LEADS */
+  .lead-row td{vertical-align:top;}
+  .lead-notes{background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 8px;color:#e2e8f0;font-size:12px;width:200px;resize:none;height:56px;}
+  .lead-notes:focus{outline:none;border-color:#6366f1;}
+  .status-select{padding:4px 8px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-size:12px;outline:none;}
+  .email-btn{padding:4px 10px;background:#1e3a5f;border:1px solid #1d4ed8;border-radius:6px;color:#93c5fd;font-size:11px;cursor:pointer;border:none;margin-top:4px;display:block;}
+  .email-btn:hover{background:#1d4ed8;}
+
+  /* CLINIC CARD */
+  .clinic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .clinic-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;}
+  .clinic-name{font-size:15px;font-weight:600;color:#f1f5f9;margin-bottom:4px;}
+  .clinic-city{font-size:12px;color:#64748b;margin-bottom:12px;}
+  .clinic-stat{display:flex;justify-content:space-between;font-size:13px;color:#94a3b8;padding:4px 0;border-top:1px solid #0f172a;}
+  .clinic-stat span:last-child{color:#e2e8f0;font-weight:500;}
+  .link-row{display:flex;gap:8px;margin-top:12px;}
+  .link-btn{flex:1;padding:7px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#6366f1;font-size:11px;text-align:center;cursor:pointer;text-decoration:none;word-break:break-all;}
+  .link-btn:hover{border-color:#6366f1;}
+
+  /* EMPTY STATE */
+  .empty{padding:48px;text-align:center;color:#475569;font-size:14px;}
+
+  /* LOADING */
+  .loading{color:#6366f1;font-size:13px;padding:16px;}
+
+  /* REFRESH */
+  .refresh-btn{padding:6px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;cursor:pointer;}
+  .refresh-btn:hover{border-color:#6366f1;color:#6366f1;}
+
+  @media(max-width:900px){
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .clinic-grid{grid-template-columns:1fr;}
+    .sidebar{width:60px;}
+    .sidebar-logo,.nav-item span,.sidebar-footer{display:none;}
+    .main{margin-left:60px;padding:20px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div id="auth-gate">
+  <div class="auth-card">
+    <div class="auth-logo">PURA</div>
+    <div class="auth-sub">Admin Command Dashboard</div>
+    <input class="auth-input" type="password" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Sign In</button>
+    <div class="auth-err" id="auth-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">PURA <span>Admin v1.0</span></div>
+    <nav id="sidebar-nav">
+      <div class="nav-item active" onclick="showTab('overview')" data-tab="overview">
+        <span class="nav-icon">📊</span><span>Overview</span>
+      </div>
+      <div class="nav-item" onclick="showTab('clinics')" data-tab="clinics">
+        <span class="nav-icon">🏥</span><span>Clinics</span>
+      </div>
+      <div class="nav-item" onclick="showTab('patients')" data-tab="patients">
+        <span class="nav-icon">👥</span><span>Patients</span>
+      </div>
+      <div class="nav-item" onclick="showTab('checkins')" data-tab="checkins">
+        <span class="nav-icon">📋</span><span>Check-ins</span>
+      </div>
+      <div class="nav-item" onclick="showTab('leads')" data-tab="leads">
+        <span class="nav-icon">⭐</span><span>Beta Leads</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">Joshua Santos · Admin</div>
+  </div>
+
+  <div class="main">
+
+    <!-- OVERVIEW TAB -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="page-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="page-title">Command Overview</div>
+            <div class="page-sub" id="overview-date">Loading...</div>
+          </div>
+          <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Beta Clinics</div>
+          <div class="stat-value" id="stat-clinics">—</div>
+          <div class="stat-sub">Active DCs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Patients</div>
+          <div class="stat-value" id="stat-patients">—</div>
+          <div class="stat-sub">Enrolled</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Check-ins Today</div>
+          <div class="stat-value" id="stat-today">—</div>
+          <div class="stat-sub" id="stat-today-sub">Loading...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Check-ins</div>
+          <div class="stat-value" id="stat-total-checkins">—</div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg PURA Signal</div>
+          <div class="stat-value" id="stat-avg-signal">—</div>
+          <div class="stat-sub">Last 7 days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Alerts</div>
+          <div class="stat-value" id="stat-alerts" style="color:#ef4444;">—</div>
+          <div class="stat-sub">Signal &lt; 40</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">PURA Signal — 30 Day Trend</div>
+        <div class="chart-wrap"><canvas id="signal-chart"></canvas></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">Recent Check-ins</div></div>
+        <div id="recent-checkins-body">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLINICS TAB -->
+    <div id="tab-clinics" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">Beta Clinics</div>
+        <div class="page-sub">All active DC partners in the beta program</div>
+      </div>
+      <div class="clinic-grid" id="clinics-grid">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- PATIENTS TAB -->
+    <div id="tab-patients" class="tab-content">
+      <div class="page-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="page-title">All Patients</div>
+            <div class="page-sub">Every enrolled patient across all clinics</div>
+          </div>
+        </div>
+      </div>
+      <div class="filters">
+        <select class="filter-select" id="patient-clinic-filter" onchange="filterPatients()">
+          <option value="">All Clinics</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Patients</div>
+        </div>
+        <div id="patients-body"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- CHECK-INS TAB -->
+    <div id="tab-checkins" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">Check-in Records</div>
+        <div class="page-sub">All patient submissions with full signal data</div>
+      </div>
+      <div class="filters">
+        <select class="filter-select" id="ci-clinic-filter" onchange="filterCheckins()">
+          <option value="">All Clinics</option>
+        </select>
+        <select class="filter-select" id="ci-date-filter" onchange="filterCheckins()">
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="">All time</option>
+        </select>
+        <button class="export-btn" onclick="exportRaw()">📥 Export Raw Data</button>
+        <button class="export-btn" onclick="exportDailyAvg()">📊 Daily Averages</button>
+        <button class="export-btn" onclick="exportClinicSummary()">🏥 Clinic Summary</button>
+      </div>
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">Check-ins</div></div>
+        <div id="checkins-body"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- BETA LEADS TAB -->
+    <div id="tab-leads" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">Beta Leads</div>
+        <div class="page-sub">Interest form submissions from beta.html</div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Leads</div>
+          <div style="font-size:12px;color:#64748b;" id="leads-count"></div>
+        </div>
+        <div id="leads-body"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// AUTH
+function checkAuth() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw === 'pura2026santos') {
+    sessionStorage.setItem('pura_admin', '1');
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initAdmin();
+  } else {
+    document.getElementById('auth-err').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+// Auto-auth if already logged in this session
+if (sessionStorage.getItem('pura_admin') === '1') {
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+// NAV
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector(`[data-tab="${name}"]`).classList.add('active');
+}
+
+// DATA
+let allCheckins = [];
+let allPatients = [];
+let allLeads = [];
+
+async function initAdmin() {
+  document.getElementById('overview-date').textContent = today();
+  await loadAll();
+}
+
+async function loadAll() {
+  await Promise.all([loadCheckins(), loadPatients(), loadLeads()]);
+  renderOverview();
+  renderClinics();
+  renderPatientsTab();
+  renderCheckinsTab();
+  renderLeadsTab();
+  buildChart();
+}
+
+async function loadCheckins() {
+  try {
+    const data = await dbSelect('check_ins', 'order=created_at.desc&limit=500');
+    if (Array.isArray(data)) allCheckins = data;
+  } catch(e) { console.error(e); }
+}
+
+async function loadPatients() {
+  try {
+    const data = await dbSelect('patients', 'order=created_at.desc&limit=500');
+    if (Array.isArray(data)) allPatients = data;
+  } catch(e) { console.error(e); }
+}
+
+async function loadLeads() {
+  try {
+    const data = await dbSelect('beta_interests', 'order=created_at.desc&limit=200');
+    if (Array.isArray(data)) allLeads = data;
+  } catch(e) { console.error(e); }
+}
+
+// OVERVIEW
+function renderOverview() {
+  const dcSlugs = Object.keys(DC_PROFILES);
+  document.getElementById('stat-clinics').textContent = dcSlugs.length;
+  document.getElementById('stat-patients').textContent = allPatients.length || '—';
+
+  const todayStr = todayISO();
+  const todayCheckins = allCheckins.filter(c => (c.created_at||'').startsWith(todayStr));
+  document.getElementById('stat-today').textContent = todayCheckins.length;
+  document.getElementById('stat-today-sub').textContent = todayStr;
+
+  document.getElementById('stat-total-checkins').textContent = allCheckins.length;
+
+  const week = getDateDaysAgo(7);
+  const recentSignals = allCheckins
+    .filter(c => (c.created_at||'') >= week && c.pura_signal != null)
+    .map(c => c.pura_signal);
+  const avg = recentSignals.length
+    ? Math.round(recentSignals.reduce((a,b) => a+b, 0) / recentSignals.length)
+    : null;
+  document.getElementById('stat-avg-signal').textContent = avg ?? '—';
+
+  const alerts = allCheckins.filter(c =>
+    (c.created_at||'').startsWith(todayStr) && c.pura_signal < 40
+  ).length;
+  document.getElementById('stat-alerts').textContent = alerts;
+
+  // Recent check-ins table
+  const recent = allCheckins.slice(0, 10);
+  if (!recent.length) {
+    document.getElementById('recent-checkins-body').innerHTML = '<div class="empty">No check-ins yet.</div>';
+    return;
+  }
+  let html = '<table><thead><tr><th>Patient</th><th>Clinic</th><th>Signal</th><th>Pain</th><th>Energy</th><th>Date</th></tr></thead><tbody>';
+  recent.forEach(c => {
+    const s = c.pura_signal ?? '—';
+    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === c.clinic_id);
+    html += `<tr>
+      <td>${c.patient_name || c.patient_id || '—'}</td>
+      <td>${dc ? dc.clinic : (c.clinic_id||'—').slice(0,8)+'...'}</td>
+      <td>${s !== '—' ? `<span class="signal-pill" style="background:${signalColor(s)}22;color:${signalColor(s)}">${s} ${signalLabel(s)}</span>` : '—'}</td>
+      <td>${c.pain ?? '—'}/10</td>
+      <td>${c.energy ?? '—'}/10</td>
+      <td>${(c.created_at||'').slice(0,10)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('recent-checkins-body').innerHTML = html;
+}
+
+// CHART
+function buildChart() {
+  const ctx = document.getElementById('signal-chart').getContext('2d');
+  const days = 30;
+  const labels = [];
+  const values = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const iso = d.toISOString().split('T')[0];
+    labels.push(iso.slice(5)); // MM-DD
+    const dayCheckins = allCheckins.filter(c =>
+      (c.created_at||'').startsWith(iso) && c.pura_signal != null
+    );
+    const avg = dayCheckins.length
+      ? Math.round(dayCheckins.reduce((a,b) => a + b.pura_signal, 0) / dayCheckins.length)
+      : null;
+    values.push(avg);
+  }
+
+  if (window._signalChart) window._signalChart.destroy();
+  window._signalChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Avg PURA Signal',
+        data: values,
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99,102,241,0.1)',
+        tension: 0.4,
+        fill: true,
+        pointRadius: 3,
+        pointBackgroundColor: '#6366f1',
+        spanGaps: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: '#1e293b' } },
+        y: { min: 0, max: 100, ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
+      }
+    }
+  });
+}
+
+// CLINICS
+function renderClinics() {
+  const dcSlugs = Object.keys(DC_PROFILES);
+  let html = '';
+  dcSlugs.forEach(slug => {
+    const dc = DC_PROFILES[slug];
+    const pts = allPatients.filter(p => p.clinic_id === dc.clinic_id).length;
+    const cis = allCheckins.filter(c => c.clinic_id === dc.clinic_id).length;
+    const todayCis = allCheckins.filter(c =>
+      c.clinic_id === dc.clinic_id && (c.created_at||'').startsWith(todayISO())
+    ).length;
+    const signals = allCheckins
+      .filter(c => c.clinic_id === dc.clinic_id && c.pura_signal != null)
+      .map(c => c.pura_signal);
+    const avgSig = signals.length
+      ? Math.round(signals.reduce((a,b)=>a+b,0)/signals.length) : null;
+
+    html += `<div class="clinic-card">
+      <div class="clinic-name">${dc.name}</div>
+      <div class="clinic-city">${dc.clinic} · ${dc.city}</div>
+      <div class="clinic-stat"><span>Patients</span><span>${pts}</span></div>
+      <div class="clinic-stat"><span>Total Check-ins</span><span>${cis}</span></div>
+      <div class="clinic-stat"><span>Today</span><span>${todayCis}</span></div>
+      <div class="clinic-stat"><span>Avg Signal</span><span>${avgSig ? `<span style="color:${signalColor(avgSig)}">${avgSig}</span>` : '—'}</span></div>
+      <div class="link-row">
+        <a class="link-btn" href="portal.html?dc=${slug}" target="_blank">Portal ↗</a>
+        <a class="link-btn" href="checkin.html?dc=${slug}" target="_blank">Check-in ↗</a>
+      </div>
+    </div>`;
+  });
+  document.getElementById('clinics-grid').innerHTML = html;
+
+  // Populate clinic filters
+  ['patient-clinic-filter','ci-clinic-filter'].forEach(id => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All Clinics</option>';
+    dcSlugs.forEach(slug => {
+      const dc = DC_PROFILES[slug];
+      sel.innerHTML += `<option value="${dc.clinic_id}">${dc.name}</option>`;
+    });
+    sel.value = cur;
+  });
+}
+
+// PATIENTS TAB
+function renderPatientsTab() { filterPatients(); }
+
+function filterPatients() {
+  const clinicFilter = document.getElementById('patient-clinic-filter')?.value || '';
+  let pts = allPatients;
+  if (clinicFilter) pts = pts.filter(p => p.clinic_id === clinicFilter);
+
+  if (!pts.length) {
+    document.getElementById('patients-body').innerHTML = '<div class="empty">No patients found.</div>';
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Name</th><th>Email</th><th>Phone</th><th>Clinic</th><th>Enrolled</th>
+  </tr></thead><tbody>`;
+  pts.forEach(p => {
+    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === p.clinic_id);
+    html += `<tr>
+      <td>${p.first_name||''} ${p.last_name||''}</td>
+      <td>${p.email||'—'}</td>
+      <td>${p.phone||'—'}</td>
+      <td>${dc ? dc.name : '—'}</td>
+      <td>${(p.created_at||'').slice(0,10)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('patients-body').innerHTML = html;
+}
+
+// CHECK-INS TAB
+function renderCheckinsTab() { filterCheckins(); }
+
+function filterCheckins() {
+  const clinicFilter = document.getElementById('ci-clinic-filter')?.value || '';
+  const daysFilter = document.getElementById('ci-date-filter')?.value || '';
+
+  let cis = allCheckins;
+  if (clinicFilter) cis = cis.filter(c => c.clinic_id === clinicFilter);
+  if (daysFilter) {
+    const cutoff = getDateDaysAgo(parseInt(daysFilter));
+    cis = cis.filter(c => (c.created_at||'') >= cutoff);
+  }
+
+  if (!cis.length) {
+    document.getElementById('checkins-body').innerHTML = '<div class="empty">No check-ins match filters.</div>';
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Patient</th><th>Clinic</th><th>Signal</th><th>Pain</th><th>Sleep</th><th>Energy</th><th>Stress</th><th>Mood</th><th>Date</th>
+  </tr></thead><tbody>`;
+  cis.forEach(c => {
+    const s = c.pura_signal ?? null;
+    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === c.clinic_id);
+    html += `<tr>
+      <td>${c.patient_name || '—'}</td>
+      <td style="font-size:11px">${dc ? dc.clinic : '—'}</td>
+      <td>${s != null ? `<span class="signal-pill" style="background:${signalColor(s)}22;color:${signalColor(s)};font-size:11px">${s}</span>` : '—'}</td>
+      <td>${c.pain ?? '—'}</td>
+      <td>${c.sleep_quality ?? '—'}</td>
+      <td>${c.energy ?? '—'}</td>
+      <td>${c.stress ?? '—'}</td>
+      <td>${c.mood ?? '—'}</td>
+      <td style="font-size:11px">${(c.created_at||'').slice(0,10)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('checkins-body').innerHTML = html;
+}
+
+// BETA LEADS
+function renderLeadsTab() {
+  if (!allLeads.length) {
+    document.getElementById('leads-body').innerHTML = '<div class="empty">No beta leads yet. Share beta.html to collect interest.</div>';
+    document.getElementById('leads-count').textContent = '0 leads';
+    return;
+  }
+  document.getElementById('leads-count').textContent = `${allLeads.length} lead${allLeads.length !== 1 ? 's' : ''}`;
+
+  let html = `<table><thead><tr>
+    <th>Name</th><th>Clinic</th><th>Email</th><th>City</th><th>Pts/wk</th><th>Status</th><th>Notes</th><th>Actions</th>
+  </tr></thead><tbody>`;
+  allLeads.forEach(lead => {
+    const statusOpts = ['new','contacted','demo_scheduled','converted','not_interested']
+      .map(s => `<option value="${s}" ${lead.status === s ? 'selected' : ''}>${s.replace(/_/g,' ')}</option>`)
+      .join('');
+    html += `<tr class="lead-row">
+      <td>${lead.full_name||'—'}</td>
+      <td>${lead.clinic_name||'—'}</td>
+      <td style="font-size:11px">${lead.email||'—'}</td>
+      <td style="font-size:11px">${lead.city||'—'}</td>
+      <td>${lead.patients_per_week||'—'}</td>
+      <td>
+        <select class="status-select" onchange="updateLeadStatus('${lead.id}', this.value)">
+          ${statusOpts}
+        </select>
+      </td>
+      <td>
+        <textarea class="lead-notes" onblur="updateLeadNotes('${lead.id}', this.value)">${lead.notes||''}</textarea>
+      </td>
+      <td>
+        <button class="email-btn" onclick="emailLead('${lead.email}','${lead.full_name}')">✉ Email</button>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('leads-body').innerHTML = html;
+}
+
+async function updateLeadStatus(id, status) {
+  await dbUpdate('beta_interests', id, { status });
+}
+async function updateLeadNotes(id, notes) {
+  await dbUpdate('beta_interests', id, { notes });
+}
+function emailLead(email, name) {
+  window.open(`mailto:${email}?subject=PURA Health Beta&body=Hi ${name},%0A%0AThanks for your interest in PURA Health...`);
+}
+
+// EXCEL EXPORTS
+function exportRaw() {
+  const rows = allCheckins.map(c => {
+    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === c.clinic_id);
+    return {
+      Date: (c.created_at||'').slice(0,10),
+      Patient: c.patient_name || c.patient_id || '',
+      Clinic: dc ? dc.name : '',
+      'PURA Signal': c.pura_signal,
+      Pain: c.pain, 'Sleep Quality': c.sleep_quality,
+      'Sleep Hours': c.sleep_hours, Energy: c.energy,
+      Stress: c.stress, Functional: c.functional, Mood: c.mood,
+      Notes: c.notes || ''
+    };
+  });
+  downloadExcel([{ name: 'Raw Check-ins', data: rows }], 'PURA_Raw_Checkins.xlsx');
+}
+
+function exportDailyAvg() {
+  const byDay = {};
+  allCheckins.forEach(c => {
+    const d = (c.created_at||'').slice(0,10);
+    if (!byDay[d]) byDay[d] = [];
+    if (c.pura_signal != null) byDay[d].push(c.pura_signal);
+  });
+  const rows = Object.keys(byDay).sort().map(d => ({
+    Date: d,
+    'Avg Signal': byDay[d].length ? Math.round(byDay[d].reduce((a,b)=>a+b,0)/byDay[d].length) : '',
+    'Check-ins': byDay[d].length
+  }));
+  downloadExcel([{ name: 'Daily Averages', data: rows }], 'PURA_Daily_Averages.xlsx');
+}
+
+function exportClinicSummary() {
+  const rows = Object.values(DC_PROFILES).map(dc => {
+    const cis = allCheckins.filter(c => c.clinic_id === dc.clinic_id);
+    const signals = cis.filter(c => c.pura_signal != null).map(c => c.pura_signal);
+    const avg = signals.length ? Math.round(signals.reduce((a,b)=>a+b,0)/signals.length) : '';
+    return {
+      DC: dc.name, Clinic: dc.clinic, City: dc.city,
+      Patients: allPatients.filter(p => p.clinic_id === dc.clinic_id).length,
+      'Total Check-ins': cis.length,
+      'Avg Signal': avg
+    };
+  });
+  downloadExcel([{ name: 'Clinic Summary', data: rows }], 'PURA_Clinic_Summary.xlsx');
+}
+
+function downloadExcel(sheets, filename) {
+  const wb = XLSX.utils.book_new();
+  sheets.forEach(s => {
+    const ws = XLSX.utils.json_to_sheet(s.data);
+    XLSX.utils.book_append_sheet(wb, ws, s.name);
+  });
+  XLSX.writeFile(wb, filename);
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('pura_admin') === '1') {
+    initAdmin();
+  }
+});
+</script>
+</body>
+</html>

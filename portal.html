@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURA Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="pura-config.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;display:flex}
+#error-page{display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:40px}
+#error-page h2{font-size:24px;font-weight:700;color:#ef4444}
+#error-page p{color:#555;font-size:15px}
+#app{display:none;flex:1}
+/* SIDEBAR */
+#sidebar{width:240px;position:fixed;left:0;top:0;height:100vh;background:#0a0a0a;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;z-index:20;overflow-y:auto}
+.sb-top{padding:24px}
+.sb-logo{font-size:20px;font-weight:700;color:#c8ff00;letter-spacing:-0.5px}
+.sb-dc-name{font-size:15px;font-weight:500;color:#fff;margin-top:16px;line-height:1.3}
+.sb-clinic{font-size:13px;color:#888;margin-top:2px}
+.sb-city{font-size:12px;color:#555;margin-top:2px}
+.sb-nav{margin-top:32px;flex:1}
+.nav-item{display:flex;align-items:center;padding:12px 24px;cursor:pointer;font-size:14px;color:#666;transition:color 0.15s,background 0.15s;border-left:3px solid transparent}
+.nav-item:hover{color:#aaa;background:#141414}
+.nav-item.active{color:#fff;border-left-color:#c8ff00;background:rgba(200,255,0,0.05)}
+.nav-icon{font-size:18px;margin-right:10px;flex-shrink:0}
+.sb-bottom{position:absolute;bottom:24px;left:24px;right:24px}
+#copy-link-btn{width:100%;background:#1a1a1a;border:1px solid #2a2a2a;color:#c8ff00;border-radius:8px;padding:12px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:background 0.2s}
+#copy-link-btn:hover{background:#222}
+.sb-hint{font-size:11px;color:#444;text-align:center;margin-top:8px}
+/* MAIN */
+#main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+#topbar{height:60px;border-bottom:1px solid #1f1f1f;padding:0 32px;display:flex;align-items:center;justify-content:space-between;background:#08080a;position:sticky;top:0;z-index:10}
+.topbar-left{font-size:15px;font-weight:500;color:#fff}
+.topbar-right{font-size:13px;color:#555}
+.tab-panel{display:none;padding:32px;flex:1}
+.tab-panel.active{display:block}
+/* CARDS */
+.card{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:28px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.card-title{font-size:16px;font-weight:600}
+.card-sub{font-size:13px;color:#555}
+/* BRIEFING */
+.briefing-body{font-size:15px;color:#ccc;line-height:1.8}
+.briefing-body h3{color:#c8ff00;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin:20px 0 8px}
+.briefing-body br+br{display:none}
+.ghost-btn{background:transparent;border:1px solid #2a2a2a;color:#888;border-radius:8px;padding:8px 14px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:border-color 0.2s,color 0.2s}
+.ghost-btn:hover{border-color:#555;color:#fff}
+.ghost-btn:disabled{opacity:0.4;cursor:not-allowed}
+.spinner-inline{display:inline-block;width:16px;height:16px;border:2px solid #1f1f1f;border-top-color:#c8ff00;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-row{display:flex;align-items:center;gap:10px;color:#555;font-size:14px;padding:12px 0}
+/* DEMO BANNER */
+.demo-banner{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 16px;font-size:13px;color:#f59e0b;margin-bottom:16px}
+/* CHECKIN CARDS */
+.ci-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:16px}
+.ci-card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;padding:18px}
+.ci-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ci-name{font-size:14px;font-weight:600}
+.ci-circle{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid;flex-shrink:0}
+.ci-status{font-size:11px;font-weight:700;letter-spacing:0.3px;padding:3px 9px;border-radius:100px;margin-bottom:10px;display:inline-block}
+.mini-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mini-bar-lbl{font-size:11px;color:#555;width:60px;flex-shrink:0}
+.mini-bar-track{flex:1;height:4px;background:#1f1f1f;border-radius:2px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:2px}
+.mini-bar-val{font-size:11px;font-weight:600;width:24px;text-align:right;flex-shrink:0}
+.ci-device{font-size:11px;color:#555;border:1px solid #2a2a2a;border-radius:100px;padding:2px 8px;display:inline-block;margin-top:8px}
+.ci-note{font-size:12px;color:#555;font-style:italic;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ask-ai-btn{width:100%;background:#1a1a1a;border:none;color:#c8ff00;border-radius:8px;padding:10px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;margin-top:12px;transition:background 0.2s}
+.ask-ai-btn:hover{background:#222}
+/* PATIENTS TAB */
+.patients-table{width:100%;border-collapse:collapse}
+.patients-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:1px;background:#0d0d0d;border-bottom:1px solid #1f1f1f}
+.patients-table td{padding:13px 14px;border-bottom:1px solid #1a1a1a;font-size:14px;vertical-align:middle}
+.patients-table tr:last-child td{border-bottom:none}
+.patients-table tr.p-row{cursor:pointer;transition:background 0.15s}
+.patients-table tr.p-row:hover{background:#111}
+.sig-badge{font-weight:700;border-radius:6px;padding:4px 10px;font-size:13px}
+/* GENERAL CHAT */
+.gchat-wrap{display:flex;flex-direction:column;height:400px;background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;overflow:hidden}
+.gchat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.gchat-msg-user{align-self:flex-end;background:#c8ff00;color:#08080a;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:80%;font-size:14px;font-weight:500}
+.gchat-msg-ai{align-self:flex-start;background:#1a1a1a;color:#e0e0e0;border-radius:12px 12px 12px 2px;padding:10px 14px;max-width:85%;font-size:14px;line-height:1.6}
+.gchat-bottom{padding:12px;border-top:1px solid #1f1f1f;display:flex;gap:8px}
+.gchat-input{flex:1;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;font-size:14px;color:#fff;font-family:'Inter',sans-serif;outline:none;resize:none;height:42px}
+.gchat-input:focus{border-color:#c8ff00}
+.gchat-send{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.starter-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.starter-pill{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:100px;padding:7px 14px;font-size:12px;cursor:pointer;color:#888;transition:border-color 0.2s,color 0.2s;font-family:'Inter',sans-serif}
+.starter-pill:hover{border-color:#c8ff00;color:#fff}
+/* ADD PATIENT WIZARD */
+.wizard-progress{height:3px;background:#1f1f1f;border-radius:2px;margin-bottom:24px;overflow:hidden}
+.wizard-bar{height:100%;background:#c8ff00;border-radius:2px;transition:width 0.4s}
+.wizard-step-lbl{font-size:12px;font-weight:600;color:#555;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px}
+.wizard-title{font-size:22px;font-weight:700;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#666;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:7px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;font-size:14px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#c8ff00}
+.form-group input.error{border-color:#ef4444}
+.form-group .err-msg{font-size:11px;color:#ef4444;margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check-item{display:flex;align-items:center;gap:8px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;padding:11px 13px;cursor:pointer;transition:border-color 0.2s;user-select:none}
+.check-item:hover{border-color:#555}
+.check-item.checked{border-color:#c8ff00;background:rgba(200,255,0,0.04)}
+.check-box{width:16px;height:16px;border-radius:3px;border:2px solid #444;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.2s}
+.check-item.checked .check-box{background:#c8ff00;border-color:#c8ff00;color:#08080a}
+.check-lbl{font-size:13px;color:#aaa}
+.slider-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:#1f1f1f;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#c8ff00;cursor:pointer}
+.nav-btns{display:flex;gap:10px;margin-top:24px}
+.btn-back{background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:8px;padding:12px 20px;font-size:14px;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s}
+.btn-back:hover{border-color:#555;color:#fff}
+.btn-next{flex:1;background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s}
+.btn-next:hover{opacity:0.88}
+.btn-next:disabled{opacity:0.35;cursor:not-allowed}
+.summary-row{display:flex;margin-bottom:10px;border-bottom:1px solid #1f1f1f;padding-bottom:10px}
+.summary-lbl{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.5px;width:140px;flex-shrink:0;margin-top:2px}
+.summary-val{font-size:14px;color:#ccc;flex:1;line-height:1.5}
+.consent-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:20px}
+.consent-box{width:18px;height:18px;border-radius:4px;border:2px solid #444;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.consent-row.checked .consent-box{background:#c8ff00;border-color:#c8ff00;color:#08080a;font-size:11px}
+.consent-text{font-size:13px;color:#666;line-height:1.6}
+.consent-row.checked .consent-text{color:#aaa}
+.success-wrap{text-align:center;padding:40px 0}
+.success-check{width:72px;height:72px;background:#c8ff00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;color:#08080a}
+.success-h{font-size:24px;font-weight:800;margin-bottom:10px}
+.success-sub{font-size:15px;color:#666;line-height:1.6;margin-bottom:24px}
+.link-box{background:#0d0d0d;border:2px solid #c8ff00;border-radius:10px;padding:16px;margin-bottom:20px;text-align:left}
+.link-lbl{font-size:11px;font-weight:700;color:#c8ff00;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px}
+.link-url{font-size:13px;color:#fff;word-break:break-all;line-height:1.5}
+.copy-link-box-btn{width:100%;background:#c8ff00;color:#08080a;border:none;border-radius:7px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;font-family:'Inter',sans-serif}
+.success-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.success-btn-sec{background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;border-radius:8px;padding:11px 20px;font-size:14px;font-family:'Inter',sans-serif;cursor:pointer}
+/* PATIENT MODAL */
+#patient-modal{position:fixed;inset:0;background:rgba(8,8,10,0.92);z-index:1000;display:none;justify-content:flex-end}
+.modal-panel{position:fixed;right:0;top:0;height:100vh;width:480px;max-width:100vw;background:#0d0d0d;border-left:1px solid #1f1f1f;overflow-y:auto;display:flex;flex-direction:column}
+.modal-hdr{padding:20px 24px;border-bottom:1px solid #1f1f1f;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#0d0d0d;z-index:2}
+.modal-title-text{font-size:16px;font-weight:700}
+.modal-sig{font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-left:8px}
+.modal-close-btn{background:transparent;border:none;color:#555;font-size:22px;cursor:pointer;line-height:1;font-family:'Inter',sans-serif}
+.modal-close-btn:hover{color:#fff}
+.modal-metrics{padding:14px 24px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid #1f1f1f}
+.metric-pill{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:100px;padding:4px 10px;font-size:12px;color:#888}
+.modal-suggestions{padding:12px 24px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid #1f1f1f}
+.sugg-pill{background:#1a1a1a;border:1px solid #c8ff00;color:#c8ff00;border-radius:100px;padding:5px 12px;font-size:12px;cursor:pointer;transition:background 0.2s;font-family:'Inter',sans-serif}
+.sugg-pill:hover{background:rgba(200,255,0,0.08)}
+.modal-chat{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;min-height:200px}
+.chat-msg-u{align-self:flex-end;background:#c8ff00;color:#08080a;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:85%;font-size:14px;font-weight:500}
+.chat-msg-a{align-self:flex-start;background:#1a1a1a;color:#e0e0e0;border-radius:12px 12px 12px 2px;padding:10px 14px;max-width:85%;font-size:14px;line-height:1.6}
+.chat-dots{display:inline-flex;gap:4px;padding:12px 14px;background:#1a1a1a;border-radius:12px 12px 12px 2px;align-self:flex-start}
+.chat-dots span{width:7px;height:7px;background:#c8ff00;border-radius:50%;animation:dot 1.2s infinite}
+.chat-dots span:nth-child(2){animation-delay:0.2s}
+.chat-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dot{0%,80%,100%{opacity:0.3}40%{opacity:1}}
+.modal-input-area{padding:14px 20px;border-top:1px solid #1f1f1f;position:sticky;bottom:0;background:#0d0d0d;display:flex;gap:8px}
+.modal-chat-input{flex:1;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;font-size:14px;color:#fff;font-family:'Inter',sans-serif;outline:none;resize:none;height:42px}
+.modal-chat-input:focus{border-color:#c8ff00}
+.modal-send{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+/* MOBILE */
+@media(max-width:768px){
+  #sidebar{display:none}
+  #main{margin-left:0}
+  #bottom-nav{display:flex!important}
+  .tab-panel{padding:16px;padding-bottom:80px}
+  .modal-panel{width:100vw}
+  .form-row{grid-template-columns:1fr}
+  .check-grid{grid-template-columns:1fr}
+  #topbar{padding:0 16px}
+}
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;border-top:1px solid #1f1f1f;z-index:20}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px;cursor:pointer;font-size:10px;color:#555;transition:color 0.2s;border:none;background:transparent;font-family:'Inter',sans-serif}
+.bnav-item.active,.bnav-item:hover{color:#c8ff00}
+.bnav-icon{font-size:20px;margin-bottom:2px}
+</style>
+</head>
+<body>
+
+<div id="error-page">
+  <div style="font-size:48px;margin-bottom:12px">&#128683;</div>
+  <h2>Portal Not Found</h2>
+  <p>This link requires a valid DC slug.<br>Contact PURA Health: viveapr@gmail.com</p>
+</div>
+
+<div id="app">
+  <aside id="sidebar">
+    <div class="sb-top">
+      <div class="sb-logo">PURA</div>
+      <div class="sb-dc-name" id="sb-dc-name"></div>
+      <div class="sb-clinic" id="sb-clinic"></div>
+      <div class="sb-city" id="sb-city"></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-item active" data-tab="briefing" onclick="showTab('briefing',this)"><span class="nav-icon">&#9728;&#65039;</span> Morning Briefing</div>
+      <div class="nav-item" data-tab="patients" onclick="showTab('patients',this)"><span class="nav-icon">&#128101;</span> My Patients</div>
+      <div class="nav-item" data-tab="add-patient" onclick="showTab('add-patient',this)"><span class="nav-icon">&#43;</span> Add Patient</div>
+    </nav>
+    <div class="sb-bottom">
+      <button id="copy-link-btn" onclick="copyPatientLink()">&#128203; Copy Patient Link</button>
+      <div class="sb-hint">Share this link with your patients</div>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="topbar">
+      <div class="topbar-left" id="topbar-greet"></div>
+      <div class="topbar-right" id="topbar-date"></div>
+    </header>
+
+    <!-- TAB 1: MORNING BRIEFING -->
+    <div id="tab-briefing" class="tab-panel active">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Morning Briefing</div>
+            <div class="card-sub" id="briefing-date"></div>
+          </div>
+          <button class="ghost-btn" id="email-briefing-btn" onclick="emailBriefing()">&#128231; Email to Myself</button>
+        </div>
+        <div id="briefing-loader" class="loader-row"><div class="spinner-inline"></div> Generating your morning briefing...</div>
+        <div class="briefing-body" id="briefing-text" style="display:none"></div>
+      </div>
+
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        Today's Check-Ins
+        <span id="ci-count-badge" style="background:rgba(110,231,183,0.15);color:#6ee7b7;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;border:1px solid rgba(110,231,183,0.2)"></span>
+      </div>
+      <div id="demo-banner-ci" class="demo-banner" style="display:none">&#9888; Demo data — no real check-ins today yet. Share your patient link to collect data.</div>
+      <div class="ci-grid" id="ci-grid"></div>
+    </div>
+
+    <!-- TAB 2: MY PATIENTS -->
+    <div id="tab-patients" class="tab-panel">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:20px 24px 16px">
+          <div class="card-title">My Patients</div>
+        </div>
+        <div id="patients-loading" class="loader-row" style="padding:20px 24px"><div class="spinner-inline"></div> Loading patients...</div>
+        <div id="patients-demo-banner" class="demo-banner" style="display:none;margin:0 20px 12px"></div>
+        <div style="overflow-x:auto">
+          <table class="patients-table" id="patients-table" style="display:none">
+            <thead><tr>
+              <th>Patient</th><th>Signal</th><th>Status</th><th>Pain</th><th>Sleep</th><th>Energy</th><th>Stress</th><th>Device</th><th>Action</th>
+            </tr></thead>
+            <tbody id="patients-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px">
+        <div class="card-title" style="margin-bottom:4px">Ask PURA AI</div>
+        <div class="card-sub" style="margin-bottom:14px">Your clinical intelligence assistant</div>
+        <div class="starter-pills" id="gchat-starters">
+          <button class="starter-pill" onclick="gchatSend(this.textContent)">Which patient needs attention today?</button>
+          <button class="starter-pill" onclick="gchatSend(this.textContent)">Draft a re-engagement message</button>
+          <button class="starter-pill" onclick="gchatSend(this.textContent)">How do I explain PURA Signal to a skeptical patient?</button>
+          <button class="starter-pill" onclick="gchatSend(this.textContent)">Generate a weekly clinic summary</button>
+        </div>
+        <div class="gchat-wrap">
+          <div class="gchat-msgs" id="gchat-msgs">
+            <div class="gchat-msg-ai">Hi! I'm PURA AI. Ask me anything about your patients, practice patterns, or clinical protocols. <span style="color:#555">(Add your API key in pura-config.js to activate.)</span></div>
+          </div>
+          <div class="gchat-bottom">
+            <textarea class="gchat-input" id="gchat-input" placeholder="Ask about your patients or practice..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();gchatSend();}"></textarea>
+            <button class="gchat-send" onclick="gchatSend()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ADD PATIENT -->
+    <div id="tab-add-patient" class="tab-panel">
+      <div class="card" style="max-width:600px">
+        <div id="wizard-wrap">
+          <div class="wizard-progress"><div class="wizard-bar" id="wizard-bar" style="width:20%"></div></div>
+          <div id="w-step1">
+            <div class="wizard-step-lbl">STEP 1 OF 5</div>
+            <div class="wizard-title">Basic Info</div>
+            <div class="form-row">
+              <div class="form-group"><label>First Name *</label><input type="text" id="w-fn" placeholder="Jane"></div>
+              <div class="form-group"><label>Last Name *</label><input type="text" id="w-ln" placeholder="Smith"></div>
+            </div>
+            <div class="form-group"><label>Email *</label><input type="email" id="w-em" placeholder="jane@email.com"></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="w-ph" placeholder="(512) 555-0100"></div>
+            <div class="form-group"><label>City, State</label><input type="text" id="w-city" placeholder="Austin, TX"></div>
+            <div class="nav-btns"><button class="btn-next" onclick="wNext(1)">Continue &rarr;</button></div>
+          </div>
+          <div id="w-step2" style="display:none">
+            <div class="wizard-step-lbl">STEP 2 OF 5</div>
+            <div class="wizard-title">Health Background</div>
+            <div class="form-group"><label id="w-reason-lbl">Reason for care *</label><textarea id="w-reason" rows="3" placeholder="Describe their main reason for care..."></textarea></div>
+            <div class="form-group">
+              <label>Duration as patient</label>
+              <select id="w-dur"><option>Under 3 months</option><option>3–12 months</option><option>1–3 years</option><option>3+ years</option></select>
+            </div>
+            <div class="form-group">
+              <label>Health concerns (select all)</label>
+              <div class="check-grid" id="w-concerns">
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Back pain</span></div>
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Neck pain</span></div>
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Headaches</span></div>
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Sciatica</span></div>
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Stress</span></div>
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Sleep issues</span></div>
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Fatigue</span></div>
+                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">General wellness</span></div>
+              </div>
+            </div>
+            <div class="nav-btns"><button class="btn-back" onclick="wGo(1)">Back</button><button class="btn-next" onclick="wNext(2)">Continue &rarr;</button></div>
+          </div>
+          <div id="w-step3" style="display:none">
+            <div class="wizard-step-lbl">STEP 3 OF 5</div>
+            <div class="wizard-title">Wearable Device</div>
+            <div class="form-group">
+              <label>Device they use</label>
+              <select id="w-device"><option>Apple Watch</option><option>Whoop</option><option>Oura Ring</option><option>Garmin</option><option>No wearable</option><option>Planning to get one</option></select>
+            </div>
+            <div class="form-group">
+              <label>Device set up and syncing?</label>
+              <select id="w-setup"><option>Yes</option><option>No</option><option>N/A</option></select>
+            </div>
+            <div class="nav-btns"><button class="btn-back" onclick="wGo(2)">Back</button><button class="btn-next" onclick="wNext(3)">Continue &rarr;</button></div>
+          </div>
+          <div id="w-step4" style="display:none">
+            <div class="wizard-step-lbl">STEP 4 OF 5</div>
+            <div class="wizard-title">Goals</div>
+            <div class="form-group"><label>90-day goal *</label><textarea id="w-goal" rows="3" placeholder="What does success look like for this patient in 90 days?"></textarea></div>
+            <div class="form-group">
+              <div class="slider-top">
+                <label style="margin-bottom:0">Commitment level (1–10)</label>
+                <span style="font-size:20px;font-weight:800;color:#c8ff00" id="w-commit-val">7</span>
+              </div>
+              <input type="range" id="w-commit" min="1" max="10" value="7" oninput="document.getElementById('w-commit-val').textContent=this.value">
+            </div>
+            <div class="nav-btns"><button class="btn-back" onclick="wGo(3)">Back</button><button class="btn-next" onclick="wNext(4)">Continue &rarr;</button></div>
+          </div>
+          <div id="w-step5" style="display:none">
+            <div class="wizard-step-lbl">STEP 5 OF 5</div>
+            <div class="wizard-title">Confirm</div>
+            <div id="w-summary"></div>
+            <div class="consent-row" id="w-consent" onclick="toggleConsent()">
+              <div class="consent-box" id="w-consent-box"></div>
+              <div class="consent-text">This patient has consented to share wellness data with me through PURA Health to support their chiropractic care.</div>
+            </div>
+            <div class="nav-btns">
+              <button class="btn-back" onclick="wGo(4)">Back</button>
+              <button class="btn-next" id="w-submit-btn" disabled onclick="submitPatient()">Add Patient &amp; Send Welcome Email &rarr;</button>
+            </div>
+          </div>
+        </div>
+        <div class="success-wrap" id="wizard-success" style="display:none">
+          <div class="success-check">&#10003;</div>
+          <div class="success-h" id="w-success-name"></div>
+          <div class="success-sub" id="w-success-sub"></div>
+          <div class="link-box">
+            <div class="link-lbl">Patient Check-in Link</div>
+            <div class="link-url" id="w-success-link"></div>
+            <button class="copy-link-box-btn" onclick="copySuccessLink()">Copy Link</button>
+          </div>
+          <div class="success-btns">
+            <button class="success-btn-sec" onclick="resetWizard()">Add Another Patient</button>
+            <button class="btn-next" style="flex:none;padding:11px 20px" onclick="showTab('patients',document.querySelector('[data-tab=patients]'))">Go to My Patients</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Bottom Nav (mobile) -->
+<nav id="bottom-nav">
+  <button class="bnav-item active" data-tab="briefing" onclick="showTab('briefing',this)"><span class="bnav-icon">&#9728;&#65039;</span>Briefing</button>
+  <button class="bnav-item" data-tab="patients" onclick="showTab('patients',this)"><span class="bnav-icon">&#128101;</span>Patients</button>
+  <button class="bnav-item" data-tab="add-patient" onclick="showTab('add-patient',this)"><span class="bnav-icon">&#43;</span>Add</button>
+</nav>
+
+<!-- Patient Modal -->
+<div id="patient-modal" onclick="closeModalOuter(event)">
+  <div class="modal-panel">
+    <div class="modal-hdr">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="modal-title-text" id="modal-name"></span>
+        <span class="modal-sig" id="modal-sig"></span>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-metrics" id="modal-metrics"></div>
+    <div class="modal-suggestions">
+      <button class="sugg-pill" onclick="modalAsk(this.textContent)">What do these metrics suggest?</button>
+      <button class="sugg-pill" onclick="modalAsk(this.textContent)">Focus for today's visit?</button>
+      <button class="sugg-pill" onclick="modalAsk(this.textContent)">Draft a follow-up message</button>
+      <button class="sugg-pill" onclick="modalAsk(this.textContent)">Is this patient improving?</button>
+    </div>
+    <div class="modal-chat" id="modal-chat"></div>
+    <div class="modal-input-area">
+      <textarea class="modal-chat-input" id="modal-input" placeholder="Ask about this patient..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();modalAsk();}"></textarea>
+      <button class="modal-send" onclick="modalAsk()">Ask</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var dc = getDC();
+var briefingLoaded = false, patientsLoaded = false;
+var briefingText = '';
+var allPatients = [];
+var currentPatient = null;
+var chatSessions = {};
+var generalChatHistory = [];
+var wizardData = {};
+var consentChecked = false;
+var successCheckinURL = '';
+
+function getDemoPatients() {
+  return [
+    {id:'demo-1',first_name:'Maria',last_name:'R.',pura_index:82,pain_level:3,sleep_quality:8,sleep_hours:7.5,energy_level:8,stress_level:4,functional_ability:8,mood:8,device_type:'Apple Watch',patient_note:'Feeling great after last adjustment',isDemo:true},
+    {id:'demo-2',first_name:'James',last_name:'T.',pura_index:61,pain_level:6,sleep_quality:5,sleep_hours:5.5,energy_level:5,stress_level:7,functional_ability:6,mood:5,device_type:'Whoop',patient_note:'Stressful week at work',isDemo:true},
+    {id:'demo-3',first_name:'Sofia',last_name:'M.',pura_index:91,pain_level:1,sleep_quality:9,sleep_hours:8.5,energy_level:9,stress_level:2,functional_ability:9,mood:9,device_type:'Oura Ring',patient_note:'',isDemo:true},
+    {id:'demo-4',first_name:'Robert',last_name:'K.',pura_index:45,pain_level:8,sleep_quality:4,sleep_hours:4.5,energy_level:3,stress_level:8,functional_ability:4,mood:4,device_type:'Garmin',patient_note:'Flare-up after yard work',isDemo:true},
+    {id:'demo-5',first_name:'Ana',last_name:'L.',pura_index:78,pain_level:4,sleep_quality:7,sleep_hours:7,energy_level:7,stress_level:5,functional_ability:7,mood:7,device_type:'Apple Watch',patient_note:'',isDemo:true},
+    {id:'demo-6',first_name:'David',last_name:'P.',pura_index:67,pain_level:5,sleep_quality:6,sleep_hours:6.5,energy_level:6,stress_level:6,functional_ability:7,mood:7,device_type:'Whoop',patient_note:'Slight improvement',isDemo:true}
+  ];
+}
+
+if(!dc){
+  document.getElementById('error-page').style.display='flex';
+} else {
+  document.getElementById('app').style.display='flex';
+  document.getElementById('sb-dc-name').textContent=dc.name;
+  document.getElementById('sb-clinic').textContent=dc.clinic;
+  document.getElementById('sb-city').textContent=dc.city;
+  document.getElementById('topbar-greet').textContent=greeting()+', Dr. '+dc.last+' \u2600\uFE0F';
+  document.getElementById('topbar-date').textContent=today();
+  document.getElementById('briefing-date').textContent=today();
+  document.getElementById('w-reason-lbl').textContent='Primary reason they see you *';
+  if(dc.lang==='es') document.documentElement.lang='es';
+  loadBriefing();
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');p.style.display='none';});
+  document.querySelectorAll('.nav-item,.bnav-item').forEach(function(n){n.classList.remove('active');});
+  var panel = document.getElementById('tab-'+name);
+  if(panel){panel.style.display='block';panel.classList.add('active');}
+  if(el) el.classList.add('active');
+  if(name==='patients'&&!patientsLoaded) loadPatients();
+}
+
+async function loadBriefing() {
+  briefingLoaded=true;
+  var todayKey=todayISO();
+  var checkins=await dbSelect('daily_checkins','clinic_id=eq.'+dc.clinic_id+'&checkin_date=eq.'+todayKey+'&select=*');
+  var realCheckins=Array.isArray(checkins)?checkins:[];
+  var useDemo=realCheckins.length===0;
+  var displayCheckins=useDemo?getDemoPatients().map(function(p){return{pura_index:p.pura_index,pain_level:p.pain_level,sleep_quality:p.sleep_quality,sleep_hours:p.sleep_hours,energy_level:p.energy_level,stress_level:p.stress_level,functional_ability:p.functional_ability,mood:p.mood,device_type:p.device_type,patient_note:p.patient_note,first_name:p.first_name,last_name:p.last_name,id:p.id,isDemo:true};}):realCheckins;
+
+  document.getElementById('ci-count-badge').textContent=displayCheckins.length+' patient'+(displayCheckins.length!==1?'s':'');
+  if(useDemo) document.getElementById('demo-banner-ci').style.display='block';
+
+  var aiText=await generateAIBriefing(displayCheckins);
+  briefingText=aiText||getStaticBriefing(displayCheckins);
+  renderBriefing(briefingText,displayCheckins);
+}
+
+async function generateAIBriefing(checkins) {
+  var ciText=checkins.length>0?checkins.map(function(c){return '- Signal '+c.pura_index+'/100 | Pain '+c.pain_level+'/10 | Sleep '+c.sleep_quality+'/10 | Energy '+c.energy_level+'/10 | Stress '+c.stress_level+'/10'+(c.patient_note?' | Notes: "'+c.patient_note+'"':'');}).join('\n'):'No check-ins yet today.';
+  return await askAI(
+    'You are PURA Health\'s morning briefing AI for '+dc.name+' at '+dc.clinic+'. Give direct, specific, actionable clinical briefings.',
+    'Morning briefing for '+dc.name+', '+dc.clinic+'. Today ('+checkins.length+' check-ins):\n'+ciText+'\n\nWrite 4 sections with **bold headers**:\n**Today\'s Overview** — what the data shows\n**Priority Flags** — Signal below 65 or pain above 7. If none: "No flags today."\n**Clinical Opportunity** — one specific actionable insight\n**Momentum** — one note on how this data builds clinical value\n3-4 sentences each. No platitudes.'+(dc.lang==='es'?' Respond in Spanish.':''),700
+  );
+}
+
+function getStaticBriefing(checkins) {
+  var count=checkins.length;
+  var flagged=checkins.filter(function(c){return c.pura_index<65||c.pain_level>7;}).length;
+  return '**Today\'s Overview**\n'+(count>0?count+' patient check-in'+(count!==1?'s':'')+' received. Review each patient\'s metrics below before your first appointment.':'No check-ins yet today. Share your patient check-in link to start collecting data.')+'\n\n**Priority Flags**\n'+(flagged>0?flagged+' patient'+(flagged!==1?'s':'')+' flagged for attention — review the cards below.':'No flags today.')+'\n\n**Clinical Opportunity**\nReview patient notes alongside PURA scores at the start of today\'s first appointment for the most informed adjustment decisions.\n\n**Momentum**\nEvery check-in builds a personal nervous system baseline. After 7 days, PURA begins detecting meaningful deviations automatically.';
+}
+
+function renderBriefing(text, checkins) {
+  var html=text.replace(/\*\*(.+?)\*\*/g,'<h3>$1</h3>').replace(/\n/g,'<br>');
+  document.getElementById('briefing-loader').style.display='none';
+  var body=document.getElementById('briefing-text');
+  body.style.display='block'; body.innerHTML=html;
+  renderCICards(checkins);
+  sendAdminCopy('Morning briefing generated — '+dc.clinic,'DC: '+dc.name+'\n\n'+text.replace(/\*\*/g,''));
+}
+
+function renderCICards(checkins) {
+  var grid=document.getElementById('ci-grid');
+  grid.innerHTML=checkins.map(function(c){
+    var col=signalColor(c.pura_index);
+    var metrics=[['Pain',c.pain_level,true],['Sleep',c.sleep_quality,false],['Energy',c.energy_level,false]];
+    var bars=metrics.map(function(m){var s=m[2]?(11-m[1])*10:m[1]*10;var c2=signalColor(Math.round(s));return '<div class="mini-bar-row"><div class="mini-bar-lbl">'+m[0]+'</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:'+s+'%;background:'+c2+'"></div></div><div class="mini-bar-val" style="color:'+c2+'">'+m[1]+'</div></div>';}).join('');
+    var noteHtml=c.patient_note?'<div class="ci-note">"'+c.patient_note+'"</div>':'';
+    return '<div class="ci-card"><div class="ci-top"><div class="ci-name">'+c.first_name+' '+c.last_name+'</div><div class="ci-circle" style="border-color:'+col+';color:'+col+'">'+c.pura_index+'</div></div><span class="ci-status" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'44">'+signalLabel(c.pura_index)+'</span>'+bars+'<div class="ci-device">'+c.device_type+'</div>'+noteHtml+'<button class="ask-ai-btn" onclick=\'openModal('+JSON.stringify(JSON.stringify(c))+')\'>Ask AI about this patient</button></div>';
+  }).join('');
+}
+
+async function emailBriefing() {
+  if(!briefingText)return;
+  var btn=document.getElementById('email-briefing-btn');
+  btn.textContent='Sending...';btn.disabled=true;
+  await sendEmail({to:dc.email,subject:'PURA Morning Briefing — '+dc.clinic+' — '+today(),body:'Good morning, Dr. '+dc.last+'.\n\n'+briefingText.replace(/\*\*/g,'')+'\n\n—\nPURA Health · '+dc.clinic,fromName:'PURA Health'});
+  await sendAdminCopy('Briefing emailed — '+dc.clinic,dc.name+' emailed their briefing on '+today()+'.');
+  btn.textContent='✓ Sent!';btn.style.color='#22c55e';
+  setTimeout(function(){btn.textContent='📧 Email to Myself';btn.style.color='';btn.disabled=false;},3000);
+}
+
+async function loadPatients() {
+  patientsLoaded=true;
+  var result=await dbSelect('patients','clinic_id=eq.'+dc.clinic_id+'&order=created_at.desc');
+  var real=Array.isArray(result)&&result.length>0;
+  allPatients=real?result:getDemoPatients();
+  if(!real){document.getElementById('patients-demo-banner').style.display='block';document.getElementById('patients-demo-banner').textContent='⚠ Demo data — add patients via the Add Patient tab to see real data here.';}
+  document.getElementById('patients-loading').style.display='none';
+  var table=document.getElementById('patients-table');table.style.display='table';
+  document.getElementById('patients-tbody').innerHTML=allPatients.map(function(p){
+    var col=signalColor(p.pura_index);
+    var sigHtml='<span class="sig-badge" style="background:'+col+'22;color:'+col+'">'+p.pura_index+'</span>';
+    return '<tr class="p-row" onclick=\'openModal('+JSON.stringify(JSON.stringify(p))+')\'>'+
+      '<td><strong>'+p.first_name+' '+p.last_name+'</strong></td>'+
+      '<td>'+sigHtml+'</td>'+
+      '<td><span style="font-size:12px;font-weight:700;color:'+col+'">'+signalLabel(p.pura_index)+'</span></td>'+
+      '<td style="color:'+signalColor((11-(p.pain_level||5))*10)+'">'+p.pain_level+'/10</td>'+
+      '<td style="color:'+signalColor((p.sleep_quality||5)*10)+'">'+p.sleep_quality+'/10</td>'+
+      '<td style="color:'+signalColor((p.energy_level||5)*10)+'">'+p.energy_level+'/10</td>'+
+      '<td style="color:'+signalColor((11-(p.stress_level||5))*10)+'">'+p.stress_level+'/10</td>'+
+      '<td style="font-size:12px;color:#555">'+(p.device_type||'—')+'</td>'+
+      '<td><button style="background:#1a1a1a;border:1px solid #2a2a2a;color:#c8ff00;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif" onclick="event.stopPropagation();openModal(\''+JSON.stringify(p).replace(/'/g,"\\'")+'\')">Chat</button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+async function gchatSend(q) {
+  var input=document.getElementById('gchat-input');
+  var msg=q||input.value.trim();if(!msg)return;
+  input.value='';
+  var msgs=document.getElementById('gchat-msgs');
+  var um=document.createElement('div');um.className='gchat-msg-user';um.textContent=msg;msgs.appendChild(um);
+  var am=document.createElement('div');am.className='gchat-msg-ai';am.innerHTML='<span class="spinner-inline"></span>Thinking...';msgs.appendChild(am);
+  msgs.scrollTop=msgs.scrollHeight;
+  generalChatHistory.push({role:'user',content:msg});
+  var pSummary=allPatients.map(function(p){return p.first_name+' '+p.last_name+': Signal '+p.pura_index+'/100, Pain '+(p.pain_level||'?')+', Stress '+(p.stress_level||'?');}).join('\n');
+  var reply=await chatWithAI('You are PURA Health\'s AI for '+dc.name+' at '+dc.clinic+'. You help interpret patient data and give clinical guidance. Be direct, specific, clinically useful. Patient summary:\n'+pSummary,generalChatHistory,500);
+  am.textContent=reply||'Add your Anthropic API key in pura-config.js to activate AI responses.';
+  generalChatHistory.push({role:'assistant',content:am.textContent});
+  await dbInsert('ai_chat_sessions',{dc_slug:dc.slug,clinic_id:dc.clinic_id,session_type:'general',messages:generalChatHistory});
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function openModal(pJson) {
+  var p=typeof pJson==='string'?JSON.parse(pJson):pJson;
+  currentPatient=p;
+  var col=signalColor(p.pura_index);
+  document.getElementById('modal-name').textContent=p.first_name+' '+p.last_name;
+  var sig=document.getElementById('modal-sig');sig.textContent=p.pura_index+'/100';sig.style.background=col+'22';sig.style.color=col;
+  var metrics=[['Pain',p.pain_level,'/10'],['Sleep Q',p.sleep_quality,'/10'],['Sleep H',p.sleep_hours,'h'],['Energy',p.energy_level,'/10'],['Stress',p.stress_level,'/10'],['Function',p.functional_ability||p.functional,'/10'],['Mood',p.mood,'/10'],['Device',p.device_type,'']];
+  document.getElementById('modal-metrics').innerHTML=metrics.map(function(m){return '<span class="metric-pill">'+m[0]+': '+m[1]+m[2]+'</span>';}).join('');
+  var chat=document.getElementById('modal-chat');chat.innerHTML='';
+  if(chatSessions[p.id]){chatSessions[p.id].forEach(function(m){var d=document.createElement('div');d.className=m.role==='user'?'chat-msg-u':'chat-msg-a';d.textContent=m.content;chat.appendChild(d);});}
+  document.getElementById('modal-input').value='';
+  document.getElementById('patient-modal').style.display='flex';
+}
+function closeModal(){currentPatient=null;document.getElementById('patient-modal').style.display='none';}
+function closeModalOuter(e){if(e.target===document.getElementById('patient-modal'))closeModal();}
+
+async function modalAsk(q) {
+  if(!currentPatient)return;
+  var input=document.getElementById('modal-input');
+  var msg=q||input.value.trim();if(!msg)return;
+  input.value='';
+  var chat=document.getElementById('modal-chat');
+  var um=document.createElement('div');um.className='chat-msg-u';um.textContent=msg;chat.appendChild(um);
+  var dots=document.createElement('div');dots.className='chat-dots';dots.innerHTML='<span></span><span></span><span></span>';chat.appendChild(dots);
+  chat.scrollTop=chat.scrollHeight;
+  var p=currentPatient;
+  var history=chatSessions[p.id]||[];
+  history.push({role:'user',content:msg});
+  var sys='You are PURA Health\'s clinical AI for '+dc.name+' at '+dc.clinic+'. Help interpret patient data. Do not diagnose. Patient: '+p.first_name+' '+p.last_name+'. Signal '+p.pura_index+'/100. Pain '+(p.pain_level||'?')+'/10, Sleep '+(p.sleep_quality||'?')+'/10, Energy '+(p.energy_level||'?')+'/10, Stress '+(p.stress_level||'?')+'/10, Function '+(p.functional_ability||p.functional||'?')+'/10, Mood '+(p.mood||'?')+'/10. Device: '+(p.device_type||'Unknown')+'. Notes: "'+(p.patient_note||p.notes||'None')+'"'+(dc.lang==='es'?' Respond in Spanish.':'');
+  var reply=await chatWithAI(sys,history,400);
+  dots.remove();
+  var am=document.createElement('div');am.className='chat-msg-a';am.textContent=reply||'Add your Anthropic API key in pura-config.js to activate AI.';chat.appendChild(am);
+  history.push({role:'assistant',content:am.textContent});
+  chatSessions[p.id]=history;
+  await dbInsert('ai_chat_sessions',{dc_slug:dc.slug,clinic_id:dc.clinic_id,session_type:'patient_specific',patient_id:p.id||null,messages:history});
+  chat.scrollTop=chat.scrollHeight;
+}
+
+// WIZARD
+function wGo(n){[1,2,3,4,5].forEach(function(i){document.getElementById('w-step'+i).style.display=i===n?'block':'none';});document.getElementById('wizard-bar').style.width=(n/5*100)+'%';}
+function wNext(n){
+  if(n===1){if(!g('w-fn').value.trim()||!g('w-ln').value.trim()||!g('w-em').value.includes('@')){alert('Please fill Name and Email.');return;}}
+  if(n===2){if(!g('w-reason').value.trim()){alert('Please describe reason for care.');return;}}
+  if(n===4){if(!g('w-goal').value.trim()){alert('Please describe their 90-day goal.');return;} buildSummary();}
+  wGo(n+1);
+}
+function g(id){return document.getElementById(id);}
+function toggle(el){el.classList.toggle('checked');if(el.classList.contains('checked'))el.querySelector('.check-box').textContent='✓';else el.querySelector('.check-box').textContent='';}
+function getChecked(gridId){var r=[];document.querySelectorAll('#'+gridId+' .check-item.checked').forEach(function(el){r.push(el.querySelector('.check-lbl').textContent);});return r.join(', ')||'None';}
+function toggleConsent(){consentChecked=!consentChecked;var row=g('w-consent');row.classList.toggle('checked',consentChecked);g('w-consent-box').textContent=consentChecked?'✓':'';g('w-submit-btn').disabled=!consentChecked;}
+function buildSummary(){
+  wizardData={firstName:g('w-fn').value.trim(),lastName:g('w-ln').value.trim(),email:g('w-em').value.trim(),phone:g('w-ph').value.trim(),city:g('w-city').value.trim(),reason:g('w-reason').value.trim(),duration:g('w-dur').value,concerns:getChecked('w-concerns'),device:g('w-device').value,setup:g('w-setup').value,goal:g('w-goal').value.trim(),commit:g('w-commit').value};
+  var rows=[['Name',wizardData.firstName+' '+wizardData.lastName],['Email',wizardData.email],['Reason for care',wizardData.reason],['Duration',wizardData.duration],['Concerns',wizardData.concerns],['Device',wizardData.device],['90-day goal',wizardData.goal],['Commitment',wizardData.commit+'/10']];
+  g('w-summary').innerHTML=rows.map(function(r){return '<div class="summary-row"><div class="summary-lbl">'+r[0]+'</div><div class="summary-val">'+r[1]+'</div></div>';}).join('');
+  consentChecked=false;g('w-consent').classList.remove('checked');g('w-consent-box').textContent='';g('w-submit-btn').disabled=true;
+}
+async function submitPatient(){
+  var f=wizardData;var checkinURL=PURA_CONFIG.BASE_URL+'/checkin.html?dc='+dc.slug;
+  g('w-submit-btn').disabled=true;g('w-submit-btn').textContent='Adding patient...';
+  var result=await dbInsert('patients',{clinic_id:dc.clinic_id,first_name:f.firstName,last_name:f.lastName,email:f.email,phone:f.phone||null,device_type:f.device,chief_complaint:f.reason,status:'active'});
+  var pid=result&&result[0]?result[0].id:null;
+  await dbInsert('patient_onboardings',{clinic_id:dc.clinic_id,dc_slug:dc.slug,first_name:f.firstName,last_name:f.lastName,email:f.email,phone:f.phone||null,reason_for_care:f.reason,device_type:f.device,ninety_day_goal:f.goal,commitment_score:parseInt(f.commit),consent_given:true,welcome_email_sent:true});
+  await sendEmail({to:f.email,subject:'Welcome to PURA — Your daily check-in link from '+dc.name,fromName:'PURA Health · '+dc.clinic,body:'Hi '+f.firstName+',\n\n'+dc.name+' has enrolled you in PURA Health — a daily wellness tracking system.\n\nYOUR CHECK-IN LINK (bookmark this):\n'+checkinURL+'\n\nYour check-in takes 2 minutes and covers 7 wellness indicators. After each check-in, PURA AI gives you a personalized analysis. '+dc.name+' reviews all check-ins each morning.\n\n— PURA Health · '+dc.clinic});
+  await sendEmail({to:dc.email,subject:'New patient added — '+f.firstName+' '+f.lastName,fromName:'PURA Health',body:'You added '+f.firstName+' '+f.lastName+' to PURA.\n\nEmail sent to: '+f.email+'\nDevice: '+f.device+'\nCommitment: '+f.commit+'/10\n\nCheck-in: '+checkinURL});
+  await sendAdminCopy('New patient — '+dc.clinic,'DC: '+dc.name+'\nPatient: '+f.firstName+' '+f.lastName+' ('+f.email+')\nDevice: '+f.device+'\nReason: '+f.reason);
+  g('wizard-wrap').style.display='none';
+  var ws=g('wizard-success');ws.style.display='block';
+  g('w-success-name').textContent=f.firstName+' has been added to PURA.';
+  g('w-success-sub').textContent='Welcome email sent to '+f.email+' with their check-in link.';
+  g('w-success-link').textContent=checkinURL;
+  successCheckinURL=checkinURL;
+}
+function copySuccessLink(){navigator.clipboard.writeText(successCheckinURL).then(function(){alert('Copied!');});}
+function resetWizard(){g('wizard-wrap').style.display='block';g('wizard-success').style.display='none';[1,2,3,4,5].forEach(function(i){var s=g('w-step'+i);if(s)s.style.display='none';});wGo(1);}
+
+function copyPatientLink(){
+  var url=PURA_CONFIG.BASE_URL+'/checkin.html?dc='+dc.slug;
+  navigator.clipboard.writeText(url).then(function(){var btn=g('copy-link-btn');btn.textContent='✓ Copied!';btn.style.color='#22c55e';setTimeout(function(){btn.textContent='📋 Copy Patient Link';btn.style.color='#c8ff00';},2500);});
+}
+</script>
+</body>
+</html>
