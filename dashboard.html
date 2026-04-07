@@ -3,325 +3,431 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PURA — Clinic Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<title>PURA Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#08080a;--surface:#0f0f12;--surface2:#16161b;
-  --border:#222228;--border2:#2e2e38;
-  --accent:#c8ff00;--accent-dim:rgba(200,255,0,.1);
-  --text:#f0f0f6;--muted:#808090;
-  --green:#22c55e;--green-dim:rgba(34,197,94,.12);
-  --yellow:#eab308;--yellow-dim:rgba(234,179,8,.12);
-  --red:#ef4444;--red-dim:rgba(239,68,68,.12);
-  --teal:#14b8a6;--teal-dim:rgba(20,184,166,.12);
-  --sidebar:220px;--radius:10px;
-}
-html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
-body{display:flex;flex-direction:column}
-.preview-banner{background:var(--accent);color:var(--bg);font-size:13px;font-weight:700;text-align:center;padding:9px 16px;flex-shrink:0;letter-spacing:-.01em}
-.app{display:flex;flex:1;overflow:hidden}
-aside{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.sidebar-logo{padding:20px 18px 16px;font-size:20px;font-weight:900;color:var(--accent);letter-spacing:.05em;border-bottom:1px solid var(--border)}
-.sidebar-clinic{padding:14px 18px;border-bottom:1px solid var(--border)}
-.sidebar-clinic-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-.sidebar-clinic-name{font-size:13px;font-weight:600}
-.sidebar-clinic-mode{font-size:11px;color:var(--accent);margin-top:2px;font-weight:500}
-nav.sidebar-nav{padding:12px 8px;flex:1}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--accent-dim);color:var(--accent);font-weight:600}
-.sidebar-connect{padding:12px;border-top:1px solid var(--border)}
-.connect-btn{width:100%;background:var(--accent-dim);border:1px solid rgba(200,255,0,.25);color:var(--accent);font:inherit;font-size:12px;font-weight:700;padding:11px 14px;border-radius:8px;cursor:pointer;transition:all .2s}
-.connect-btn:hover{background:var(--accent);color:var(--bg)}
-main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
-main::-webkit-scrollbar{width:6px}
-main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.topbar-greeting{font-size:15px;font-weight:700}
-.topbar-date{font-size:13px;color:var(--muted)}
-.alert-pill{background:var(--red-dim);border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px}
-.main-content{padding:24px;flex:1}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-.stat-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
-.stat-value{font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1}
-.stat-sub{font-size:12px;color:var(--muted);margin-top:6px}
-.stat-card.alert .stat-value{color:var(--red)}
-.stat-card.accent .stat-value{color:var(--accent)}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.section-title{font-size:16px;font-weight:700}
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.layout{display:flex;flex:1;min-height:100vh}
+.sidebar{width:220px;background:#0a0a0d;border-right:1px solid #1a1a1e;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;bottom:0;left:0;overflow-y:auto}
+.sb-logo{padding:24px 20px 16px;font-size:18px;font-weight:800;color:#c8ff00;letter-spacing:-0.5px}
+.sb-dc{padding:0 20px 20px;border-bottom:1px solid #1a1a1e}
+.sb-dc-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;line-height:1.3}
+.sb-dc-clinic{font-size:12px;color:#555}
+.sb-nav{padding:16px 12px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:#666;transition:all 0.2s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left}
+.nav-item:hover{background:#1a1a1e;color:#fff}
+.nav-item.active{background:rgba(200,255,0,0.1);color:#c8ff00;font-weight:600}
+.nav-icon{font-size:16px;flex-shrink:0}
+.sb-bottom{padding:16px 12px;border-top:1px solid #1a1a1e}
+.copy-btn{width:100%;background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity 0.2s}
+.copy-btn:hover{opacity:0.85}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column}
+.topbar{padding:16px 28px;border-bottom:1px solid #1a1a1e;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#08080a}
+.topbar-greet{font-size:18px;font-weight:700}
+.topbar-date{font-size:13px;color:#555}
+.demo-banner{background:#1a1000;border-bottom:1px solid #f59e0b;padding:10px 28px;font-size:13px;color:#f59e0b;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.demo-dismiss{background:transparent;border:none;color:#f59e0b;cursor:pointer;font-size:16px;line-height:1}
+.content{padding:28px;flex:1}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px;padding:20px}
+.stat-label{font-size:11px;font-weight:700;color:#555;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px}
+.stat-value{font-size:32px;font-weight:800;line-height:1;margin-bottom:4px}
+.stat-sub{font-size:12px;color:#555}
+.table-card{background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px;overflow:hidden;margin-bottom:24px}
+.table-header{padding:16px 20px;border-bottom:1px solid #1a1a1e;display:flex;align-items:center;justify-content:space-between}
+.table-title{font-size:14px;font-weight:700}
+.table-sub{font-size:12px;color:#555}
 table{width:100%;border-collapse:collapse}
-thead{background:var(--surface2)}
-th{padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
-td{padding:14px 16px;font-size:13px;border-bottom:1px solid var(--border)}
+th{text-align:left;padding:10px 20px;font-size:11px;font-weight:700;color:#555;letter-spacing:0.5px;text-transform:uppercase;border-bottom:1px solid #1a1a1e}
+td{padding:14px 20px;border-bottom:1px solid #0f0f12;font-size:14px;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tbody tr{cursor:pointer;transition:background .15s}
-tbody tr:hover{background:var(--surface2)}
-.signal-wrap{display:flex;align-items:center;gap:10px}
-.mini-bar{height:4px;border-radius:2px;background:var(--border2);flex:1;max-width:80px;overflow:hidden}
-.mini-fill{height:100%;border-radius:2px}
-.status-pill{display:inline-flex;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
-.s-track{background:var(--green-dim);color:var(--green)}
-.s-thrive{background:var(--accent-dim);color:var(--accent)}
-.s-improve{background:var(--teal-dim);color:var(--teal)}
-.s-attention{background:var(--yellow-dim);color:var(--yellow)}
-.s-alert{background:var(--red-dim);color:var(--red)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px}
-.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;max-width:520px;width:100%;padding:28px;max-height:90vh;overflow-y:auto}
-.modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
-.modal-name{font-size:20px;font-weight:800}
-.modal-sub{font-size:13px;color:var(--muted);margin-top:3px}
-.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
-.modal-section{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
-.pura-score-block{text-align:center;padding:20px;background:var(--surface2);border-radius:10px;margin-bottom:24px}
-.pura-score-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.pura-score-num{font-size:52px;font-weight:900;color:var(--accent);line-height:1;letter-spacing:-.04em}
-.pura-score-sub{font-size:12px;color:var(--muted);margin-top:4px}
-.breakdown{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
-.bd-row{display:flex;align-items:center;gap:12px}
-.bd-label{font-size:13px;font-weight:500;min-width:150px;color:var(--muted)}
-.bd-bar{flex:1;height:8px;border-radius:4px;background:var(--border2);overflow:hidden}
-.bd-fill{height:100%;border-radius:4px;background:var(--accent)}
-.bd-score{font-size:13px;font-weight:700;min-width:36px;text-align:right}
-.edit-fab{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);font:inherit;font-size:12px;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer;transition:all .2s;z-index:100}
-.edit-fab:hover{border-color:var(--muted);color:var(--text)}
-.edit-panel{position:fixed;bottom:68px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:20px;width:280px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none}
-.edit-panel.open{display:block}
-.edit-panel h3{font-size:14px;font-weight:700;margin-bottom:14px}
-.ef{margin-bottom:12px}
-.ef label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
-.ef input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:9px 12px;font:inherit;font-size:13px;color:var(--text);outline:none}
-.ef input:focus{border-color:var(--accent)}
-.edit-save{width:100%;background:var(--accent);color:var(--bg);font:inherit;font-size:13px;font-weight:700;padding:10px;border-radius:8px;border:none;cursor:pointer;margin-top:4px}
-.placeholder-tab{text-align:center;padding:80px 24px;color:var(--muted)}
-.placeholder-tab .pt-icon{font-size:40px;margin-bottom:16px}
-.placeholder-tab .pt-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
-@media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}aside{display:none}}
-@media(max-width:480px){.stats-grid{grid-template-columns:1fr}th:nth-child(3),td:nth-child(3),th:nth-child(4),td:nth-child(4){display:none}}
+tr.clickable{cursor:pointer;transition:background 0.15s}
+tr.clickable:hover{background:#1a1a1e}
+.score-badge{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px}
+.score-mini{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:2px solid}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:0.3px}
+.st-alert{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
+.st-attn{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.2)}
+.st-stable{background:rgba(20,184,166,0.15);color:#14b8a6;border:1px solid rgba(20,184,166,0.2)}
+.st-thriving{background:rgba(200,255,0,0.15);color:#c8ff00;border:1px solid rgba(200,255,0,0.2)}
+.trend{font-size:16px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:50;display:none;align-items:flex-start;justify-content:flex-end;padding:20px}
+.modal{background:#0f0f12;border:1px solid #2a2a2e;border-radius:16px;width:420px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:20px 24px;border-bottom:1px solid #1a1a1e;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{background:transparent;border:none;color:#555;font-size:20px;cursor:pointer;line-height:1}
+.modal-close:hover{color:#fff}
+.modal-body{padding:24px}
+.modal-score{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.modal-circle{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;border:3px solid}
+.mbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mbar-name{font-size:12px;color:#666;width:90px;flex-shrink:0}
+.mbar-track{flex:1;height:5px;background:#1a1a1e;border-radius:3px;overflow:hidden}
+.mbar-fill{height:100%;border-radius:3px}
+.mbar-val{font-size:12px;font-weight:700;width:36px;text-align:right;flex-shrink:0}
+.ai-chat{margin-top:20px;border-top:1px solid #1a1a1e;padding-top:20px}
+.ai-chat-title{font-size:13px;font-weight:700;color:#c8ff00;margin-bottom:12px}
+.chat-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chat-pill{background:#1a1a1e;border:1px solid #2a2a2e;border-radius:100px;padding:6px 12px;font-size:11px;cursor:pointer;transition:border-color 0.2s;color:#888}
+.chat-pill:hover{border-color:#c8ff00;color:#fff}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{flex:1;background:#08080a;border:1px solid #2a2a2e;border-radius:8px;padding:10px 12px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none}
+.chat-input:focus{border-color:#c8ff00}
+.chat-send{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer}
+.chat-response{margin-top:12px;background:#0a0a0d;border-radius:8px;padding:14px;font-size:13px;color:#ccc;line-height:1.7;display:none}
+.full-chat{display:flex;flex-direction:column;height:calc(100vh - 120px)}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.msg-user{align-self:flex-end;background:#c8ff00;color:#08080a;border-radius:12px 12px 0 12px;padding:12px 16px;font-size:14px;max-width:75%;font-weight:500}
+.msg-ai{align-self:flex-start;background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px 12px 12px 0;padding:12px 16px;font-size:14px;color:#ccc;max-width:85%;line-height:1.6}
+.msg-ai strong{color:#fff}
+.chat-bottom{padding:16px 20px;border-top:1px solid #1a1a1e;display:flex;gap:10px}
+.full-chat-input{flex:1;background:#0f0f12;border:1px solid #2a2a2e;border-radius:10px;padding:12px 16px;font-size:14px;color:#fff;font-family:'Inter',sans-serif;outline:none;resize:none;height:48px}
+.full-chat-input:focus{border-color:#c8ff00}
+.full-chat-send{background:#c8ff00;color:#08080a;border:none;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer}
+.starter-prompts{padding:20px;display:flex;flex-wrap:wrap;gap:8px}
+.starter{background:#0f0f12;border:1px solid #2a2a2e;border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;color:#888;transition:border-color 0.2s}
+.starter:hover{border-color:#c8ff00;color:#fff}
+.placeholder-pane{display:flex;align-items:center;justify-content:center;height:300px;color:#444;flex-direction:column;gap:12px}
+.placeholder-pane .big{font-size:40px}
+.error-page{text-align:center;padding:80px 24px}
+.error-page h2{font-size:24px;font-weight:700;margin-bottom:12px;color:#ef4444}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.stats-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<div class="preview-banner">
-  PREVIEW MODE — This is sample data. Connect your patients' wearables to see live data.
+<div class="error-page" id="errorPage" style="display:none">
+  <h2>DC Not Found</h2>
+  <p>Use the link provided by PURA Health: dashboard.html?dc=your-slug</p>
 </div>
 
-<div class="app">
-
-<!-- SIDEBAR -->
-<aside>
-  <div class="sidebar-logo">PURA</div>
-  <!-- [EDIT: CLINIC NAME] -->
-  <div class="sidebar-clinic">
-    <div class="sidebar-clinic-label">Clinic</div>
-    <div class="sidebar-clinic-name" id="sidebar-clinic-name">Demo Clinic — Preview Mode</div>
-    <div class="sidebar-clinic-mode">Preview Mode</div>
-  </div>
-  <nav class="sidebar-nav">
-    <button class="nav-item active" onclick="setTab('overview',this)">▦ Overview</button>
-    <button class="nav-item" onclick="setTab('patients',this)">👥 Patients</button>
-    <button class="nav-item" onclick="setTab('signals',this)">📈 Signals</button>
-    <button class="nav-item" onclick="setTab('reports',this)">📋 Reports</button>
-    <button class="nav-item" onclick="setTab('settings',this)">⚙ Settings</button>
-  </nav>
-  <div class="sidebar-connect">
-    <button class="connect-btn" onclick="alert('Wearable connection is configured during your 48-hour onboarding. Your PURA team handles the setup.')">⚡ Connect Wearables</button>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<main>
-  <div class="topbar">
-    <div>
-      <div class="topbar-greeting">Good morning, Dr. <span id="topbar-name">Santos</span></div>
-      <div class="topbar-date" id="topbar-date"></div>
+<div class="layout" id="mainLayout">
+  <div class="sidebar">
+    <div class="sb-logo">PURA</div>
+    <div class="sb-dc">
+      <div class="sb-dc-name" id="sbDCName"></div>
+      <div class="sb-dc-clinic" id="sbClinic"></div>
     </div>
-    <div class="alert-pill">⚠ 2 Alerts Today</div>
+    <div class="sb-nav">
+      <button class="nav-item active" onclick="showTab('overview',this)"><span class="nav-icon">&#128202;</span> Overview</button>
+      <button class="nav-item" onclick="showTab('patients',this)"><span class="nav-icon">&#128101;</span> Patients</button>
+      <button class="nav-item" onclick="showTab('signals',this)"><span class="nav-icon">&#9889;</span> PURA Signals</button>
+      <button class="nav-item" onclick="showTab('briefing',this)"><span class="nav-icon">&#9728;&#65039;</span> Morning Briefing</button>
+      <button class="nav-item" onclick="showTab('ai',this)"><span class="nav-icon">&#129504;</span> Ask PURA AI</button>
+      <button class="nav-item" onclick="showTab('settings',this)"><span class="nav-icon">&#9881;&#65039;</span> Settings</button>
+    </div>
+    <div class="sb-bottom">
+      <button class="copy-btn" onclick="copyCheckinLink()">&#128279; Share Check-in Link</button>
+    </div>
   </div>
 
-  <div class="main-content">
-
-    <!-- OVERVIEW TAB (default) -->
-    <div id="tab-overview">
-      <!-- [EDIT: STAT CARDS] -->
-      <div class="stats-grid">
-        <div class="stat-card accent">
-          <div class="stat-label">Active Patients</div>
-          <div class="stat-value">6</div>
-          <div class="stat-sub">All enrolled in beta</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Avg PURA Signal</div>
-          <div class="stat-value">74<span style="font-size:18px;color:var(--muted);font-weight:400">/100</span></div>
-          <div class="stat-sub">Across all patients</div>
-        </div>
-        <div class="stat-card alert">
-          <div class="stat-label">Alerts Today</div>
-          <div class="stat-value">2</div>
-          <div class="stat-sub">Require attention</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Adjustments This Week</div>
-          <div class="stat-value">18</div>
-          <div class="stat-sub">Response data tracked</div>
-        </div>
-      </div>
-
-      <div class="section-header">
-        <div class="section-title">Patient Overview</div>
-      </div>
-
-      <!-- [EDIT: PATIENT DATA] — Edit the PATIENTS array in the script below -->
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Patient</th>
-              <th>PURA Signal</th>
-              <th>Trend</th>
-              <th>Last Check-in</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="patient-tbody"></tbody>
-        </table>
-      </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-greet" id="topGreet"></div>
+      <div class="topbar-date" id="topDate"></div>
+    </div>
+    <div class="demo-banner" id="demoBanner">
+      &#9888;&#65039; DEMO MODE — Add your Anthropic API key and Web3Forms key to activate live AI responses and email alerts.
+      <button class="demo-dismiss" onclick="document.getElementById('demoBanner').style.display='none'">&#10005;</button>
     </div>
 
-    <!-- OTHER TABS -->
-    <div id="tab-patients" style="display:none"><div class="placeholder-tab"><div class="pt-icon">👥</div><div class="pt-title">Patient Management</div><div>Full patient records available when wearables are connected.</div></div></div>
-    <div id="tab-signals" style="display:none"><div class="placeholder-tab"><div class="pt-icon">📈</div><div class="pt-title">Signal Analytics</div><div>Real-time HRV, sleep, and PURA Signal charts available when connected.</div></div></div>
-    <div id="tab-reports" style="display:none"><div class="placeholder-tab"><div class="pt-icon">📋</div><div class="pt-title">Reports</div><div>Monthly summaries and adjustment response reports in the full version.</div></div></div>
-    <div id="tab-settings" style="display:none"><div class="placeholder-tab"><div class="pt-icon">⚙</div><div class="pt-title">Settings</div><div>Clinic profile, notifications, and integrations in the full version.</div></div></div>
+    <div class="content">
+      <!-- OVERVIEW -->
+      <div class="tab-pane active" id="tab-overview">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Active Patients</div><div class="stat-value" style="color:#c8ff00">6</div><div class="stat-sub">On daily tracking</div></div>
+          <div class="stat-card"><div class="stat-label">Avg PURA Signal</div><div class="stat-value" id="avgSignal" style="color:#14b8a6">74</div><div class="stat-sub">Across all patients</div></div>
+          <div class="stat-card"><div class="stat-label">Alerts Today</div><div class="stat-value" style="color:#ef4444">2</div><div class="stat-sub">Need attention</div></div>
+          <div class="stat-card"><div class="stat-label">Check-ins Today</div><div class="stat-value" style="color:#fff" id="checkinCount">6</div><div class="stat-sub">Submitted today</div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">Today's Patients</div><div class="table-sub">Click any row to view details + ask AI</div></div>
+          <table>
+            <thead><tr><th>Patient</th><th>PURA Signal</th><th>Pain</th><th>Sleep</th><th>Stress</th><th>Status</th><th>Trend</th></tr></thead>
+            <tbody id="patientTableBody"></tbody>
+          </table>
+        </div>
+      </div>
 
+      <!-- PATIENTS -->
+      <div class="tab-pane" id="tab-patients">
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">All Patients</div></div>
+          <table>
+            <thead><tr><th>Patient</th><th>PURA Signal</th><th>Pain</th><th>Sleep</th><th>Energy</th><th>Stress</th><th>Status</th></tr></thead>
+            <tbody id="patientTableBody2"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SIGNALS -->
+      <div class="tab-pane" id="tab-signals">
+        <div class="placeholder-pane">
+          <div class="big">&#9889;</div>
+          <div style="font-size:16px;font-weight:600;color:#555">Signal Trends</div>
+          <div style="font-size:13px;color:#444;max-width:300px;text-align:center">7-day and 30-day PURA Signal trends will appear here as patients check in consistently.</div>
+        </div>
+      </div>
+
+      <!-- MORNING BRIEFING -->
+      <div class="tab-pane" id="tab-briefing">
+        <div id="briefingEmbed"></div>
+      </div>
+
+      <!-- ASK PURA AI -->
+      <div class="tab-pane" id="tab-ai">
+        <div style="font-size:20px;font-weight:800;margin-bottom:4px">Ask PURA AI</div>
+        <div style="font-size:14px;color:#555;margin-bottom:20px">Your clinical intelligence assistant.</div>
+        <div class="starter-prompts">
+          <div class="starter" onclick="sendAI(this.textContent)">Generate my morning briefing</div>
+          <div class="starter" onclick="sendAI(this.textContent)">Which patients need attention today?</div>
+          <div class="starter" onclick="sendAI(this.textContent)">Draft a re-engagement message for inactive patients</div>
+          <div class="starter" onclick="sendAI(this.textContent)">What's our clinic's average PURA Signal?</div>
+          <div class="starter" onclick="sendAI(this.textContent)">How do I explain PURA to a new patient?</div>
+        </div>
+        <div class="full-chat">
+          <div class="chat-messages" id="chatMessages">
+            <div class="msg-ai">Hi! I'm PURA AI. Ask me anything about your patients, trends, clinical protocols, or how to get more from PURA. <strong>Add your Anthropic API key to activate live responses.</strong></div>
+          </div>
+          <div class="chat-bottom">
+            <textarea class="full-chat-input" id="aiInput" placeholder="Ask about your patients or practice..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
+            <button class="full-chat-send" onclick="sendAI()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="tab-pane" id="tab-settings">
+        <div style="max-width:480px">
+          <div style="font-size:20px;font-weight:800;margin-bottom:24px">Settings</div>
+          <div style="background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px;padding:24px;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px">Display</div>
+            <div style="margin-bottom:16px">
+              <label style="display:block;font-size:12px;font-weight:600;color:#666;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">Clinic Name</label>
+              <input type="text" id="settingClinic" style="width:100%;background:#08080a;border:1px solid #2a2a2e;border-radius:8px;padding:12px 14px;font-size:14px;color:#fff;font-family:Inter,sans-serif;outline:none" oninput="saveSettings()">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#666;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">Doctor Name</label>
+              <input type="text" id="settingDoctor" style="width:100%;background:#08080a;border:1px solid #2a2a2e;border-radius:8px;padding:12px 14px;font-size:14px;color:#fff;font-family:Inter,sans-serif;outline:none" oninput="saveSettings()">
+            </div>
+          </div>
+          <div style="font-size:12px;color:#444">Changes save automatically and appear in the sidebar.</div>
+        </div>
+      </div>
+    </div>
   </div>
-</main>
 </div>
 
-<!-- [EDIT: MODAL CONTENT] -->
-<div class="modal-overlay" id="patient-modal" style="display:none" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
+<!-- Patient Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="patientModal">
     <div class="modal-header">
-      <div>
-        <div class="modal-name" id="modal-name"></div>
-        <div class="modal-sub" id="modal-sub"></div>
+      <div class="modal-title" id="modalTitle">Patient Detail</div>
+      <button class="modal-close" onclick="closeModalDirect()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-score">
+        <div class="modal-circle" id="modalCircle">
+          <span id="modalScore">0</span>
+        </div>
+        <div>
+          <div style="font-size:18px;font-weight:800" id="modalName"></div>
+          <div class="status-pill" id="modalStatus" style="margin-top:4px"></div>
+          <div style="font-size:12px;color:#555;margin-top:4px" id="modalDevice"></div>
+        </div>
       </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modalBars"></div>
+      <div id="modalNotes" style="font-size:13px;color:#666;font-style:italic;margin-top:12px;padding:12px;background:#0a0a0d;border-radius:8px;display:none"></div>
+      <div class="ai-chat">
+        <div class="ai-chat-title">Ask PURA AI about this patient</div>
+        <div class="chat-pills">
+          <div class="chat-pill" onclick="askPatientAI(this.textContent)">What do these metrics suggest?</div>
+          <div class="chat-pill" onclick="askPatientAI(this.textContent)">What should I focus on in today's visit?</div>
+          <div class="chat-pill" onclick="askPatientAI(this.textContent)">Is this patient trending up or down?</div>
+          <div class="chat-pill" onclick="askPatientAI(this.textContent)">Draft a follow-up message for this patient</div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="patientChatInput" placeholder="Ask about this patient..." onkeydown="if(event.key==='Enter')askPatientAI()">
+          <button class="chat-send" onclick="askPatientAI()">Ask</button>
+        </div>
+        <div class="chat-response" id="patientChatResponse"></div>
+      </div>
     </div>
-    <div class="pura-score-block">
-      <div class="pura-score-label">PURA Signal Score</div>
-      <div class="pura-score-num" id="modal-score"></div>
-      <div class="pura-score-sub" id="modal-status-text"></div>
-    </div>
-    <div class="modal-section">Signal Breakdown</div>
-    <div class="breakdown" id="signal-breakdown"></div>
-    <button onclick="closeModal()" style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);font:inherit;font-size:13px;padding:12px;border-radius:8px;cursor:pointer;margin-top:8px">Close</button>
   </div>
-</div>
-
-<button class="edit-fab" onclick="toggleEdit()">✎ Edit Dashboard</button>
-<div class="edit-panel" id="edit-panel">
-  <h3>Customize Dashboard</h3>
-  <div class="ef"><label>Clinic Name</label><input type="text" id="edit-clinic" placeholder="Your clinic name"></div>
-  <div class="ef"><label>Doctor Name</label><input type="text" id="edit-doctor" placeholder="Your name"></div>
-  <button class="edit-save" onclick="saveEdits()">Save Changes</button>
 </div>
 
 <script>
-// [EDIT: PATIENT DATA]
-const PATIENTS = [
-  { name:'Maria R.',  score:82, trend:'↑',  last:'Today',      status:'On Track',        cls:'s-track',
-    bd:{ 'Pain':70,'Sleep Quality':80,'Sleep Hours':65,'Energy':75,'Stress':55,'Functional Ability':85,'Mood':90 }},
-  { name:'James T.',  score:61, trend:'↓',  last:'Yesterday',  status:'Needs Attention', cls:'s-attention',
-    bd:{ 'Pain':50,'Sleep Quality':55,'Sleep Hours':60,'Energy':60,'Stress':45,'Functional Ability':70,'Mood':65 }},
-  { name:'Sofia M.',  score:91, trend:'↑↑', last:'Today',      status:'Thriving',        cls:'s-thrive',
-    bd:{ 'Pain':85,'Sleep Quality':95,'Sleep Hours':90,'Energy':92,'Stress':80,'Functional Ability':95,'Mood':98 }},
-  { name:'Robert K.', score:45, trend:'↓↓', last:'3 days ago', status:'Alert',           cls:'s-alert',
-    bd:{ 'Pain':30,'Sleep Quality':40,'Sleep Hours':45,'Energy':35,'Stress':25,'Functional Ability':55,'Mood':50 }},
-  { name:'Ana L.',    score:78, trend:'→',  last:'Today',      status:'On Track',        cls:'s-track',
-    bd:{ 'Pain':70,'Sleep Quality':80,'Sleep Hours':75,'Energy':78,'Stress':65,'Functional Ability':82,'Mood':85 }},
-  { name:'David P.',  score:67, trend:'↑',  last:'Yesterday',  status:'Improving',       cls:'s-improve',
-    bd:{ 'Pain':60,'Sleep Quality':65,'Sleep Hours':70,'Energy':68,'Stress':55,'Functional Ability':72,'Mood':75 }},
+var DCP = {
+  'harrison-coleman':{name:'Dr. Harrison Coleman',clinic:'Helix Austin',city:'Austin, TX',email:'harrison@helixaustin.com',lang:'en'},
+  'yina-cuevas':{name:'Dr. Yina Cuevas',clinic:'Mana Chiropractic',city:'Austin, TX',email:'yina@manachiropractic.com',lang:'en'},
+  'david-miranda':{name:'Dr. David Miranda',clinic:'Quito Tropical',city:'Miami, FL',email:'david@quitotropicalchiro.com',lang:'es'},
+  'bryant-ramirez':{name:'Bryant Ramirez',clinic:'Mycelium Chiropractic',city:'Austin, TX',email:'bryant@myceliumchiro.com',lang:'en'},
+  'ian-brewer':{name:'Ian Brewer',clinic:'Anointed Vessel Chiropractic',city:'Austin, TX',email:'ian@anointedvessel.com',lang:'en'},
+  'denis-chang':{name:'Dr. Denis Chang',clinic:'Optimize Health Chiropractic',city:'Miami, FL',email:'denis@optimizehealth.com',lang:'en'}
+};
+var slug = (new URLSearchParams(location.search)).get('dc')||'';
+var dc = DCP[slug]||null;
+
+var DEMO_PATIENTS = [
+  {patientFirstName:'Maria',patientLastName:'R.',patientEmail:'maria@email.com',pain:2,sleepQuality:8,sleepHours:7.5,energy:8,stress:2,functional:9,mood:8,puraSignal:82,notes:'Feeling great after adjustment.',device:'Apple Watch',trend:'&#9650;'},
+  {patientFirstName:'James',patientLastName:'T.',patientEmail:'james@email.com',pain:6,sleepQuality:5,sleepHours:5,energy:4,stress:7,functional:6,mood:5,puraSignal:61,notes:'Work stress high this week.',device:'No Wearable',trend:'&#9660;'},
+  {patientFirstName:'Sofia',patientLastName:'M.',patientEmail:'sofia@email.com',pain:1,sleepQuality:9,sleepHours:8,energy:9,stress:1,functional:10,mood:9,puraSignal:91,notes:'',device:'Oura Ring',trend:'&#9650;&#9650;'},
+  {patientFirstName:'Robert',patientLastName:'K.',patientEmail:'robert@email.com',pain:8,sleepQuality:3,sleepHours:4.5,energy:2,stress:9,functional:3,mood:3,puraSignal:45,notes:'Back pain flared. Couldn\'t sleep.',device:'Whoop',trend:'&#9660;&#9660;'},
+  {patientFirstName:'Ana',patientLastName:'L.',patientEmail:'ana@email.com',pain:4,sleepQuality:7,sleepHours:7,energy:6,stress:4,functional:7,mood:7,puraSignal:78,notes:'',device:'Apple Watch',trend:'&#8594;'},
+  {patientFirstName:'David',patientLastName:'P.',patientEmail:'david@email.com',pain:5,sleepQuality:6,sleepHours:6.5,energy:5,stress:5,functional:6,mood:6,puraSignal:67,notes:'Neck stiffness mornings.',device:'Garmin',trend:'&#9650;'}
 ];
 
-const TREND_COLOR={'↑↑':'var(--green)','↑':'var(--accent)','→':'var(--muted)','↓':'var(--yellow)','↓↓':'var(--red)'};
-function sColor(s){return s>=80?'var(--accent)':s>=60?'var(--text)':'var(--red)'}
-function bColor(s){return s>=80?'var(--accent)':s>=60?'var(--yellow)':'var(--red)'}
+var currentPatient = null;
 
-function renderTable(){
-  document.getElementById('patient-tbody').innerHTML=PATIENTS.map((p,i)=>`
-    <tr onclick="openPatient(${i})">
-      <td style="font-weight:600">${p.name}</td>
-      <td><div class="signal-wrap"><span style="font-weight:700;color:${sColor(p.score)};min-width:28px;display:inline-block">${p.score}</span><div class="mini-bar"><div class="mini-fill" style="width:${p.score}%;background:${bColor(p.score)}"></div></div></div></td>
-      <td style="font-size:16px;color:${TREND_COLOR[p.trend]||'var(--muted)'}">${p.trend}</td>
-      <td style="color:var(--muted)">${p.last}</td>
-      <td><span class="status-pill ${p.cls}">${p.status}</span></td>
-    </tr>`).join('');
+function col(s){return s<40?'#ef4444':s<65?'#f59e0b':s<=80?'#14b8a6':'#c8ff00';}
+function stat(s){return s<50?'ALERT':s<65?'ATTENTION NEEDED':s<80?'STABLE':'THRIVING';}
+function scl(s){return s<50?'st-alert':s<65?'st-attn':s<80?'st-stable':'st-thriving';}
+
+if(!dc){
+  document.getElementById('mainLayout').style.display='none';
+  document.getElementById('errorPage').style.display='block';
+} else {
+  var settings = JSON.parse(localStorage.getItem('pura_dash_settings_'+slug)||'{}');
+  var displayName = settings.doctor || dc.name;
+  var displayClinic = settings.clinic || dc.clinic;
+  document.getElementById('sbDCName').textContent = displayName;
+  document.getElementById('sbClinic').textContent = displayClinic;
+  document.getElementById('topGreet').textContent = 'Good morning, '+dc.name.split(' ').slice(-2)[0];
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  var key = 'pura_ci_'+slug+'_'+new Date().toDateString();
+  var checkins = JSON.parse(localStorage.getItem(key)||'[]');
+  var patients = checkins.length > 0 ? checkins : DEMO_PATIENTS;
+  var avg = Math.round(patients.reduce(function(a,p){return a+p.puraSignal;},0)/patients.length);
+  document.getElementById('avgSignal').textContent = avg;
+  document.getElementById('checkinCount').textContent = patients.length;
+
+  renderTable('patientTableBody', patients, true);
+  renderTable('patientTableBody2', patients, true);
+
+  document.getElementById('settingClinic').value = displayClinic;
+  document.getElementById('settingDoctor').value = displayName;
 }
 
-function openPatient(i){
-  const p=PATIENTS[i];
-  document.getElementById('modal-name').textContent=p.name;
-  document.getElementById('modal-score').textContent=p.score;
-  document.getElementById('modal-sub').textContent=p.last+' · '+p.status;
-  document.getElementById('modal-status-text').textContent=p.score>=80?'Above baseline — performing well':p.score>=60?'Within normal range':'Below baseline — attention recommended';
-  document.getElementById('signal-breakdown').innerHTML=Object.entries(p.bd).map(([k,v])=>`
-    <div class="bd-row">
-      <span class="bd-label">${k}</span>
-      <div class="bd-bar"><div class="bd-fill" style="width:${v}%"></div></div>
-      <span class="bd-score">${v}%</span>
-    </div>`).join('');
-  document.getElementById('patient-modal').style.display='flex';
+function renderTable(tbodyId, patients, showTrend){
+  var tbody = document.getElementById(tbodyId);
+  if(!tbody)return;
+  tbody.innerHTML = patients.map(function(p){
+    var c = col(p.puraSignal);
+    var statusHtml='<span class="status-pill '+scl(p.puraSignal)+'">'+stat(p.puraSignal)+'</span>';
+    var trendHtml = showTrend && p.trend ? '<span class="trend">'+p.trend+'</span>' : '';
+    return '<tr class="clickable" onclick="openPatient('+JSON.stringify(JSON.stringify(p))+')">'
+      +'<td><strong>'+p.patientFirstName+' '+p.patientLastName+'</strong></td>'
+      +'<td><div class="score-badge"><div class="score-mini" style="border-color:'+c+';color:'+c+'">'+p.puraSignal+'</div></div></td>'
+      +'<td style="color:'+col((11-p.pain)*10)+'">'+p.pain+'/10</td>'
+      +'<td style="color:'+col(p.sleepQuality*10)+'">'+p.sleepQuality+'/10</td>'
+      +'<td style="color:'+col((11-p.stress)*10)+'">'+p.stress+'/10</td>'
+      +'<td>'+statusHtml+'</td>'
+      +(showTrend?'<td>'+trendHtml+'</td>':'')
+      +'</tr>';
+  }).join('');
 }
 
-function closeModal(){document.getElementById('patient-modal').style.display='none';}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-
-// [EDIT: ADD TABS]
-function setTab(name,btn){
-  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
-  document.getElementById('tab-'+name).style.display='block';
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+function openPatient(pJson){
+  var p = JSON.parse(pJson);
+  currentPatient = p;
+  var c = col(p.puraSignal);
+  document.getElementById('modalTitle').textContent = p.patientFirstName+' '+p.patientLastName;
+  document.getElementById('modalName').textContent = p.patientFirstName+' '+p.patientLastName;
+  document.getElementById('modalScore').textContent = p.puraSignal;
+  var circle = document.getElementById('modalCircle');
+  circle.style.borderColor = c; circle.style.color = c;
+  var pill = document.getElementById('modalStatus');
+  pill.textContent = stat(p.puraSignal); pill.className = 'status-pill '+scl(p.puraSignal);
+  document.getElementById('modalDevice').textContent = p.device;
+  var metrics = [['Pain',p.pain,true,'/10'],['Sleep Q',p.sleepQuality,false,'/10'],['Sleep H',p.sleepHours,false,'h'],['Energy',p.energy,false,'/10'],['Stress',p.stress,true,'/10'],['Function',p.functional,false,'/10'],['Mood',p.mood,false,'/10']];
+  document.getElementById('modalBars').innerHTML = metrics.map(function(m){
+    var s=m[2]?(11-m[1])*10:(m[0]==='Sleep H'?Math.min(100,Math.round(m[1]/8*100)):m[1]*10);
+    var c2=s<40?'#ef4444':s<65?'#f59e0b':s<80?'#14b8a6':'#c8ff00';
+    return '<div class="mbar"><div class="mbar-name">'+m[0]+'</div><div class="mbar-track"><div class="mbar-fill" style="width:'+s+'%;background:'+c2+'"></div></div><div class="mbar-val" style="color:'+c2+'">'+m[1]+m[3]+'</div></div>';
+  }).join('');
+  var notesEl = document.getElementById('modalNotes');
+  if(p.notes){notesEl.textContent='"'+p.notes+'"';notesEl.style.display='block';}else{notesEl.style.display='none';}
+  document.getElementById('patientChatResponse').style.display='none';
+  document.getElementById('patientChatInput').value='';
+  document.getElementById('modalOverlay').style.display='flex';
 }
 
-function toggleEdit(){
-  document.getElementById('edit-panel').classList.toggle('open');
-  document.getElementById('edit-clinic').value=localStorage.getItem('pura-clinic')||'';
-  document.getElementById('edit-doctor').value=localStorage.getItem('pura-doctor')||'';
+function closeModal(e){ if(e.target===document.getElementById('modalOverlay'))closeModalDirect(); }
+function closeModalDirect(){ document.getElementById('modalOverlay').style.display='none'; }
+
+async function askPatientAI(q){
+  var input = document.getElementById('patientChatInput');
+  var question = q || input.value.trim();
+  if(!question||!currentPatient)return;
+  input.value='';
+  var res=document.getElementById('patientChatResponse');
+  res.style.display='block'; res.textContent='Thinking...';
+  var p=currentPatient;
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':'ANTHROPIC_API_KEY','anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,
+        system:'You are PURA Health\'s clinical AI assistant helping '+dc.name+' at '+dc.clinic+' understand patient data. Patient: '+p.patientFirstName+' '+p.patientLastName+'. Metrics: Pain '+p.pain+'/10, Sleep Quality '+p.sleepQuality+'/10, Sleep Hours '+p.sleepHours+', Energy '+p.energy+'/10, Stress '+p.stress+'/10, Function '+p.functional+'/10, Mood '+p.mood+'/10, PURA Signal '+p.puraSignal+'/100. You help the DC interpret this data clinically. You are not providing diagnosis.',
+        messages:[{role:'user',content:question}]})
+    });
+    var j=await r.json();
+    res.textContent=(j.content&&j.content[0])?j.content[0].text:'Add your Anthropic API key (replace ANTHROPIC_API_KEY) to activate AI responses.';
+  }catch(e){res.textContent='Add your Anthropic API key to activate AI responses.';}
 }
 
-function saveEdits(){
-  const c=document.getElementById('edit-clinic').value.trim();
-  const d=document.getElementById('edit-doctor').value.trim();
-  if(c){localStorage.setItem('pura-clinic',c);document.getElementById('sidebar-clinic-name').textContent=c;}
-  if(d){localStorage.setItem('pura-doctor',d);document.getElementById('topbar-name').textContent=d;}
-  document.getElementById('edit-panel').classList.remove('open');
+async function sendAI(q){
+  var input=document.getElementById('aiInput');
+  var question=q||input.value.trim();
+  if(!question)return;
+  input.value='';
+  var msgs=document.getElementById('chatMessages');
+  var userDiv=document.createElement('div'); userDiv.className='msg-user'; userDiv.textContent=question; msgs.appendChild(userDiv);
+  var aiDiv=document.createElement('div'); aiDiv.className='msg-ai'; aiDiv.textContent='Thinking...'; msgs.appendChild(aiDiv);
+  msgs.scrollTop=msgs.scrollHeight;
+  var checkins=JSON.parse(localStorage.getItem('pura_ci_'+slug+'_'+new Date().toDateString())||'[]');
+  var patients=checkins.length>0?checkins:DEMO_PATIENTS;
+  var pSummary=patients.map(function(p){return p.patientFirstName+' '+p.patientLastName+': Signal '+p.puraSignal+'/100, Pain '+p.pain+', Stress '+p.stress+', Sleep '+p.sleepQuality;}).join('\n');
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':'ANTHROPIC_API_KEY','anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,
+        system:'You are PURA Health\'s clinical AI assistant for '+dc.name+' at '+dc.clinic+'. You help DCs understand patient data, clinical patterns, and how to use PURA effectively. Today\'s patient data:\n'+pSummary,
+        messages:[{role:'user',content:question}]})
+    });
+    var j=await r.json();
+    aiDiv.textContent=(j.content&&j.content[0])?j.content[0].text:'Add your Anthropic API key (replace ANTHROPIC_API_KEY) to activate AI responses.';
+  }catch(e){aiDiv.textContent='Add your Anthropic API key to activate live AI responses.';}
+  msgs.scrollTop=msgs.scrollHeight;
 }
 
-(function init(){
-  const c=localStorage.getItem('pura-clinic'),d=localStorage.getItem('pura-doctor');
-  if(c)document.getElementById('sidebar-clinic-name').textContent=c;
-  if(d)document.getElementById('topbar-name').textContent=d;
-  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderTable();
-})();
+function showTab(id, btn){
+  document.querySelectorAll('.tab-pane').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='briefing'){
+    var embed=document.getElementById('briefingEmbed');
+    if(!embed.innerHTML){embed.innerHTML='<iframe src="'+location.origin+'/morning-briefing.html?dc='+slug+'" style="width:100%;height:calc(100vh - 160px);border:none;border-radius:12px;background:#0f0f12" frameborder="0"></iframe>';}
+  }
+}
+
+function copyCheckinLink(){
+  var url=location.origin+'/checkin.html?dc='+slug;
+  navigator.clipboard.writeText(url).then(function(){alert('Check-in link copied:\n'+url);});
+}
+
+function saveSettings(){
+  var s={clinic:document.getElementById('settingClinic').value,doctor:document.getElementById('settingDoctor').value};
+  localStorage.setItem('pura_dash_settings_'+slug,JSON.stringify(s));
+  document.getElementById('sbDCName').textContent=s.doctor||dc.name;
+  document.getElementById('sbClinic').textContent=s.clinic||dc.clinic;
+}
 </script>
-
-<!--
-====================================================
-PURA DASHBOARD — EDITABLE SECTION
-====================================================
-[EDIT: PATIENT DATA]   — Edit the PATIENTS array in the <script> block
-[EDIT: STAT CARDS]     — Change the 4 numbers in <div class="stat-card"> elements
-[EDIT: CLINIC NAME]    — Change "Demo Clinic — Preview Mode" in sidebar-clinic-name div
-[EDIT: COLORS]         — Main accent is #c8ff00 — find/replace in :root to change
-[EDIT: ADD TABS]       — Add a .nav-item button + a new <div id="tab-name"> following existing pattern
-[EDIT: MODAL CONTENT]  — Patient modal pulls data from PATIENTS array in the script
-====================================================
--->
 </body>
 </html>

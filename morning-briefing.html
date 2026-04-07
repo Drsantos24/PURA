@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURA Morning Briefing</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #1a1a1e;background:#08080a}
+.logo{font-size:20px;font-weight:800;color:#c8ff00;letter-spacing:-0.5px}
+.container{max-width:800px;margin:0 auto;padding:40px 24px 80px}
+.morning-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px}
+.morning-greeting{font-size:28px;font-weight:800;letter-spacing:-0.5px}
+.morning-date{font-size:14px;color:#666;text-align:right}
+.morning-day{font-size:16px;font-weight:600;color:#888}
+.briefing-card{background:#0f0f12;border:1px solid #1a1a1e;border-radius:16px;padding:32px;margin-bottom:28px}
+.briefing-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.briefing-title{font-size:16px;font-weight:700}
+.briefing-badge{font-size:11px;font-weight:700;color:#c8ff00;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.2);padding:4px 10px;border-radius:100px;letter-spacing:0.5px}
+.briefing-loading{display:flex;align-items:center;gap:12px;color:#666;font-size:14px;padding:20px 0}
+.spinner{width:20px;height:20px;border:2px solid #1a1a1e;border-top:2px solid #c8ff00;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.briefing-body{font-size:15px;color:#ccc;line-height:1.8}
+.briefing-body strong,.briefing-body b{color:#fff;font-weight:700}
+.briefing-body p{margin-bottom:16px}
+.briefing-footer{font-size:12px;color:#444;margin-top:20px;padding-top:16px;border-top:1px solid #1a1a1e;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.email-btn{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.2s}
+.email-btn:hover{opacity:0.85}
+.email-btn:disabled{opacity:0.4;cursor:not-allowed}
+.section-title{font-size:12px;font-weight:700;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #1a1a1e}
+.patient-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:28px}
+.p-card{background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px;padding:20px}
+.p-card-top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.p-circle{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;border:2px solid #c8ff00;flex-shrink:0}
+.p-info{flex:1}
+.p-name{font-size:15px;font-weight:700}
+.p-signal{font-size:12px;color:#888;margin-top:2px}
+.p-status{font-size:11px;font-weight:700;letter-spacing:0.5px;padding:3px 10px;border-radius:100px}
+.st-alert{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
+.st-attn{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.2)}
+.st-stable{background:rgba(20,184,166,0.15);color:#14b8a6;border:1px solid rgba(20,184,166,0.2)}
+.st-thriving{background:rgba(200,255,0,0.15);color:#c8ff00;border:1px solid rgba(200,255,0,0.2)}
+.mini-bars{margin-bottom:12px}
+.mini-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mini-bar-label{font-size:11px;color:#555;width:70px;flex-shrink:0}
+.mini-bar-track{flex:1;height:4px;background:#1a1a1e;border-radius:2px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:2px}
+.mini-bar-val{font-size:11px;font-weight:600;width:28px;text-align:right;flex-shrink:0}
+.p-notes{font-size:12px;color:#666;font-style:italic;border-top:1px solid #1a1a1e;padding-top:10px;margin-top:4px;line-height:1.5}
+.p-reply{display:inline-block;margin-top:10px;font-size:12px;color:#c8ff00;text-decoration:none;font-weight:600}
+.p-reply:hover{text-decoration:underline}
+.error-page{text-align:center;padding:80px 24px}
+.error-page h2{font-size:24px;font-weight:700;margin-bottom:12px;color:#ef4444}
+.error-page p{color:#666;line-height:1.6}
+.no-checkins{background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px;padding:32px;text-align:center;color:#555;font-size:14px;margin-bottom:28px}
+.no-checkins strong{display:block;font-size:16px;color:#888;margin-bottom:8px}
+@media(max-width:600px){.morning-header{flex-direction:column}.patient-cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="error-page" id="errorPage" style="display:none">
+  <h2>DC Not Found</h2>
+  <p>Use the link provided by PURA Health.</p>
+</div>
+
+<div id="mainContent">
+  <nav>
+    <div class="logo">PURA</div>
+    <div style="font-size:13px;color:#666">Morning Briefing</div>
+  </nav>
+  <div class="container">
+    <div class="morning-header">
+      <div class="morning-greeting" id="greeting"></div>
+      <div class="morning-date">
+        <div class="morning-day" id="dayLabel"></div>
+        <div id="dateLabel" style="font-size:13px;color:#555;margin-top:2px"></div>
+      </div>
+    </div>
+
+    <div class="briefing-card">
+      <div class="briefing-header">
+        <div class="briefing-title">Morning Briefing</div>
+        <div class="briefing-badge">AI GENERATED</div>
+      </div>
+      <div id="briefingLoading" class="briefing-loading">
+        <div class="spinner"></div>
+        <span>Generating your morning briefing...</span>
+      </div>
+      <div class="briefing-body" id="briefingBody" style="display:none"></div>
+      <div class="briefing-footer" id="briefingFooter" style="display:none">
+        <span>Generated by PURA AI &middot; Refreshes daily</span>
+        <button class="email-btn" id="emailBtn" onclick="emailBriefing()">&#128231; Email This Briefing to Myself</button>
+      </div>
+    </div>
+
+    <div class="section-title">TODAY'S CHECK-INS</div>
+    <div id="patientSection"></div>
+
+    <div style="background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px;padding:20px;margin-top:24px">
+      <div style="font-size:13px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">QUICK LINKS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <a id="dashLink" href="#" style="color:#c8ff00;text-decoration:none;font-size:13px;font-weight:600;background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);padding:8px 14px;border-radius:8px">&#128202; Dashboard</a>
+        <a id="checkinLink" href="#" style="color:#fff;text-decoration:none;font-size:13px;font-weight:600;background:#1a1a1e;border:1px solid #2a2a2e;padding:8px 14px;border-radius:8px">&#128279; Patient Check-in Link</a>
+        <a id="onboardLink" href="#" style="color:#fff;text-decoration:none;font-size:13px;font-weight:600;background:#1a1a1e;border:1px solid #2a2a2e;padding:8px 14px;border-radius:8px">&#128203; Patient Onboarding</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var DCP = {
+  'harrison-coleman':{name:'Dr. Harrison Coleman',clinic:'Helix Austin',city:'Austin, TX',email:'harrison@helixaustin.com',lang:'en'},
+  'yina-cuevas':{name:'Dr. Yina Cuevas',clinic:'Mana Chiropractic',city:'Austin, TX',email:'yina@manachiropractic.com',lang:'en'},
+  'david-miranda':{name:'Dr. David Miranda',clinic:'Quito Tropical',city:'Miami, FL',email:'david@quitotropicalchiro.com',lang:'es'},
+  'bryant-ramirez':{name:'Bryant Ramirez',clinic:'Mycelium Chiropractic',city:'Austin, TX',email:'bryant@myceliumchiro.com',lang:'en'},
+  'ian-brewer':{name:'Ian Brewer',clinic:'Anointed Vessel Chiropractic',city:'Austin, TX',email:'ian@anointedvessel.com',lang:'en'},
+  'denis-chang':{name:'Dr. Denis Chang',clinic:'Optimize Health Chiropractic',city:'Miami, FL',email:'denis@optimizehealth.com',lang:'en'}
+};
+var slug = (new URLSearchParams(location.search)).get('dc')||'';
+var dc = DCP[slug]||null;
+var BRIEFING_TEXT = '';
+
+var DEMO_CHECKINS = [
+  {patientFirstName:'Maria',patientLastName:'R.',patientEmail:'maria@email.com',pain:2,sleepQuality:8,sleepHours:7.5,energy:8,stress:2,functional:9,mood:8,puraSignal:82,notes:'Feeling great after yesterday\'s adjustment.',device:'Apple Watch'},
+  {patientFirstName:'James',patientLastName:'T.',patientEmail:'james@email.com',pain:6,sleepQuality:5,sleepHours:5,energy:4,stress:7,functional:6,mood:5,puraSignal:61,notes:'Work stress has been high this week.',device:'No Wearable'},
+  {patientFirstName:'Sofia',patientLastName:'M.',patientEmail:'sofia@email.com',pain:1,sleepQuality:9,sleepHours:8,energy:9,stress:1,functional:10,mood:9,puraSignal:91,notes:'',device:'Oura Ring'},
+  {patientFirstName:'Robert',patientLastName:'K.',patientEmail:'robert@email.com',pain:8,sleepQuality:3,sleepHours:4.5,energy:2,stress:9,functional:3,mood:3,puraSignal:45,notes:'Back pain flared up yesterday. Couldn\'t sleep.',device:'Whoop'},
+  {patientFirstName:'Ana',patientLastName:'L.',patientEmail:'ana@email.com',pain:4,sleepQuality:7,sleepHours:7,energy:6,stress:4,functional:7,mood:7,puraSignal:78,notes:'',device:'Apple Watch'},
+  {patientFirstName:'David',patientLastName:'P.',patientEmail:'david@email.com',pain:5,sleepQuality:6,sleepHours:6.5,energy:5,stress:5,functional:6,mood:6,puraSignal:67,notes:'Neck stiffness in the morning.',device:'Garmin'}
+];
+
+function col(s){return s<40?'#ef4444':s<65?'#f59e0b':s<=80?'#14b8a6':'#c8ff00';}
+function stat(s){return s<50?'ALERT':s<65?'ATTENTION NEEDED':s<80?'STABLE':'THRIVING';}
+function scl(s){return s<50?'st-alert':s<65?'st-attn':s<80?'st-stable':'st-thriving';}
+
+if(!dc){
+  document.getElementById('mainContent').style.display='none';
+  document.getElementById('errorPage').style.display='block';
+} else {
+  var fname = dc.name.split(' ').slice(-2)[0] || dc.name.split(' ')[0];
+  document.getElementById('greeting').textContent = 'Good morning, '+fname+' \u2600\uFE0F';
+  var now = new Date();
+  document.getElementById('dayLabel').textContent = now.toLocaleDateString('en-US',{weekday:'long'});
+  document.getElementById('dateLabel').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('dashLink').href = location.origin+'/dashboard.html?dc='+slug;
+  document.getElementById('checkinLink').href = location.origin+'/checkin.html?dc='+slug;
+  document.getElementById('onboardLink').href = location.origin+'/onboarding.html?dc='+slug;
+  if(dc.lang==='es') document.documentElement.lang='es';
+
+  var key='pura_ci_'+slug+'_'+now.toDateString();
+  var checkins=JSON.parse(localStorage.getItem(key)||'[]');
+  var useDemo = checkins.length===0;
+  var displayCheckins = useDemo ? DEMO_CHECKINS : checkins;
+
+  renderPatients(displayCheckins, useDemo);
+  getMorningBriefing(displayCheckins).then(function(text){
+    BRIEFING_TEXT=text;
+    document.getElementById('briefingLoading').style.display='none';
+    var body=document.getElementById('briefingBody');
+    body.style.display='block';
+    body.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').split(/\n\n+/).filter(function(p){return p.trim();}).map(function(p){return '<p>'+p.trim().replace(/\n/g,'<br>')+'</p>';}).join('');
+    document.getElementById('briefingFooter').style.display='flex';
+    emailBriefingJoshua(text, displayCheckins);
+  });
+}
+
+function renderPatients(checkins, isDemo){
+  var sec = document.getElementById('patientSection');
+  if(isDemo){
+    sec.innerHTML='<div class="no-checkins"><strong>No check-ins yet today</strong>Showing demo patient data. Share your check-in link for patients to submit real data.</div>';
+  }
+  var grid = document.createElement('div');
+  grid.className = 'patient-cards';
+  checkins.forEach(function(c){
+    var color = col(c.puraSignal);
+    var card = document.createElement('div');
+    card.className = 'p-card';
+    var initials=(c.patientFirstName[0]||'')+(c.patientLastName[0]||'');
+    var metrics=[['Pain',c.pain,true],['Sleep Q',c.sleepQuality,false],['Energy',c.energy,false],['Stress',c.stress,true],['Function',c.functional,false],['Mood',c.mood,false]];
+    var barsHtml=metrics.map(function(m){
+      var s=m[2]?(11-m[1])*10:m[1]*10;
+      var c2=s<40?'#ef4444':s<65?'#f59e0b':s<80?'#14b8a6':'#c8ff00';
+      return '<div class="mini-bar-row"><div class="mini-bar-label">'+m[0]+'</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:'+s+'%;background:'+c2+'"></div></div><div class="mini-bar-val" style="color:'+c2+'">'+m[1]+'</div></div>';
+    }).join('');
+    var notesHtml=c.notes?'<div class="p-notes">"'+c.notes+'"</div>':'';
+    var replyHtml=c.patientEmail?'<a class="p-reply" href="mailto:'+c.patientEmail+'?subject=Your PURA Check-In — Following Up&body=Hi '+c.patientFirstName+',">Reply by Email &#8599;</a>':'';
+    card.innerHTML='<div class="p-card-top"><div class="p-circle" style="border-color:'+color+';color:'+color+'">'+initials+'</div><div class="p-info"><div class="p-name">'+c.patientFirstName+' '+c.patientLastName+'</div><div class="p-signal">PURA Signal: <strong style="color:'+color+'">'+c.puraSignal+'/100</strong> &nbsp;&middot;&nbsp; '+c.device+'</div></div><div class="p-status '+scl(c.puraSignal)+'">'+stat(c.puraSignal)+'</div></div><div class="mini-bars">'+barsHtml+'</div>'+notesHtml+replyHtml;
+    grid.appendChild(card);
+  });
+  sec.appendChild(grid);
+}
+
+async function getMorningBriefing(checkins){
+  var ci=checkins.length>0?checkins.map(function(c){return '- '+c.patientFirstName+' '+c.patientLastName+': PURA Signal '+c.puraSignal+'/100 | Pain '+c.pain+'/10 | Sleep '+c.sleepQuality+'/10 | Energy '+c.energy+'/10 | Stress '+c.stress+'/10'+(c.notes?' | Notes: "'+c.notes+'"':'');}).join('\n'):'No check-ins yet today.';
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':'ANTHROPIC_API_KEY','anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,
+        system:'You are PURA Health\'s AI briefing system. Every morning you give chiropractors a concise, actionable clinical briefing based on their patients\' overnight check-in data. You are direct, specific, and useful.',
+        messages:[{role:'user',content:'Generate a morning briefing for '+dc.name+' at '+dc.clinic+'.\n\nOVERNIGHT CHECK-INS ('+checkins.length+' patients):\n'+ci+'\n\nWrite a morning briefing with 4 sections (use **bold headers**):\n\n**Today\'s Patient Overview**\nSummarize what you see across all check-ins. Who is doing well? Who needs attention? Any patterns?\n\n**Priority Patients**\nName any patients with PURA Signal below 65 or pain above 7 and explain why they need attention today. If none, say so clearly.\n\n**Clinical Opportunity**\nOne specific, actionable clinical insight or conversation starter for today based on the data.\n\n**Your Practice Momentum**\nOne brief encouraging note about the data collection and what consistent tracking enables.\n\nTone: collegial, specific, like a knowledgeable colleague briefing them before clinic. 2-4 sentences per section. Prose only, no bullet points within sections.'+(dc.lang==='es'?'\n\nWrite entirely in Spanish.':'')}]})
+    });
+    var j=await r.json();
+    return (j.content&&j.content[0])?j.content[0].text:demoText();
+  }catch(e){return demoText();}
+}
+
+function demoText(){
+  return '**Today\'s Patient Overview**\nYour morning briefing is ready. Add your Anthropic API key (replace ANTHROPIC_API_KEY in this file) to generate live AI briefings based on real patient check-in data. Once connected, this briefing will analyze every patient who checked in overnight.\n\n**Priority Patients**\nWith live data connected, any patient with a PURA Signal below 65 or pain above 7 will be flagged here automatically so you know exactly who needs attention before you see them.\n\n**Clinical Opportunity**\nConsistency of check-in data over 7+ days reveals patterns invisible to single-session assessments. Share the check-in link with your highest-priority patients first.\n\n**Your Practice Momentum**\nEvery check-in submitted is a data point building toward a longitudinal nervous system baseline. The more consistent your patients are, the more powerful your clinical picture becomes.';
+}
+
+async function emailBriefing(){
+  if(!BRIEFING_TEXT)return;
+  var btn=document.getElementById('emailBtn');
+  btn.disabled=true; btn.textContent='Sending...';
+  var checkins=JSON.parse(localStorage.getItem('pura_ci_'+slug+'_'+new Date().toDateString())||'[]');
+  var ciList=checkins.length>0?checkins.map(function(c){return '- '+c.patientFirstName+' '+c.patientLastName+' — Signal: '+c.puraSignal+'/100 | Pain: '+c.pain+'/10 | Stress: '+c.stress+'/10';}).join('\n'):'No check-ins received yet.';
+  try{
+    await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:'WEB3FORMS_ACCESS_KEY',subject:'PURA Morning Briefing — '+new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+' — '+dc.clinic,from_name:'PURA Health',to:dc.email,message:'Good morning, '+dc.name.split(' ').pop()+'.\n\n'+new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+'\n\n'+BRIEFING_TEXT.replace(/\*\*(.*?)\*\*/g,'$1')+'\n\n---\nOVERNIGHT CHECK-INS:\n'+ciList+'\n---\nDashboard: '+location.origin+'/dashboard.html?dc='+slug+'\nPatient check-in: '+location.origin+'/checkin.html?dc='+slug+'\n\n— PURA Health AI\npura-delta.vercel.app'})});
+    btn.textContent='Sent!'; setTimeout(function(){btn.disabled=false;btn.textContent='Email This Briefing to Myself';},3000);
+  }catch(e){btn.disabled=false;btn.textContent='Error — try again';}
+}
+
+async function emailBriefingJoshua(text, checkins){
+  var ciList=checkins.map(function(c){return '- '+c.patientFirstName+' '+c.patientLastName+' — Signal: '+c.puraSignal+'/100';}).join('\n');
+  try{
+    await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:'WEB3FORMS_ACCESS_KEY',subject:'PURA Morning Briefing — '+dc.clinic+' — '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric'}),from_name:'PURA Health',to:'viveapr@gmail.com',message:'PURA MORNING BRIEFING — ADMIN COPY\nDC: '+dc.name+' | '+dc.clinic+'\nDate: '+new Date().toLocaleDateString()+'\n\n'+text.replace(/\*\*(.*?)\*\*/g,'$1')+'\n\nCHECK-INS:\n'+ciList});});
+  }catch(e){}
+}
+</script>
+</body>
+</html>

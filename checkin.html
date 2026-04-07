@@ -3,666 +3,362 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PURA — Daily Recovery Check-in</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,300&family=Epilogue:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>PURA Daily Check-In</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#080B0A;--card:#111714;--card2:#161C18;
-  --sage:#52B788;--sage-d:#2D6A4F;--sage-xl:rgba(82,183,136,.08);
-  --gold:#C9A84C;--gold-xl:rgba(201,168,76,.08);
-  --rose:#E8A0A0;--rose-xl:rgba(232,160,160,.08);
-  --blue:#7EB8D4;--blue-xl:rgba(126,184,212,.08);
-  --purple:#A78BFA;--purple-xl:rgba(167,139,250,.08);
-  --bone:#D4CFC4;--gray:#6B7280;--gray2:#374151;
-  --border:rgba(255,255,255,.07);--radius:10px;
-  --white:#fff;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--bone);min-height:100vh;padding-bottom:60px;}
-
-/* TOP BAR */
-.topbar{background:rgba(8,11,10,.95);backdrop-filter:blur(12px);position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
-.brand{font-family:'Fraunces',serif;font-size:20px;color:var(--sage);font-style:italic;letter-spacing:1px;}
-.date-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray);background:var(--card2);padding:5px 12px;border-radius:20px;border:1px solid var(--border);}
-
-.shell{max-width:540px;margin:0 auto;padding:90px 20px 40px;}
-
-/* PATIENT HEADER */
-.patient-header{text-align:center;padding:32px 0 28px;}
-.ph-eye{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);margin-bottom:10px;font-family:'JetBrains Mono',monospace;}
-.ph-title{font-family:'Fraunces',serif;font-size:28px;color:var(--white);margin-bottom:6px;line-height:1.2;}
-.ph-title em{color:var(--sage);font-style:italic;}
-.ph-sub{font-size:13px;color:var(--gray);line-height:1.7;}
-
-/* VITALITY RING */
-.vitality-ring-wrap{display:flex;justify-content:center;margin:0 0 32px;}
-.vring{position:relative;width:130px;height:130px;display:flex;align-items:center;justify-content:center;}
-.vring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
-.vring circle{fill:none;stroke-linecap:round;}
-.vr-bg{stroke:rgba(255,255,255,.06);stroke-width:8;}
-.vr-fill{stroke:var(--sage);stroke-width:8;stroke-dasharray:339.3;stroke-dashoffset:339.3;transition:stroke-dashoffset 1.2s ease;}
-.vring-inner{text-align:center;z-index:1;position:relative;}
-.vring-num{font-family:'Fraunces',serif;font-size:36px;color:var(--sage);line-height:1;font-weight:900;}
-.vring-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--gray);margin-top:3px;}
-.vring-sub{font-size:10px;color:var(--gray);margin-top:2px;}
-
-/* SECTION */
-.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:border-color .2s;}
-.section-card:focus-within{border-color:rgba(82,183,136,.3);}
-.sc-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
-.sc-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-.sc-title{font-size:13px;font-weight:700;color:var(--white);}
-.sc-sub{font-size:11px;color:var(--gray);margin-top:1px;}
-
-/* SLIDER */
-.slider-wrap{padding:4px 0;}
-.slider-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--gray);font-family:'JetBrains Mono',monospace;margin-bottom:8px;}
-.slider-val{font-family:'Fraunces',serif;font-size:32px;font-weight:900;text-align:center;margin-bottom:10px;transition:color .2s;}
-.slider-val span{font-size:13px;font-weight:400;color:var(--gray);font-family:'Epilogue',sans-serif;}
-input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;background:var(--gray2);outline:none;cursor:pointer;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--sage);cursor:pointer;border:3px solid var(--bg);box-shadow:0 0 0 2px var(--sage);}
-input[type=range].pain-slider::-webkit-slider-thumb{background:var(--rose);}
-input[type=range].stress-slider::-webkit-slider-thumb{background:var(--gold);}
-input[type=range].energy-slider::-webkit-slider-thumb{background:var(--blue);}
-input[type=range].mood-slider::-webkit-slider-thumb{background:var(--purple);}
-input[type=range].function-slider::-webkit-slider-thumb{background:var(--sage);}
-
-/* NUMBER INPUT */
-.num-input-wrap{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:8px;}
-.num-btn{width:40px;height:40px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--white);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
-.num-btn:hover{background:var(--sage-d);border-color:var(--sage);}
-.num-display{font-family:'Fraunces',serif;font-size:36px;color:var(--white);min-width:80px;text-align:center;}
-.num-unit{font-size:12px;color:var(--gray);}
-
-/* CHECKBOX GRID */
-.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
-.check-item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .18s;font-size:12px;color:var(--bone);}
-.check-item:hover{border-color:var(--sage);background:var(--sage-xl);}
-.check-item.selected{border-color:var(--sage);background:var(--sage-xl);color:var(--sage);font-weight:600;}
-.check-box{width:14px;height:14px;border-radius:3px;border:2px solid var(--gray2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .18s;}
-.check-item.selected .check-box{background:var(--sage);border-color:var(--sage);}
-.check-item.selected .check-box::after{content:'✓';font-size:9px;color:#fff;font-weight:700;}
-
-/* TEXT INPUT */
-.text-inp{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;font-family:'Epilogue',sans-serif;color:var(--bone);outline:none;resize:vertical;min-height:70px;transition:border .2s;}
-.text-inp:focus{border-color:rgba(82,183,136,.4);}
-.text-inp::placeholder{color:var(--gray);}
-
-/* PATIENT INFO */
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.info-field{display:flex;flex-direction:column;gap:5px;}
-.info-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray);}
-.info-inp{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;font-family:'Epilogue',sans-serif;color:var(--bone);outline:none;transition:border .2s;}
-.info-inp:focus{border-color:rgba(82,183,136,.4);}
-.info-inp::placeholder{color:var(--gray2);}
-.info-inp.full{grid-column:1/-1;}
-
-/* SUBMIT */
-.submit-wrap{margin-top:24px;}
-.submit-btn{width:100%;background:var(--sage);color:#fff;border:none;padding:16px;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px;font-family:'Epilogue',sans-serif;}
-.submit-btn:hover{background:var(--sage-d);transform:translateY(-1px);}
-.submit-btn:disabled{background:var(--gray2);cursor:not-allowed;transform:none;}
-
-/* SUCCESS */
-#successScreen{display:none;text-align:center;padding:60px 20px;}
-.success-icon{font-size:56px;margin-bottom:20px;}
-.success-title{font-family:'Fraunces',serif;font-size:28px;color:var(--white);margin-bottom:8px;}
-.success-title em{color:var(--sage);font-style:italic;}
-.success-sub{font-size:14px;color:var(--gray);line-height:1.7;max-width:380px;margin:0 auto 28px;}
-.score-reveal{background:var(--card);border:1px solid rgba(82,183,136,.2);border-radius:var(--radius);padding:24px;margin-bottom:24px;}
-.sr-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--gray);margin-bottom:8px;font-family:'JetBrains Mono',monospace;}
-.sr-score{font-family:'Fraunces',serif;font-size:56px;color:var(--sage);font-weight:900;line-height:1;}
-.sr-max{font-size:13px;color:var(--gray);}
-.sr-grade{font-size:14px;color:var(--bone);margin-top:6px;font-weight:600;}
-.insight-list{text-align:left;margin-top:16px;}
-.insight-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--bone);line-height:1.5;}
-.insight-item:last-child{border-bottom:none;}
-.i-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
-.redo-btn{background:transparent;border:1px solid var(--border);color:var(--bone);padding:12px 28px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Epilogue',sans-serif;}
-.redo-btn:hover{border-color:var(--sage);color:var(--sage);}
-
-/* PROGRESS DOTS */
-.prog-dots{display:flex;justify-content:center;gap:6px;margin-bottom:24px;}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--gray2);transition:all .3s;}
-.dot.active{background:var(--sage);width:20px;border-radius:3px;}
-.dot.done{background:var(--sage-d);}
-
-@media(max-width:480px){
-  .info-grid{grid-template-columns:1fr;}
-  .check-grid{grid-template-columns:1fr;}
-}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #1a1a1e;position:sticky;top:0;z-index:10;background:#08080a}
+.logo{font-size:20px;font-weight:800;color:#c8ff00;letter-spacing:-0.5px}
+.nav-right{font-size:13px;color:#666;font-weight:500}
+.dc-banner{background:#0f0f12;border-bottom:1px solid #1a1a1e;padding:12px 24px;font-size:13px;color:#888;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.dc-banner strong{color:#fff}
+.container{max-width:640px;margin:0 auto;padding:32px 24px 80px}
+.intro{margin-bottom:36px}
+.intro h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.intro p{color:#666;font-size:15px;line-height:1.6}
+.signal-display{display:flex;flex-direction:column;align-items:center;margin-bottom:40px;padding:32px;background:#0f0f12;border-radius:16px;border:1px solid #1a1a1e}
+.signal-circle{width:120px;height:120px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid #c8ff00;transition:border-color 0.4s;margin-bottom:12px}
+.signal-number{font-size:38px;font-weight:800;line-height:1;transition:color 0.4s;color:#c8ff00}
+.signal-max{font-size:12px;color:#555;margin-top:2px}
+.signal-status{font-size:13px;font-weight:700;letter-spacing:0.5px;margin-top:12px;padding:4px 14px;border-radius:100px;background:#1a1a1e;color:#c8ff00}
+.signal-hint{font-size:12px;color:#555;margin-top:8px}
+.section-title{font-size:12px;font-weight:700;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #1a1a1e}
+.slider-group{margin-bottom:28px}
+.slider-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.slider-name{font-size:15px;font-weight:600}
+.slider-val{font-size:24px;font-weight:800;color:#c8ff00;min-width:36px;text-align:right}
+.slider-helper{font-size:12px;color:#555;margin-bottom:10px;line-height:1.5}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:#1a1a1e;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#c8ff00;cursor:pointer;box-shadow:0 0 0 3px rgba(200,255,0,0.2)}
+.sleep-wrap{display:flex;align-items:center;gap:12px}
+.sleep-wrap input[type=number]{background:#1a1a1e;border:1px solid #2a2a2e;border-radius:8px;padding:12px 16px;font-size:18px;font-weight:700;color:#c8ff00;width:100px;text-align:center;outline:none;font-family:'Inter',sans-serif}
+.sleep-wrap input[type=number]:focus{border-color:#c8ff00}
+.patient-info{background:#0f0f12;border:1px solid #1a1a1e;border-radius:16px;padding:28px;margin-bottom:28px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:12px;font-weight:600;color:#666;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px}
+input[type=text],input[type=email],select,textarea{width:100%;background:#08080a;border:1px solid #2a2a2e;border-radius:8px;padding:13px 15px;font-size:15px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+input[type=text]:focus,input[type=email]:focus,select:focus,textarea:focus{border-color:#c8ff00}
+select option{background:#08080a}
+textarea{resize:vertical;min-height:90px}
+.submit-btn{width:100%;background:#c8ff00;color:#08080a;border:none;border-radius:12px;padding:18px;font-size:18px;font-weight:700;cursor:pointer;transition:opacity 0.2s}
+.submit-btn:hover{opacity:0.9}
+.submit-btn:disabled{opacity:0.35;cursor:not-allowed}
+.error-page{text-align:center;padding:80px 24px}
+.error-page h2{font-size:24px;font-weight:700;margin-bottom:12px;color:#ef4444}
+.error-page p{color:#666;line-height:1.6}
+.loading-overlay{position:fixed;inset:0;background:rgba(8,8,10,0.97);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.spinner{width:60px;height:60px;border:3px solid #1a1a1e;border-top:3px solid #c8ff00;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-dc{font-size:15px;font-weight:600;color:#c8ff00}
+.load-msg{font-size:14px;color:#666;transition:opacity 0.3s}
+.results-wrap{max-width:640px;margin:0 auto;padding:32px 24px 80px}
+.result-header{text-align:center;margin-bottom:40px}
+.result-circle{width:140px;height:140px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px;border:5px solid #c8ff00}
+.result-num{font-size:44px;font-weight:800;line-height:1}
+.result-max{font-size:14px;color:#555}
+.result-lbl{font-size:16px;font-weight:700;margin-bottom:4px}
+.status-pill{display:inline-block;padding:6px 18px;border-radius:100px;font-size:13px;font-weight:700;letter-spacing:0.5px;margin-top:4px}
+.s-alert{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.s-attn{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
+.s-stable{background:rgba(20,184,166,0.15);color:#14b8a6;border:1px solid rgba(20,184,166,0.3)}
+.s-thriving{background:rgba(200,255,0,0.15);color:#c8ff00;border:1px solid rgba(200,255,0,0.3)}
+.divider{height:1px;background:#1a1a1e;margin:28px 0}
+.ai-card,.metrics-card,.share-card,.again-card{background:#0f0f12;border:1px solid #1a1a1e;border-radius:16px;padding:28px;margin-bottom:24px}
+.ai-hdr{font-size:13px;font-weight:700;color:#c8ff00;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:16px}
+.ai-body{font-size:15px;color:#ccc;line-height:1.8}
+.ai-body p{margin-bottom:14px}
+.ai-footer{font-size:11px;color:#444;margin-top:16px;border-top:1px solid #1a1a1e;padding-top:12px;line-height:1.5}
+.metrics-title{font-size:13px;font-weight:700;color:#666;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:20px}
+.mbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.mbar-name{font-size:13px;color:#888;width:130px;flex-shrink:0}
+.mbar-track{flex:1;height:6px;background:#1a1a1e;border-radius:3px;overflow:hidden}
+.mbar-fill{height:100%;border-radius:3px}
+.mbar-val{font-size:13px;font-weight:700;width:40px;text-align:right;flex-shrink:0}
+.share-title{font-size:15px;font-weight:700;margin-bottom:16px;text-align:center}
+.share-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.share-btn{padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #2a2a2e;background:#1a1a1e;color:#fff;transition:border-color 0.2s}
+.share-btn:hover{border-color:#c8ff00}
+.again-card{text-align:center}
+.again-card p{color:#666;font-size:14px;line-height:1.6;margin-bottom:16px}
+.again-link{color:#c8ff00;text-decoration:none;font-weight:600;font-size:14px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}.mbar-name{width:90px}}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand">PURA</div>
-  <div class="date-badge" id="todayDate"></div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="load-dc" id="loadDC"></div>
+  <div class="load-msg" id="loadMsg">Analyzing your metrics...</div>
 </div>
 
-<div class="shell">
+<div class="error-page" id="errorPage" style="display:none">
+  <div style="margin-bottom:20px;font-size:48px">&#128683;</div>
+  <h2>DC Not Found</h2>
+  <p>This check-in link doesn't have a valid DC.<br>Please use the link provided by your chiropractor.</p>
+</div>
 
-<!-- FORM -->
-<div id="formView">
-  <div class="patient-header">
-    <div class="ph-eye">Daily Recovery Check-in</div>
-    <h1 class="ph-title">How is your body <em>recovering</em> today?</h1>
-    <p class="ph-sub">30 seconds. Honest answers. Your DC sees this data — it shapes your care.</p>
+<div id="mainContent">
+  <nav>
+    <div class="logo">PURA</div>
+    <div class="nav-right">Patient Check-In</div>
+  </nav>
+  <div class="dc-banner">
+    <span>Checking in with <strong id="bannerDC"></strong> &nbsp;&middot;&nbsp; <span id="bannerClinic"></span> &nbsp;&middot;&nbsp; <span id="bannerCity"></span></span>
+    <span style="font-size:12px;color:#555" id="todayDate"></span>
   </div>
-
-  <!-- LIVE SCORE RING -->
-  <div class="vitality-ring-wrap">
-    <div class="vring">
-      <svg viewBox="0 0 120 120">
-        <circle class="vr-bg" cx="60" cy="60" r="54"/>
-        <circle class="vr-fill" id="liveArc" cx="60" cy="60" r="54"/>
-      </svg>
-      <div class="vring-inner">
-        <div class="vring-num" id="liveScore">—</div>
-        <div class="vring-label">Vitality</div>
-        <div class="vring-sub" id="liveGrade">fill in below</div>
+  <div class="container">
+    <div class="intro">
+      <h2>Your daily check-in takes 2 minutes.</h2>
+      <p id="introText"></p>
+    </div>
+    <div class="signal-display">
+      <div class="signal-circle" id="sigCircle">
+        <div class="signal-number" id="sigNum">70</div>
+        <div class="signal-max">/100</div>
+      </div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">Your PURA Signal</div>
+      <div class="signal-status" id="sigStatus">STABLE</div>
+      <div class="signal-hint">Updates as you move the sliders</div>
+    </div>
+    <div class="section-title">YOUR 7 HEALTH INDICATORS</div>
+    <div class="slider-group">
+      <div class="slider-top"><span class="slider-name">Pain Level</span><span class="slider-val" id="vPain">3</span></div>
+      <div class="slider-helper">1 = no pain at all &nbsp;&middot;&nbsp; 10 = worst pain imaginable</div>
+      <input type="range" id="pain" min="1" max="10" value="3" oninput="sv('pain','vPain');live()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-top"><span class="slider-name">Sleep Quality Last Night</span><span class="slider-val" id="vSQ">7</span></div>
+      <div class="slider-helper">1 = terrible, barely slept &nbsp;&middot;&nbsp; 10 = best sleep of your life</div>
+      <input type="range" id="sleepQ" min="1" max="10" value="7" oninput="sv('sleepQ','vSQ');live()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-top"><span class="slider-name">Hours Slept</span><span class="slider-val" id="vSH">7</span></div>
+      <div class="slider-helper">Estimate is fine — round to nearest half hour</div>
+      <div class="sleep-wrap">
+        <input type="number" id="sleepH" min="2" max="14" step="0.5" value="7" oninput="document.getElementById('vSH').textContent=this.value;live()">
+        <span style="font-size:14px;color:#666">hours</span>
       </div>
     </div>
-  </div>
-
-  <div class="prog-dots">
-    <div class="dot active" id="d1"></div>
-    <div class="dot" id="d2"></div>
-    <div class="dot" id="d3"></div>
-    <div class="dot" id="d4"></div>
-    <div class="dot" id="d5"></div>
-    <div class="dot" id="d6"></div>
-    <div class="dot" id="d7"></div>
-  </div>
-
-  <!-- 1. PATIENT INFO -->
-  <div class="section-card">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--sage-xl);">👤</div>
-      <div><div class="sc-title">Your Info</div><div class="sc-sub">First time only — we'll remember you</div></div>
+    <div class="slider-group">
+      <div class="slider-top"><span class="slider-name">Energy Level Today</span><span class="slider-val" id="vEnergy">6</span></div>
+      <div class="slider-helper">1 = exhausted &nbsp;&middot;&nbsp; 10 = peak energy, firing on all cylinders</div>
+      <input type="range" id="energy" min="1" max="10" value="6" oninput="sv('energy','vEnergy');live()">
     </div>
-    <div class="info-grid">
-      <div class="info-field">
-        <div class="info-label">First Name *</div>
-        <input class="info-inp" type="text" id="firstName" placeholder="Maria">
+    <div class="slider-group">
+      <div class="slider-top"><span class="slider-name">Stress Level</span><span class="slider-val" id="vStress">4</span></div>
+      <div class="slider-helper">1 = completely calm &nbsp;&middot;&nbsp; 10 = overwhelmed</div>
+      <input type="range" id="stress" min="1" max="10" value="4" oninput="sv('stress','vStress');live()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-top"><span class="slider-name">Ability to Do Normal Activities</span><span class="slider-val" id="vFunc">7</span></div>
+      <div class="slider-helper">1 = very limited &nbsp;&middot;&nbsp; 10 = full capacity — work, exercise, household tasks</div>
+      <input type="range" id="func" min="1" max="10" value="7" oninput="sv('func','vFunc');live()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-top"><span class="slider-name">Overall Mood</span><span class="slider-val" id="vMood">7</span></div>
+      <div class="slider-helper">1 = very low &nbsp;&middot;&nbsp; 10 = excellent</div>
+      <input type="range" id="mood" min="1" max="10" value="7" oninput="sv('mood','vMood');live()">
+    </div>
+    <div class="section-title" style="margin-top:8px">YOUR INFORMATION</div>
+    <div class="patient-info">
+      <div class="form-row">
+        <div class="form-group"><label>First Name *</label><input type="text" id="fn" placeholder="Jane" oninput="ready()"></div>
+        <div class="form-group"><label>Last Name *</label><input type="text" id="ln" placeholder="Smith" oninput="ready()"></div>
       </div>
-      <div class="info-field">
-        <div class="info-label">Last Name *</div>
-        <input class="info-inp" type="text" id="lastName" placeholder="Santos">
+      <div class="form-group"><label id="emailLbl">Email Address *</label><input type="email" id="em" placeholder="jane@email.com" oninput="ready()"></div>
+      <div class="form-group">
+        <label>Wearable Device</label>
+        <select id="dev"><option>No Wearable</option><option>Apple Watch</option><option>Whoop</option><option>Oura Ring</option><option>Garmin</option><option>Other</option></select>
       </div>
-      <div class="info-field" style="grid-column:1/-1">
-        <div class="info-label">Email</div>
-        <input class="info-inp" type="email" id="patientEmail" placeholder="you@email.com">
-      </div>
-      <div class="info-field" style="grid-column:1/-1">
-        <div class="info-label">Clinic / DC Name</div>
-        <input class="info-inp" type="text" id="clinicName" placeholder="e.g. Miami Lakes Chiropractic">
-      </div>
-      <div class="info-field">
-        <div class="info-label">Days in Care Plan</div>
-        <input class="info-inp" type="number" id="carePlanDay" placeholder="e.g. 7">
-      </div>
-      <div class="info-field">
-        <div class="info-label">Wearable Device</div>
-        <select class="info-inp" id="deviceType">
-          <option value="">Select device</option>
-          <option>Apple Watch</option>
-          <option>iPhone / Apple Health</option>
-          <option>WHOOP</option>
-          <option>Oura Ring</option>
-          <option>Garmin</option>
-          <option>Fitbit</option>
-          <option>Samsung</option>
-          <option>None</option>
-        </select>
+      <div class="form-group" style="margin-bottom:0">
+        <label id="notesLbl">Open Notes (optional)</label>
+        <textarea id="notes" placeholder="Anything your DC should know today?"></textarea>
       </div>
     </div>
-  </div>
-
-  <!-- 2. PAIN -->
-  <div class="section-card" id="painCard">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--rose-xl);">🔴</div>
-      <div><div class="sc-title">Pain Level</div><div class="sc-sub">Right now, overall body pain</div></div>
-    </div>
-    <div class="slider-wrap">
-      <div class="slider-val" id="painVal" style="color:var(--rose)">5 <span>/ 10</span></div>
-      <div class="slider-labels"><span>No pain</span><span>Worst pain</span></div>
-      <input type="range" class="pain-slider" id="painSlider" min="0" max="10" value="5">
-      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--gray);font-family:'JetBrains Mono',monospace;">
-        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. SLEEP -->
-  <div class="section-card" id="sleepCard">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--blue-xl);">🌙</div>
-      <div><div class="sc-title">Sleep Last Night</div><div class="sc-sub">Total hours + how rested you feel</div></div>
-    </div>
-    <div class="num-input-wrap" style="margin-bottom:16px;">
-      <button class="num-btn" id="sleepMinus">−</button>
-      <div>
-        <div class="num-display" id="sleepHours">7.0</div>
-        <div class="num-unit" style="text-align:center;">hours</div>
-      </div>
-      <button class="num-btn" id="sleepPlus">+</button>
-    </div>
-    <div class="slider-wrap">
-      <div style="font-size:11px;color:var(--gray);margin-bottom:8px;font-weight:600;">Sleep Quality</div>
-      <div class="slider-val" id="sleepQualVal" style="color:var(--blue)">5 <span>/ 10</span></div>
-      <div class="slider-labels"><span>Terrible</span><span>Perfect</span></div>
-      <input type="range" class="energy-slider" id="sleepQualSlider" min="0" max="10" value="5" style="--thumb-color:var(--blue)">
-    </div>
-  </div>
-
-  <!-- 4. ENERGY -->
-  <div class="section-card" id="energyCard">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--gold-xl);">⚡</div>
-      <div><div class="sc-title">Energy Level</div><div class="sc-sub">How much energy do you have today?</div></div>
-    </div>
-    <div class="slider-wrap">
-      <div class="slider-val" id="energyVal" style="color:var(--gold)">5 <span>/ 10</span></div>
-      <div class="slider-labels"><span>Exhausted</span><span>Energized</span></div>
-      <input type="range" class="energy-slider" id="energySlider" min="0" max="10" value="5">
-    </div>
-  </div>
-
-  <!-- 5. STRESS -->
-  <div class="section-card" id="stressCard">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--gold-xl);">🧠</div>
-      <div><div class="sc-title">Stress Level</div><div class="sc-sub">Mental and emotional stress today</div></div>
-    </div>
-    <div class="slider-wrap">
-      <div class="slider-val" id="stressVal" style="color:var(--gold)">5 <span>/ 10</span></div>
-      <div class="slider-labels"><span>No stress</span><span>Overwhelmed</span></div>
-      <input type="range" class="stress-slider" id="stressSlider" min="0" max="10" value="5">
-    </div>
-  </div>
-
-  <!-- 6. FUNCTIONAL ABILITY -->
-  <div class="section-card" id="funcCard">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--sage-xl);">🏃</div>
-      <div><div class="sc-title">Functional Ability</div><div class="sc-sub">How well can you move and do daily tasks?</div></div>
-    </div>
-    <div class="slider-wrap">
-      <div class="slider-val" id="funcVal" style="color:var(--sage)">5 <span>/ 10</span></div>
-      <div class="slider-labels"><span>Very limited</span><span>Full capacity</span></div>
-      <input type="range" class="function-slider" id="funcSlider" min="0" max="10" value="5">
-    </div>
-  </div>
-
-  <!-- 7. MOOD -->
-  <div class="section-card" id="moodCard">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--purple-xl);">💜</div>
-      <div><div class="sc-title">Mood & Outlook</div><div class="sc-sub">How are you feeling emotionally today?</div></div>
-    </div>
-    <div class="slider-wrap">
-      <div class="slider-val" id="moodVal" style="color:var(--purple)">5 <span>/ 10</span></div>
-      <div class="slider-labels"><span>Very low</span><span>Excellent</span></div>
-      <input type="range" class="mood-slider" id="moodSlider" min="0" max="10" value="5">
-    </div>
-  </div>
-
-  <!-- 8. SYMPTOMS -->
-  <div class="section-card">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--rose-xl);">📋</div>
-      <div><div class="sc-title">Symptoms Today</div><div class="sc-sub">Select all that apply right now</div></div>
-    </div>
-    <div class="check-grid" id="symptomsGroup">
-      <div class="check-item" data-val="Headache"><div class="check-box"></div>Headache</div>
-      <div class="check-item" data-val="Neck pain"><div class="check-box"></div>Neck pain</div>
-      <div class="check-item" data-val="Upper back pain"><div class="check-box"></div>Upper back pain</div>
-      <div class="check-item" data-val="Lower back pain"><div class="check-box"></div>Lower back pain</div>
-      <div class="check-item" data-val="Shoulder pain"><div class="check-box"></div>Shoulder pain</div>
-      <div class="check-item" data-val="Hip/leg pain"><div class="check-box"></div>Hip / leg pain</div>
-      <div class="check-item" data-val="Numbness/tingling"><div class="check-box"></div>Numbness / tingling</div>
-      <div class="check-item" data-val="Stiffness"><div class="check-box"></div>Stiffness</div>
-      <div class="check-item" data-val="Fatigue"><div class="check-box"></div>Fatigue</div>
-      <div class="check-item" data-val="Brain fog"><div class="check-box"></div>Brain fog</div>
-      <div class="check-item" data-val="Anxiety"><div class="check-box"></div>Anxiety</div>
-      <div class="check-item" data-val="None today"><div class="check-box"></div>✨ None today</div>
-    </div>
-  </div>
-
-  <!-- 9. ACTIVITY -->
-  <div class="section-card">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--sage-xl);">🏋️</div>
-      <div><div class="sc-title">Physical Activity Today</div><div class="sc-sub">What did you do since your last check-in?</div></div>
-    </div>
-    <div class="check-grid" id="activityGroup">
-      <div class="check-item" data-val="Rest / minimal movement"><div class="check-box"></div>Rest only</div>
-      <div class="check-item" data-val="Light walking"><div class="check-box"></div>Light walking</div>
-      <div class="check-item" data-val="Stretching / mobility"><div class="check-box"></div>Stretching</div>
-      <div class="check-item" data-val="Gym / workout"><div class="check-box"></div>Gym / workout</div>
-      <div class="check-item" data-val="Physical labor / heavy lifting"><div class="check-box"></div>Physical labor</div>
-      <div class="check-item" data-val="Desk work / prolonged sitting"><div class="check-box"></div>Desk / sitting</div>
-      <div class="check-item" data-val="Sports"><div class="check-box"></div>Sports</div>
-      <div class="check-item" data-val="Swimming"><div class="check-box"></div>Swimming</div>
-    </div>
-  </div>
-
-  <!-- 10. WEARABLE DATA (optional) -->
-  <div class="section-card">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--sage-xl);">⌚</div>
-      <div><div class="sc-title">Wearable Data <span style="font-weight:400;color:var(--gray)">(optional)</span></div><div class="sc-sub">Enter from your device app if you have it</div></div>
-    </div>
-    <div class="info-grid">
-      <div class="info-field">
-        <div class="info-label">HRV (ms)</div>
-        <input class="info-inp" type="number" id="hrvVal" placeholder="e.g. 42">
-      </div>
-      <div class="info-field">
-        <div class="info-label">Resting HR (bpm)</div>
-        <input class="info-inp" type="number" id="rhrVal" placeholder="e.g. 62">
-      </div>
-      <div class="info-field">
-        <div class="info-label">Steps</div>
-        <input class="info-inp" type="number" id="stepsVal" placeholder="e.g. 6500">
-      </div>
-      <div class="info-field">
-        <div class="info-label">SpO2 %</div>
-        <input class="info-inp" type="number" id="spo2Val" placeholder="e.g. 97">
-      </div>
-      <div class="info-field">
-        <div class="info-label">Deep Sleep (min)</div>
-        <input class="info-inp" type="number" id="deepSleepVal" placeholder="e.g. 85">
-      </div>
-      <div class="info-field">
-        <div class="info-label">Recovery Score</div>
-        <input class="info-inp" type="number" id="recoveryScore" placeholder="WHOOP/Oura 0-100">
-      </div>
-    </div>
-  </div>
-
-  <!-- 11. ADJUSTMENT -->
-  <div class="section-card">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--sage-xl);">🩺</div>
-      <div><div class="sc-title">Adjustment Info</div><div class="sc-sub">Helps us track your response to care</div></div>
-    </div>
-    <div class="info-grid">
-      <div class="info-field">
-        <div class="info-label">Last Adjustment</div>
-        <select class="info-inp" id="lastAdj">
-          <option value="">Select</option>
-          <option>Today</option>
-          <option>Yesterday</option>
-          <option>2 days ago</option>
-          <option>3 days ago</option>
-          <option>4–7 days ago</option>
-          <option>Over a week ago</option>
-        </select>
-      </div>
-      <div class="info-field">
-        <div class="info-label">Feel better since?</div>
-        <select class="info-inp" id="adjResponse">
-          <option value="">Select</option>
-          <option>Yes — significantly</option>
-          <option>Yes — somewhat</option>
-          <option>About the same</option>
-          <option>Slightly worse</option>
-          <option>Worse</option>
-          <option>Haven't had one yet</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- 12. OPEN NOTE -->
-  <div class="section-card">
-    <div class="sc-header">
-      <div class="sc-icon" style="background:var(--sage-xl);">💬</div>
-      <div><div class="sc-title">Note to Your DC</div><div class="sc-sub">Anything specific they should know today?</div></div>
-    </div>
-    <textarea class="text-inp" id="patientNote" placeholder="e.g. Slept on the wrong side last night, neck feels tighter on the left..."></textarea>
-  </div>
-
-  <div class="submit-wrap">
-    <button class="submit-btn" id="submitBtn">Submit My Check-in →</button>
-    <p style="font-size:11px;color:var(--gray);text-align:center;margin-top:10px;">Your data goes directly to your care team. Private and secure.</p>
+    <button class="submit-btn" id="submitBtn" disabled onclick="doSubmit()">Submit My Check-In &rarr;</button>
   </div>
 </div>
 
-<!-- SUCCESS -->
-<div id="successScreen">
-  <div class="success-icon">✅</div>
-  <h2 class="success-title">Check-in <em>received</em></h2>
-  <p class="success-sub">Your DC can see this data now. Keep showing up — consistency is what makes the Vitality Score meaningful.</p>
-  <div class="score-reveal">
-    <div class="sr-label">Today's Vitality Score</div>
-    <div class="sr-score" id="finalScore">—</div>
-    <div class="sr-max">out of 100</div>
-    <div class="sr-grade" id="finalGrade">—</div>
-    <div class="insight-list" id="finalInsights"></div>
+<div id="resultsSection" style="display:none">
+  <nav>
+    <div class="logo">PURA</div>
+    <div class="nav-right" id="resNavLbl"></div>
+  </nav>
+  <div class="results-wrap">
+    <div class="result-header">
+      <div class="result-circle" id="resCir">
+        <div class="result-num" id="resNum">0</div>
+        <div class="result-max">/100</div>
+      </div>
+      <div class="result-lbl">Your PURA Signal Today</div>
+      <div class="status-pill" id="resPill"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="ai-card">
+      <div class="ai-hdr" id="aiHdr">Your PURA Analysis</div>
+      <div class="ai-body" id="aiBody"></div>
+      <div class="ai-footer">This analysis is generated by PURA Health AI based on your submitted metrics. Your chiropractor reviews your data each morning. This is not medical diagnosis.</div>
+    </div>
+    <div class="metrics-card">
+      <div class="metrics-title">Metric Breakdown</div>
+      <div id="mBars"></div>
+    </div>
+    <div class="share-card">
+      <div class="share-title">Share your PURA Signal</div>
+      <div class="share-btns">
+        <button class="share-btn" onclick="doWA()">&#128241; Share via WhatsApp</button>
+        <button class="share-btn" onclick="doCopy()">&#128203; Copy My Score</button>
+      </div>
+    </div>
+    <div class="again-card">
+      <p>Bookmark this page to check in tomorrow. Consistency is how PURA works.</p>
+      <a class="again-link" id="againLink" href="#">&#8592; Check in again tomorrow</a>
+    </div>
   </div>
-  <button class="redo-btn" id="redoBtn">Submit another check-in</button>
-</div>
-
 </div>
 
 <script>
-// Date
-var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-var now = new Date();
-document.getElementById('todayDate').textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+var DCP = {
+  'harrison-coleman':{name:'Dr. Harrison Coleman',clinic:'Helix Austin',city:'Austin, TX',email:'harrison@helixaustin.com',lang:'en'},
+  'yina-cuevas':{name:'Dr. Yina Cuevas',clinic:'Mana Chiropractic',city:'Austin, TX',email:'yina@manachiropractic.com',lang:'en'},
+  'david-miranda':{name:'Dr. David Miranda',clinic:'Quito Tropical',city:'Miami, FL',email:'david@quitotropicalchiro.com',lang:'es'},
+  'bryant-ramirez':{name:'Bryant Ramirez',clinic:'Mycelium Chiropractic',city:'Austin, TX',email:'bryant@myceliumchiro.com',lang:'en'},
+  'ian-brewer':{name:'Ian Brewer',clinic:'Anointed Vessel Chiropractic',city:'Austin, TX',email:'ian@anointedvessel.com',lang:'en'},
+  'denis-chang':{name:'Dr. Denis Chang',clinic:'Optimize Health Chiropractic',city:'Miami, FL',email:'denis@optimizehealth.com',lang:'en'}
+};
+var slug = (new URLSearchParams(location.search)).get('dc') || '';
+var dc = DCP[slug] || null;
 
-// Sleep hours stepper
-var sleepHoursVal = 7.0;
-document.getElementById('sleepMinus').addEventListener('click', function() {
-  sleepHoursVal = Math.max(0, sleepHoursVal - 0.5);
-  document.getElementById('sleepHours').textContent = sleepHoursVal.toFixed(1);
-  updateLiveScore();
-});
-document.getElementById('sleepPlus').addEventListener('click', function() {
-  sleepHoursVal = Math.min(12, sleepHoursVal + 0.5);
-  document.getElementById('sleepHours').textContent = sleepHoursVal.toFixed(1);
-  updateLiveScore();
-});
-
-// Sliders
-function bindSlider(id, displayId, color) {
-  var slider = document.getElementById(id);
-  var display = document.getElementById(displayId);
-  slider.addEventListener('input', function() {
-    display.textContent = slider.value + ' / 10';
-    updateLiveScore();
-  });
-}
-bindSlider('painSlider','painVal','rose');
-bindSlider('sleepQualSlider','sleepQualVal','blue');
-bindSlider('energySlider','energyVal','gold');
-bindSlider('stressSlider','stressVal','gold');
-bindSlider('funcSlider','funcVal','sage');
-bindSlider('moodSlider','moodVal','purple');
-
-// Checkboxes
-document.querySelectorAll('.check-item').forEach(function(item) {
-  item.addEventListener('click', function() {
-    item.classList.toggle('selected');
-  });
-});
-
-// Live Vitality Score
-function updateLiveScore() {
-  var pain = parseInt(document.getElementById('painSlider').value);
-  var sleepQual = parseInt(document.getElementById('sleepQualSlider').value);
-  var energy = parseInt(document.getElementById('energySlider').value);
-  var stress = parseInt(document.getElementById('stressSlider').value);
-  var func = parseInt(document.getElementById('funcSlider').value);
-  var mood = parseInt(document.getElementById('moodSlider').value);
-  var sleepH = sleepHoursVal;
-
-  // Normalize sleep hours (ideal = 8hrs)
-  var sleepHScore = Math.min((sleepH / 8) * 10, 10);
-
-  // Pain is inverted (0 pain = 10 points)
-  var painScore = 10 - pain;
-  // Stress is inverted
-  var stressScore = 10 - stress;
-
-  // Weighted formula
-  // Pain 25%, Sleep quality 20%, Sleep hours 15%, Energy 15%, Stress 10%, Function 10%, Mood 5%
-  var raw = (painScore * 0.25) + (sleepQual * 0.20) + (sleepHScore * 0.15) +
-            (energy * 0.15) + (stressScore * 0.10) + (func * 0.10) + (mood * 0.05);
-
-  var score = Math.round(raw * 10);
-  score = Math.min(100, Math.max(0, score));
-
-  document.getElementById('liveScore').textContent = score;
-
-  var grade = '';
-  var gradeColor = '';
-  if (score >= 80) { grade = 'Recovering well'; gradeColor = '#52B788'; }
-  else if (score >= 60) { grade = 'Moderate recovery'; gradeColor = '#C9A84C'; }
-  else if (score >= 40) { grade = 'Needs attention'; gradeColor = '#E8A0A0'; }
-  else { grade = 'High priority'; gradeColor = '#B91C1C'; }
-
-  document.getElementById('liveGrade').textContent = grade;
-  document.getElementById('liveScore').style.color = gradeColor;
-
-  var arc = document.getElementById('liveArc');
-  var circumference = 339.3;
-  arc.style.strokeDashoffset = circumference - (score / 100) * circumference;
-  arc.style.stroke = gradeColor;
-
-  // Progress dots
-  var pain2 = parseInt(document.getElementById('painSlider').value);
-  var sl = parseInt(document.getElementById('sleepQualSlider').value);
-  var en = parseInt(document.getElementById('energySlider').value);
-  var st = parseInt(document.getElementById('stressSlider').value);
-  var fn = parseInt(document.getElementById('funcSlider').value);
-  var md = parseInt(document.getElementById('moodSlider').value);
-  var filled = [true, pain2 > 0, sl > 0, en > 0, st > 0, fn > 0, md > 0];
-  for (var i = 1; i <= 7; i++) {
-    var d = document.getElementById('d' + i);
-    d.className = 'dot';
-    if (filled[i-1]) d.classList.add('done');
-  }
-
-  return score;
+if(!dc){
+  document.getElementById('mainContent').style.display='none';
+  document.getElementById('errorPage').style.display='block';
+} else {
+  document.getElementById('bannerDC').textContent = dc.name;
+  document.getElementById('bannerClinic').textContent = dc.clinic;
+  document.getElementById('bannerCity').textContent = dc.city;
+  document.getElementById('introText').textContent = dc.name+' reviews this data every morning. The more consistent you are, the more powerful your results.';
+  document.getElementById('emailLbl').textContent = 'Email Address * — So '+dc.name+' can follow up if needed';
+  document.getElementById('notes').placeholder = 'Anything '+dc.name.split(' ').pop()+' should know today? New symptoms, activities, life events...';
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  if(dc.lang==='es') document.documentElement.lang='es';
 }
 
-// Initialize
-updateLiveScore();
+function sv(id, vid){ document.getElementById(vid).textContent = document.getElementById(id).value; }
+function gn(id){ return id==='sleepH' ? (parseFloat(document.getElementById(id).value)||7) : (+document.getElementById(id).value); }
 
-// Insights
-function getInsights(pain, sleepQual, sleepH, energy, stress, func, mood) {
-  var insights = [];
-  if (pain >= 7) insights.push({color:'#B91C1C', text:'Pain is high today — your DC will be notified to review your care plan.'});
-  if (sleepH < 6) insights.push({color:'#E8A0A0', text:'Less than 6 hours of sleep significantly impacts spinal tissue repair.'});
-  if (sleepQual <= 3) insights.push({color:'#E8A0A0', text:'Poor sleep quality affects your HRV and nervous system recovery speed.'});
-  if (energy <= 3) insights.push({color:'#C9A84C', text:'Low energy today — consider lighter activity and extra hydration.'});
-  if (stress >= 8) insights.push({color:'#C9A84C', text:'High stress activates the sympathetic nervous system, which can slow recovery.'});
-  if (func >= 7 && pain <= 3) insights.push({color:'#52B788', text:'Strong functional ability with low pain — your care plan is working.'});
-  if (mood >= 8) insights.push({color:'#52B788', text:'Positive mood correlates with faster recovery outcomes.'});
-  if (insights.length === 0) insights.push({color:'#52B788', text:'Your metrics look balanced today. Keep following your care plan.'});
-  return insights;
+function pura(p,sq,sh,e,s,f,m){
+  return Math.round(((11-p)/10*0.25+(sq/10)*0.20+(Math.min(10,sh/8*10)/10)*0.15+(e/10)*0.15+((11-s)/10)*0.10+(f/10)*0.10+(m/10)*0.05)*100);
+}
+function col(s){ return s<40?'#ef4444':s<65?'#f59e0b':s<=80?'#14b8a6':'#c8ff00'; }
+function stat(s){ return s<50?'ALERT':s<65?'ATTENTION NEEDED':s<80?'STABLE':'THRIVING'; }
+function scl(s){ return s<50?'s-alert':s<65?'s-attn':s<80?'s-stable':'s-thriving'; }
+
+function live(){
+  var s=pura(gn('pain'),gn('sleepQ'),gn('sleepH'),gn('energy'),gn('stress'),gn('func'),gn('mood'));
+  var c=col(s);
+  document.getElementById('sigNum').textContent=s; document.getElementById('sigNum').style.color=c;
+  document.getElementById('sigCircle').style.borderColor=c;
+  document.getElementById('sigStatus').textContent=stat(s); document.getElementById('sigStatus').style.color=c;
+}
+function ready(){
+  document.getElementById('submitBtn').disabled=!(document.getElementById('fn').value.trim()&&document.getElementById('ln').value.trim()&&document.getElementById('em').value.includes('@'));
 }
 
-// Submit
-document.getElementById('submitBtn').addEventListener('click', function() {
-  var firstName = document.getElementById('firstName').value.trim();
-  var lastName = document.getElementById('lastName').value.trim();
-  if (!firstName) { alert('Please enter your first name to continue.'); return; }
-
-  var btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-
-  var score = updateLiveScore();
-  var pain = parseInt(document.getElementById('painSlider').value);
-  var sleepQual = parseInt(document.getElementById('sleepQualSlider').value);
-  var energy = parseInt(document.getElementById('energySlider').value);
-  var stress = parseInt(document.getElementById('stressSlider').value);
-  var func2 = parseInt(document.getElementById('funcSlider').value);
-  var mood = parseInt(document.getElementById('moodSlider').value);
-
-  var symptoms = [];
-  document.querySelectorAll('#symptomsGroup .check-item.selected').forEach(function(el) {
-    symptoms.push(el.getAttribute('data-val'));
-  });
-  var activities = [];
-  document.querySelectorAll('#activityGroup .check-item.selected').forEach(function(el) {
-    activities.push(el.getAttribute('data-val'));
-  });
-
-  var grade = score >= 80 ? 'Recovering well' : score >= 60 ? 'Moderate recovery' : score >= 40 ? 'Needs attention' : 'High priority';
-
-  var payload = {
-    access_key: 'c86e97a1-9a78-45ce-94f2-eb96113d260f',
-    subject: 'PURA Check-in — ' + firstName + ' ' + lastName + ' | Score: ' + score + '/100 | ' + grade,
-    from_name: 'PURA Daily Check-in',
-    Patient: firstName + ' ' + lastName,
-    Email: document.getElementById('patientEmail').value || 'not provided',
-    Clinic: document.getElementById('clinicName').value || 'not provided',
-    Date: now.toLocaleDateString(),
-    VitalityScore: score + ' / 100',
-    Grade: grade,
-    CarePlanDay: document.getElementById('carePlanDay').value || 'not provided',
-    Device: document.getElementById('deviceType').value || 'not provided',
-    PainLevel: pain + ' / 10',
-    SleepHours: sleepHoursVal + ' hours',
-    SleepQuality: sleepQual + ' / 10',
-    EnergyLevel: energy + ' / 10',
-    StressLevel: stress + ' / 10',
-    FunctionalAbility: func2 + ' / 10',
-    Mood: mood + ' / 10',
-    Symptoms: symptoms.length > 0 ? symptoms.join(', ') : 'none reported',
-    PhysicalActivity: activities.length > 0 ? activities.join(', ') : 'none reported',
-    HRV_ms: document.getElementById('hrvVal').value || 'not entered',
-    RestingHR: document.getElementById('rhrVal').value || 'not entered',
-    Steps: document.getElementById('stepsVal').value || 'not entered',
-    SpO2: document.getElementById('spo2Val').value || 'not entered',
-    DeepSleep_min: document.getElementById('deepSleepVal').value || 'not entered',
-    RecoveryScore: document.getElementById('recoveryScore').value || 'not entered',
-    LastAdjustment: document.getElementById('lastAdj').value || 'not provided',
-    AdjustmentResponse: document.getElementById('adjResponse').value || 'not provided',
-    NoteTodc: document.getElementById('patientNote').value || 'none'
+async function doSubmit(){
+  if(!dc)return;
+  var d={
+    patientFirstName:document.getElementById('fn').value.trim(),
+    patientLastName:document.getElementById('ln').value.trim(),
+    patientEmail:document.getElementById('em').value.trim(),
+    device:document.getElementById('dev').value,
+    notes:document.getElementById('notes').value.trim(),
+    pain:gn('pain'),sleepQuality:gn('sleepQ'),sleepHours:gn('sleepH'),
+    energy:gn('energy'),stress:gn('stress'),functional:gn('func'),mood:gn('mood'),
+    timestamp:new Date().toISOString()
   };
+  d.puraSignal=pura(d.pain,d.sleepQuality,d.sleepHours,d.energy,d.stress,d.functional,d.mood);
 
-  fetch('https://api.web3forms.com/submit', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-    body: JSON.stringify(payload)
-  }).then(function(res) { return res.json(); })
-  .then(function(data) {
-    document.getElementById('formView').style.display = 'none';
-    document.getElementById('successScreen').style.display = 'block';
-    document.getElementById('finalScore').textContent = score;
-    document.getElementById('finalGrade').textContent = grade;
-    var insightsHtml = getInsights(pain, sleepQual, sleepHoursVal, energy, stress, func2, mood)
-      .map(function(i) { return '<div class="insight-item"><div class="i-dot" style="background:' + i.color + '"></div><div>' + i.text + '</div></div>'; })
-      .join('');
-    document.getElementById('finalInsights').innerHTML = insightsHtml;
-    window.scrollTo({top:0,behavior:'smooth'});
-  }).catch(function() {
-    // Show success anyway — data was captured
-    document.getElementById('formView').style.display = 'none';
-    document.getElementById('successScreen').style.display = 'block';
-    document.getElementById('finalScore').textContent = score;
-    document.getElementById('finalGrade').textContent = grade;
-    window.scrollTo({top:0,behavior:'smooth'});
-    btn.disabled = false;
-    btn.textContent = 'Submit My Check-in →';
-  });
-});
+  document.getElementById('loadDC').textContent=dc.name+' is being notified...';
+  document.getElementById('loadingOverlay').style.display='flex';
+  var msgs=['Analyzing your metrics...',dc.name+' is being notified...','Generating your personalized response...'];
+  var mi=0;
+  var li=setInterval(function(){
+    mi=(mi+1)%msgs.length;
+    var el=document.getElementById('loadMsg');
+    el.style.opacity='0';
+    setTimeout(function(){el.textContent=msgs[mi];el.style.opacity='1';},300);
+  },2000);
 
-document.getElementById('redoBtn').addEventListener('click', function() {
-  document.getElementById('successScreen').style.display = 'none';
-  document.getElementById('formView').style.display = 'block';
-  window.scrollTo({top:0,behavior:'smooth'});
-});
+  var ai=await getAI(d);
+  await Promise.all([emailAdmin(d,ai),emailDC(d,ai)]);
+  var key='pura_ci_'+slug+'_'+new Date().toDateString();
+  var arr=JSON.parse(localStorage.getItem(key)||'[]'); arr.push(d); localStorage.setItem(key,JSON.stringify(arr));
+
+  clearInterval(li);
+  document.getElementById('loadingOverlay').style.display='none';
+  showRes(d,ai);
+}
+
+async function getAI(d){
+  var fl=stat(d.puraSignal);
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':'ANTHROPIC_API_KEY','anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
+        system:'You are the PURA Health AI assistant analyzing patient check-in data for '+dc.name+' at '+dc.clinic+'. Respond directly to the patient in a warm, specific, clinically-informed voice. You are not a doctor and do not diagnose.',
+        messages:[{role:'user',content:'Patient check-in for '+dc.name+' at '+dc.clinic+'.\nPain: '+d.pain+'/10'+(d.pain>6?' (HIGH)':'')+'\nSleep Quality: '+d.sleepQuality+'/10\nSleep Hours: '+d.sleepHours+'\nEnergy: '+d.energy+'/10\nStress: '+d.stress+'/10'+(d.stress>=7?' (ELEVATED)':'')+'\nFunction: '+d.functional+'/10\nMood: '+d.mood+'/10\nPURA Signal: '+d.puraSignal+'/100 ('+fl+')\nWearable: '+d.device+'\nNotes: "'+(d.notes||'None provided')+'"\n\nWrite response DIRECTLY TO PATIENT. 3 paragraphs, no headers, no bullets.\nP1: Name specific numbers - strongest metric and one needing most attention.\nP2: 2-3 concrete actionable things TODAY for weak metrics.\nP3: Encouraging close with score '+d.puraSignal+'/100 and what to watch tomorrow.'+(dc.lang==='es'?'\n\nWrite entirely in Spanish.':'')}]})
+    });
+    var j=await r.json();
+    return (j.content&&j.content[0])?j.content[0].text:fallback(d);
+  }catch(e){return fallback(d);}
+}
+function fallback(d){return 'Your check-in is in and your PURA Signal is '+d.puraSignal+'/100. '+dc.name+' will review your data this morning.\n\nFocus today on your lowest-scoring areas with small intentional actions. Even 10 minutes of mindful movement or an earlier bedtime makes a measurable difference in your PURA pattern over time.\n\nSee you tomorrow. Your consistency is what makes PURA work — keep showing up.';}
+
+async function emailAdmin(d,ai){
+  var fl=d.puraSignal<50?'🚨 ALERT':d.puraSignal<65?'⚠️ ATTENTION':'✅ OK';
+  try{await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:'WEB3FORMS_ACCESS_KEY',subject:fl+' PURA Check-in: '+d.patientFirstName+' '+d.patientLastName+' — '+dc.clinic+' — Signal '+d.puraSignal+'/100',from_name:'PURA Health System',to:'viveapr@gmail.com',message:'PURA DAILY CHECK-IN — ADMIN COPY\n===================================\nDC: '+dc.name+' | '+dc.clinic+'\nPatient: '+d.patientFirstName+' '+d.patientLastName+' <'+d.patientEmail+'>\nWearable: '+d.device+'\nDate/Time: '+new Date().toLocaleString()+'\n\nPURA SIGNAL: '+d.puraSignal+'/100 '+fl+'\n\nMETRICS:\n  Pain:      '+d.pain+'/10\n  Sleep Q:   '+d.sleepQuality+'/10\n  Sleep H:   '+d.sleepHours+'\n  Energy:    '+d.energy+'/10\n  Stress:    '+d.stress+'/10\n  Function:  '+d.functional+'/10\n  Mood:      '+d.mood+'/10\n\nNOTES: '+(d.notes||'None')+'\n\nAI RESPONSE SENT TO PATIENT:\n'+ai+'\n==================================='})});}catch(e){}}
+
+async function emailDC(d,ai){
+  var fl=d.puraSignal<50?'🚨 ALERT —':d.puraSignal<65?'⚠️ CHECK IN —':'✅';
+  var last=dc.name.split(' ').pop();
+  try{await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:'WEB3FORMS_ACCESS_KEY',subject:fl+' '+d.patientFirstName+' '+d.patientLastName+' checked in — PURA Signal: '+d.puraSignal+'/100',from_name:'PURA Health',to:dc.email,message:'Dr. '+last+',\n\n'+d.patientFirstName+' '+d.patientLastName+' just submitted their daily PURA check-in.\n\nPURA SIGNAL: '+d.puraSignal+'/100\n\nBREAKDOWN:\n  Pain:     '+d.pain+'/10\n  Sleep Q:  '+d.sleepQuality+'/10\n  Sleep H:  '+d.sleepHours+'\n  Energy:   '+d.energy+'/10\n  Stress:   '+d.stress+'/10\n  Function: '+d.functional+'/10\n  Mood:     '+d.mood+'/10\n\nDevice: '+d.device+'\n\nNOTES: "'+(d.notes||'None provided')+'"\n\nPURA AI SENT TO PATIENT:\n'+ai+'\n\nPatient contact: '+d.patientEmail+'\n\n— PURA Health\npura-delta.vercel.app'})});}catch(e){}}
+
+function showRes(d,ai){
+  document.getElementById('mainContent').style.display='none';
+  document.getElementById('resultsSection').style.display='block';
+  var c=col(d.puraSignal);
+  document.getElementById('resCir').style.borderColor=c;
+  document.getElementById('resNum').textContent=d.puraSignal; document.getElementById('resNum').style.color=c;
+  var pill=document.getElementById('resPill'); pill.textContent=stat(d.puraSignal); pill.className='status-pill '+scl(d.puraSignal);
+  document.getElementById('aiHdr').textContent='Your PURA Analysis from '+dc.name;
+  document.getElementById('resNavLbl').textContent=dc.clinic;
+  document.getElementById('aiBody').innerHTML=ai.split(/\n\n+/).filter(function(p){return p.trim();}).map(function(p){return '<p>'+p.trim().replace(/\n/g,'<br>')+'</p>';}).join('');
+  var metrics=[['Pain Level',d.pain,true,'/10'],['Sleep Quality',d.sleepQuality,false,'/10'],['Sleep Hours',d.sleepHours,false,'h'],['Energy',d.energy,false,'/10'],['Stress Level',d.stress,true,'/10'],['Function',d.functional,false,'/10'],['Mood',d.mood,false,'/10']];
+  document.getElementById('mBars').innerHTML=metrics.map(function(m){
+    var n=m[0],v=m[1],inv=m[2],u=m[3];
+    var s=inv?(11-v)*10:(n==='Sleep Hours'?Math.min(100,Math.round(v/8*100)):v*10);
+    var c2=s<40?'#ef4444':s<65?'#f59e0b':s<80?'#14b8a6':'#c8ff00';
+    return '<div class="mbar"><div class="mbar-name">'+n+'</div><div class="mbar-track"><div class="mbar-fill" style="width:'+s+'%;background:'+c2+'"></div></div><div class="mbar-val" style="color:'+c2+'">'+v+u+'</div></div>';
+  }).join('');
+  document.getElementById('againLink').href=location.origin+'/checkin.html?dc='+slug;
+  window._rd=d; scrollTo(0,0);
+}
+
+function doWA(){
+  if(!window._rd)return;
+  var url=location.origin+'/checkin.html?dc='+slug;
+  open('https://wa.me/?text='+encodeURIComponent('My PURA Signal today is '+window._rd.puraSignal+'/100 — tracking my nervous system health with '+dc.name+'. Try it: '+url));
+}
+function doCopy(){
+  if(!window._rd||!dc)return;
+  navigator.clipboard.writeText('My PURA Signal: '+window._rd.puraSignal+'/100 — '+dc.name+', '+dc.clinic).then(function(){alert('Copied!');});
+}
+
+live();
 </script>
 </body>
 </html>

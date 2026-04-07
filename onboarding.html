@@ -3,429 +3,420 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PURA Health — DC Onboarding</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<title>PURA Patient Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#08080a;--surface:#0f0f12;--surface2:#16161b;
-  --border:#222228;--border2:#2e2e38;
-  --accent:#c8ff00;--accent-dim:rgba(200,255,0,.1);
-  --text:#f0f0f6;--muted:#808090;--muted2:#50505e;
-  --green:#22c55e;--red:#ef4444;--radius:12px;
-}
-html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
-
-/* LAYOUT */
-.shell{min-height:100vh;display:flex;flex-direction:column}
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.logo{font-size:18px;font-weight:800;color:var(--accent);letter-spacing:.05em}
-.step-counter{font-size:13px;color:var(--muted);font-weight:500}
-
-/* PROGRESS BAR */
-<!-- [EDIT: PROGRESS BAR] -->
-.progress-outer{height:3px;background:var(--border);position:relative}
-.progress-inner{height:100%;background:var(--accent);transition:width .4s ease}
-
-/* CONTENT */
-.content{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px 80px}
-.wizard{max-width:600px;width:100%}
-
-/* STEPS */
-.step{display:none;animation:fadeUp .3s ease}
-.step.active{display:block}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-.step-eyebrow{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-/* [EDIT: STEP LABELS] */
-.step-title{font-size:clamp(22px,4vw,32px);font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
-.step-subtitle{font-size:14px;color:var(--muted);margin-bottom:36px}
-
-/* FIELDS */
-.field-group{display:flex;flex-direction:column;gap:18px;margin-bottom:8px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-label{font-size:13px;font-weight:600;color:var(--text)}
-.label-note{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
-input[type=text],input[type=number],select,textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;font:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;width:100%}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-select option{background:var(--surface)}
-textarea{min-height:110px;resize:vertical}
-input[type=number]{-moz-appearance:textfield}
-
-/* CHECKBOX GROUP */
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #1a1a1e;background:#08080a}
+.logo{font-size:20px;font-weight:800;color:#c8ff00;letter-spacing:-0.5px}
+.progress-bar{height:3px;background:#1a1a1e;width:100%}
+.progress-fill{height:100%;background:#c8ff00;transition:width 0.4s ease}
+.container{max-width:600px;margin:0 auto;padding:40px 24px 80px}
+.step-indicator{font-size:12px;font-weight:700;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.step-title{font-size:26px;font-weight:800;margin-bottom:8px;letter-spacing:-0.5px}
+.step-sub{font-size:15px;color:#666;line-height:1.6;margin-bottom:32px}
+.form-group{margin-bottom:20px}
+label{display:block;font-size:12px;font-weight:600;color:#666;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px}
+input,select,textarea{width:100%;background:#0f0f12;border:1px solid #2a2a2e;border-radius:8px;padding:13px 15px;font-size:15px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+input:focus,select:focus,textarea:focus{border-color:#c8ff00}
+select option{background:#08080a}
+textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.check-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;cursor:pointer;transition:all .2s;user-select:none}
-.check-item:hover{border-color:var(--border2)}
-.check-item.checked{border-color:var(--accent);background:var(--accent-dim)}
-.check-item input[type=checkbox]{display:none}
-.check-box{width:16px;height:16px;border-radius:4px;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.check-item.checked .check-box{background:var(--accent);border-color:var(--accent)}
-.check-mark{font-size:10px;color:var(--bg);font-weight:900;display:none}
-.check-item.checked .check-mark{display:block}
+.check-item{display:flex;align-items:center;gap:10px;background:#0f0f12;border:1px solid #2a2a2e;border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s;user-select:none}
+.check-item:hover{border-color:#555}
+.check-item.checked{border-color:#c8ff00;background:rgba(200,255,0,0.05)}
+.check-box{width:18px;height:18px;border-radius:4px;border:2px solid #444;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.check-item.checked .check-box{background:#c8ff00;border-color:#c8ff00}
+.check-box svg{display:none;width:12px;height:12px}
+.check-item.checked .check-box svg{display:block}
 .check-label{font-size:13px;font-weight:500}
-.check-item.checked .check-label{color:var(--accent)}
-
-/* STEP 5 SUMMARY */
-.summary-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px}
-.summary-section{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
-.summary-row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
-.summary-row:last-child{border-bottom:none}
-.summary-key{color:var(--muted);flex-shrink:0;min-width:160px;font-weight:500}
-.summary-val{color:var(--text);word-break:break-word}
-.success-icon{width:72px;height:72px;border-radius:50%;background:rgba(34,197,94,.15);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:32px}
-.success-title{font-size:26px;font-weight:800;text-align:center;margin-bottom:10px}
-.success-sub{font-size:14px;color:var(--muted);text-align:center;max-width:420px;margin:0 auto 32px}
-.success-note{background:var(--accent-dim);border:1px solid rgba(200,255,0,.2);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px}
-.success-note strong{color:var(--accent)}
-
-/* NAV */
-.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:36px;padding-top:24px;border-top:1px solid var(--border)}
-.btn-back{background:transparent;border:1px solid var(--border2);color:var(--muted);font:inherit;font-size:14px;font-weight:500;padding:12px 24px;border-radius:8px;cursor:pointer;transition:all .2s}
-.btn-back:hover{border-color:var(--muted);color:var(--text)}
-.btn-next{background:var(--accent);color:var(--bg);font:inherit;font-size:14px;font-weight:700;padding:12px 32px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s;letter-spacing:-.01em}
-.btn-next:hover{opacity:.88}
-.btn-next:disabled{opacity:.4;cursor:default}
-.btn-finish{background:var(--green);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:12px 32px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s}
-.btn-finish:hover{opacity:.88}
-.btn-dashboard{background:var(--accent);color:var(--bg);font:inherit;font-size:15px;font-weight:700;padding:14px 36px;border-radius:10px;border:none;cursor:pointer;display:block;width:100%;text-align:center;text-decoration:none;transition:opacity .2s}
-.btn-dashboard:hover{opacity:.88}
-
-@media(max-width:560px){
-  .field-row{grid-template-columns:1fr}
-  .check-grid{grid-template-columns:1fr}
-  .content{padding:32px 16px 60px}
-}
+.radio-group{display:flex;gap:10px}
+.radio-item{flex:1;background:#0f0f12;border:1px solid #2a2a2e;border-radius:8px;padding:12px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s}
+.radio-item:hover{border-color:#555}
+.radio-item.selected{border-color:#c8ff00;background:rgba(200,255,0,0.05);color:#c8ff00}
+.slider-group{margin-bottom:8px}
+.slider-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:#1a1a1e;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#c8ff00;cursor:pointer;box-shadow:0 0 0 3px rgba(200,255,0,0.2)}
+.benefit-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+.benefit-pill{background:#0f0f12;border:1px solid #2a2a2e;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:500;color:#888}
+.how-it-works{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+.hiw-step{background:#0f0f12;border:1px solid #1a1a1e;border-radius:10px;padding:16px;text-align:center}
+.hiw-num{font-size:24px;font-weight:800;color:#c8ff00;margin-bottom:6px}
+.hiw-text{font-size:12px;color:#666;line-height:1.5}
+.nav-btns{display:flex;gap:12px;margin-top:8px}
+.btn-back{flex:0 0 auto;background:transparent;border:1px solid #2a2a2e;color:#888;border-radius:10px;padding:14px 24px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-back:hover{border-color:#555;color:#fff}
+.btn-next{flex:1;background:#c8ff00;color:#08080a;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity 0.2s}
+.btn-next:hover{opacity:0.9}
+.summary-section{margin-bottom:20px}
+.summary-label{font-size:11px;font-weight:700;color:#555;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px}
+.summary-value{font-size:14px;color:#ccc;line-height:1.6;padding:12px 14px;background:#0f0f12;border:1px solid #1a1a1e;border-radius:8px}
+.consent-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:24px;cursor:pointer}
+.consent-check{width:20px;height:20px;border:2px solid #444;border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.consent-row.checked .consent-check{background:#c8ff00;border-color:#c8ff00}
+.consent-text{font-size:13px;color:#888;line-height:1.6}
+.consent-row.checked .consent-text{color:#ccc}
+.success-screen{display:none;text-align:center;padding:40px 0}
+.success-check{width:80px;height:80px;background:#c8ff00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px}
+.success-h{font-size:28px;font-weight:800;margin-bottom:12px}
+.success-sub{color:#888;font-size:16px;line-height:1.6;margin-bottom:32px}
+.checkin-link-box{background:#0f0f12;border:2px solid #c8ff00;border-radius:12px;padding:20px;margin-bottom:24px}
+.link-label{font-size:12px;font-weight:700;color:#c8ff00;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px}
+.link-url{font-size:14px;color:#fff;word-break:break-all;line-height:1.6}
+.copy-btn{width:100%;background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;transition:opacity 0.2s}
+.copy-btn:hover{opacity:0.9}
+.error-page{text-align:center;padding:80px 24px}
+.error-page h2{font-size:24px;font-weight:700;margin-bottom:12px;color:#ef4444}
+.invited-banner{background:#0f0f12;border:1px solid #1a1a1e;border-radius:12px;padding:16px 20px;margin-bottom:32px;font-size:14px;color:#888}
+.invited-banner strong{color:#fff}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}.check-grid{grid-template-columns:1fr}.how-it-works{grid-template-columns:1fr}.radio-group{flex-direction:column}}
 </style>
 </head>
 <body>
-<div class="shell">
 
-<header>
-  <div class="logo">PURA</div>
-  <div class="step-counter" id="step-counter">Step 1 of 5</div>
-</header>
-
-<!-- [EDIT: PROGRESS BAR] -->
-<div class="progress-outer" data-total="5">
-  <div class="progress-inner" id="progress-bar" style="width:20%"></div>
+<div class="error-page" id="errorPage" style="display:none">
+  <h2>Invite Not Found</h2>
+  <p>This onboarding link requires a DC. Please use the link provided by your chiropractor.</p>
 </div>
 
-<div class="content">
-<div class="wizard">
+<div id="mainContent">
+  <nav>
+    <div class="logo">PURA</div>
+    <div style="font-size:13px;color:#666">Welcome to PURA</div>
+  </nav>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:20%"></div></div>
 
-<!-- ── STEP 1: PRACTICE IDENTITY ────────────────────────────────────────── -->
-<!-- [EDIT: STEP QUESTIONS] -->
-<div class="step active" id="step-1">
-  <div class="step-eyebrow">Step 1 of 5</div>
-  <!-- [EDIT: STEP LABELS] -->
-  <h2 class="step-title">Practice Identity</h2>
-  <p class="step-subtitle">Tell us about your clinic. This builds your PURA profile.</p>
-
-  <div class="field-group">
-    <div class="field-row">
-      <div class="field">
-        <label for="clinic-name">Clinic Name <span class="label-note">*</span></label>
-        <input type="text" id="clinic-name" placeholder="Smith Chiropractic" required>
+  <div class="container">
+    <div id="introSection">
+      <div class="invited-banner">You've been invited by <strong id="inviteDC"></strong> at <strong id="inviteClinic"></strong></div>
+      <h1 style="font-size:32px;font-weight:800;letter-spacing:-0.5px;margin-bottom:12px">Your nervous system,<br>tracked daily.</h1>
+      <p style="font-size:16px;color:#666;line-height:1.7;margin-bottom:28px" id="introBody"></p>
+      <div class="benefit-pills">
+        <span class="benefit-pill">&#9889; Daily 2-minute check-in</span>
+        <span class="benefit-pill">&#129504; AI-powered insights</span>
+        <span class="benefit-pill">&#128200; Your DC sees your data</span>
       </div>
-      <div class="field">
-        <label for="location">City, State <span class="label-note">*</span></label>
-        <input type="text" id="location" placeholder="Miami, FL" required>
+      <div class="how-it-works">
+        <div class="hiw-step"><div class="hiw-num">01</div><div class="hiw-text">Check in daily — 2 min, any device</div></div>
+        <div class="hiw-step"><div class="hiw-num">02</div><div class="hiw-text">PURA analyzes your 7 health indicators</div></div>
+        <div class="hiw-step"><div class="hiw-num">03</div><div class="hiw-text" id="hiwDC">Your DC reviews your morning report</div></div>
+      </div>
+      <button class="btn-next" style="width:100%" onclick="startOnboarding()">Get Started &rarr;</button>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="step1" style="display:none">
+      <div class="step-indicator">STEP 1 OF 5</div>
+      <div class="step-title">About You</div>
+      <div class="step-sub">Tell us the basics so we can personalize your PURA experience.</div>
+      <div class="form-row">
+        <div class="form-group"><label>First Name *</label><input type="text" id="s1fn" placeholder="Jane"></div>
+        <div class="form-group"><label>Last Name *</label><input type="text" id="s1ln" placeholder="Smith"></div>
+      </div>
+      <div class="form-group"><label>Email Address *</label><input type="email" id="s1em" placeholder="jane@email.com"></div>
+      <div class="form-group"><label>Phone (optional)</label><input type="tel" id="s1ph" placeholder="(512) 555-0100"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Date of Birth (optional)</label><input type="date" id="s1dob"></div>
+        <div class="form-group"><label>City, State</label><input type="text" id="s1city" placeholder="Austin, TX"></div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn-next" onclick="nextStep(1)">Continue &rarr;</button>
       </div>
     </div>
-    <div class="field-row">
-      <div class="field">
-        <label for="years">Years in Practice</label>
-        <select id="years">
-          <option value="">Select…</option>
-          <option>0–2 years</option>
-          <option>3–5 years</option>
-          <option>6–10 years</option>
-          <option>10+ years</option>
+
+    <!-- STEP 2 -->
+    <div id="step2" style="display:none">
+      <div class="step-indicator">STEP 2 OF 5</div>
+      <div class="step-title">Your Health Background</div>
+      <div class="step-sub">This helps PURA understand your starting point.</div>
+      <div class="form-group">
+        <label id="s2reasonLbl">Primary reason you see your DC *</label>
+        <textarea id="s2reason" placeholder="Describe your main reason for chiropractic care..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>How long have you been a patient?</label>
+        <select id="s2duration">
+          <option>Under 3 months</option><option>3–12 months</option><option>1–3 years</option><option>3+ years</option>
         </select>
       </div>
-      <div class="field">
-        <label for="team">Team Size</label>
-        <select id="team">
-          <option value="">Select…</option>
-          <option>Solo (just me)</option>
-          <option>1–2 staff</option>
-          <option>3–5 staff</option>
-          <option>5+ staff</option>
+      <div class="form-group">
+        <label>Chronic conditions (select all that apply)</label>
+        <div class="check-grid" id="condGrid">
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">None</span></div>
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Back pain</span></div>
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Neck pain</span></div>
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Headaches</span></div>
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Sciatica</span></div>
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Stress / Anxiety</span></div>
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Sleep issues</span></div>
+          <div class="check-item" onclick="toggle(this)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Other</span></div>
+        </div>
+      </div>
+      <div class="form-group"><label>Current medications (optional)</label><textarea id="s2meds" placeholder="List any medications — optional, helps PURA understand your baseline"></textarea></div>
+      <div class="form-group" style="margin-bottom:0"><label>Past injuries (optional)</label><textarea id="s2injuries" placeholder="Any past injuries relevant to your care..."></textarea></div>
+      <div class="nav-btns" style="margin-top:20px">
+        <button class="btn-back" onclick="goStep(1)">Back</button>
+        <button class="btn-next" onclick="nextStep(2)">Continue &rarr;</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" style="display:none">
+      <div class="step-indicator">STEP 3 OF 5</div>
+      <div class="step-title">Your Wearable</div>
+      <div class="step-sub">PURA works with or without wearables — but if you have one, we want to know.</div>
+      <div class="form-group">
+        <label>Do you own a wearable device?</label>
+        <select id="s3device">
+          <option>Apple Watch</option><option>Whoop</option><option>Oura Ring</option><option>Garmin</option><option>I don't have one</option><option>Planning to get one</option>
         </select>
       </div>
-    </div>
-    <div class="field-row">
-      <div class="field">
-        <label for="patients-week">Active Patients / Week</label>
-        <input type="number" id="patients-week" placeholder="e.g. 80" min="1">
+      <div class="form-group">
+        <label>If Apple Watch — is the Health app set up?</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('healthApp',this,'Yes')">Yes</div>
+          <div class="radio-item" onclick="selectRadio('healthApp',this,'No')">No</div>
+          <div class="radio-item selected" onclick="selectRadio('healthApp',this,'N/A')">N/A</div>
+        </div>
+        <input type="hidden" id="healthApp" value="N/A">
       </div>
-      <div class="field">
-        <label for="ehr">Current EHR / Practice Software</label>
-        <input type="text" id="ehr" placeholder="ChiroTouch, Jane, None…">
+      <div class="form-group" style="margin-bottom:0">
+        <label id="shareDataLbl">Comfortable sharing wearable data with your DC?</label>
+        <div class="radio-group">
+          <div class="radio-item selected" onclick="selectRadio('shareData',this,'Yes')">Yes</div>
+          <div class="radio-item" onclick="selectRadio('shareData',this,'No')">No</div>
+        </div>
+        <input type="hidden" id="shareData" value="Yes">
       </div>
-    </div>
-  </div>
-
-  <div class="nav-row">
-    <span></span>
-    <button class="btn-next" onclick="nextStep(1)">Continue →</button>
-  </div>
-</div>
-
-<!-- ── STEP 2: CLINICAL PHILOSOPHY ──────────────────────────────────────── -->
-<!-- [EDIT: STEP QUESTIONS] -->
-<div class="step" id="step-2">
-  <div class="step-eyebrow">Step 2 of 5</div>
-  <!-- [EDIT: STEP LABELS] -->
-  <h2 class="step-title">Clinical Philosophy</h2>
-  <p class="step-subtitle">Your approach shapes how we configure your PURA Signal thresholds.</p>
-
-  <div class="field-group">
-    <div class="field">
-      <label>Primary Technique(s) Used</label>
-      <div class="check-grid" id="techniques">
-        <label class="check-item"><input type="checkbox" value="Diversified"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Diversified</span></label>
-        <label class="check-item"><input type="checkbox" value="Gonstead"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Gonstead</span></label>
-        <label class="check-item"><input type="checkbox" value="Activator"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Activator</span></label>
-        <label class="check-item"><input type="checkbox" value="Thompson"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Thompson</span></label>
-        <label class="check-item"><input type="checkbox" value="SOT"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">SOT</span></label>
-        <label class="check-item"><input type="checkbox" value="Network"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Network</span></label>
-        <label class="check-item"><input type="checkbox" value="Other"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Other</span></label>
+      <div class="nav-btns" style="margin-top:20px">
+        <button class="btn-back" onclick="goStep(2)">Back</button>
+        <button class="btn-next" onclick="nextStep(3)">Continue &rarr;</button>
       </div>
     </div>
-    <div class="field">
-      <label>Patient Demographics Primarily Served</label>
-      <div class="check-grid" id="demographics">
-        <label class="check-item"><input type="checkbox" value="General"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">General</span></label>
-        <label class="check-item"><input type="checkbox" value="Pediatric"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Pediatric</span></label>
-        <label class="check-item"><input type="checkbox" value="Sports"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Sports</span></label>
-        <label class="check-item"><input type="checkbox" value="Prenatal"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Prenatal</span></label>
-        <label class="check-item"><input type="checkbox" value="Geriatric"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Geriatric</span></label>
-        <label class="check-item"><input type="checkbox" value="Auto Injury"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Auto Injury</span></label>
+
+    <!-- STEP 4 -->
+    <div id="step4" style="display:none">
+      <div class="step-indicator">STEP 4 OF 5</div>
+      <div class="step-title">Your Goals</div>
+      <div class="step-sub">What you're working toward shapes how PURA interprets your data.</div>
+      <div class="form-group">
+        <label>What do you most want to improve? (up to 3)</label>
+        <div class="check-grid" id="goalGrid">
+          <div class="check-item" onclick="toggleMax(this,'goalGrid',3)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Pain reduction</span></div>
+          <div class="check-item" onclick="toggleMax(this,'goalGrid',3)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Better sleep</span></div>
+          <div class="check-item" onclick="toggleMax(this,'goalGrid',3)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">More energy</span></div>
+          <div class="check-item" onclick="toggleMax(this,'goalGrid',3)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Less stress</span></div>
+          <div class="check-item" onclick="toggleMax(this,'goalGrid',3)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Better performance</span></div>
+          <div class="check-item" onclick="toggleMax(this,'goalGrid',3)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">General wellness</span></div>
+          <div class="check-item" onclick="toggleMax(this,'goalGrid',3)"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Other</span></div>
+        </div>
+      </div>
+      <div class="form-group"><label>What does success look like for you in 90 days? *</label><textarea id="s4success" placeholder="Describe your 90-day vision..."></textarea></div>
+      <div class="form-group" style="margin-bottom:0">
+        <div class="slider-group">
+          <div class="slider-top">
+            <label style="margin-bottom:0">Commitment to daily check-ins (1–10)</label>
+            <span style="font-size:24px;font-weight:800;color:#c8ff00" id="commitVal">8</span>
+          </div>
+        </div>
+        <input type="range" id="s4commit" min="1" max="10" value="8" oninput="document.getElementById('commitVal').textContent=this.value">
+      </div>
+      <div class="nav-btns" style="margin-top:20px">
+        <button class="btn-back" onclick="goStep(3)">Back</button>
+        <button class="btn-next" onclick="nextStep(4)">Continue &rarr;</button>
       </div>
     </div>
-    <div class="field">
-      <label for="outcomes">How do you currently measure patient outcomes?</label>
-      <textarea id="outcomes" placeholder="e.g. Pain scales, functional assessments, patient feedback, range of motion…"></textarea>
-    </div>
-  </div>
 
-  <div class="nav-row">
-    <button class="btn-back" onclick="prevStep(2)">← Back</button>
-    <button class="btn-next" onclick="nextStep(2)">Continue →</button>
+    <!-- STEP 5 -->
+    <div id="step5" style="display:none">
+      <div class="step-indicator">STEP 5 OF 5</div>
+      <div class="step-title">Confirm &amp; Submit</div>
+      <div class="step-sub">Review your answers, then start your PURA journey.</div>
+      <div class="summary-section"><div class="summary-label">Name</div><div class="summary-value" id="sum1"></div></div>
+      <div class="summary-section"><div class="summary-label">Email</div><div class="summary-value" id="sum2"></div></div>
+      <div class="summary-section"><div class="summary-label">Primary reason for care</div><div class="summary-value" id="sum3"></div></div>
+      <div class="summary-section"><div class="summary-label">Conditions</div><div class="summary-value" id="sum4"></div></div>
+      <div class="summary-section"><div class="summary-label">Wearable</div><div class="summary-value" id="sum5"></div></div>
+      <div class="summary-section"><div class="summary-label">Goals</div><div class="summary-value" id="sum6"></div></div>
+      <div class="summary-section"><div class="summary-label">90-day success</div><div class="summary-value" id="sum7"></div></div>
+      <div class="summary-section"><div class="summary-label">Commitment to daily check-ins</div><div class="summary-value" id="sum8"></div></div>
+      <div class="consent-row" id="consentRow" onclick="toggleConsent()">
+        <div class="consent-check" id="consentCheck"><svg viewBox="0 0 12 12" fill="none" style="width:12px;height:12px;display:none"><path d="M2 6l3 3 5-5" stroke="#08080a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="consent-text" id="consentText">I understand PURA is a wellness tracking tool, not a medical service. My data is shared with my DC to support my care.</div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn-back" onclick="goStep(4)">Back</button>
+        <button class="btn-next" id="submitBtn" onclick="doSubmit()" disabled>Start My PURA Journey &rarr;</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-check">&#10003;</div>
+      <div class="success-h" id="successH">You're all set!</div>
+      <div class="success-sub" id="successSub"></div>
+      <div class="checkin-link-box">
+        <div class="link-label">Your Daily Check-in Link</div>
+        <div class="link-url" id="checkinLinkText"></div>
+        <button class="copy-btn" onclick="copyCheckinLink()">Copy Link</button>
+      </div>
+      <p style="color:#555;font-size:13px;line-height:1.7" id="successFooter"></p>
+    </div>
   </div>
 </div>
-
-<!-- ── STEP 3: GOALS & VISION ────────────────────────────────────────────── -->
-<!-- [EDIT: STEP QUESTIONS] -->
-<div class="step" id="step-3">
-  <div class="step-eyebrow">Step 3 of 5</div>
-  <!-- [EDIT: STEP LABELS] -->
-  <h2 class="step-title">Goals & Vision</h2>
-  <p class="step-subtitle">Your goals guide our onboarding and ongoing support.</p>
-
-  <div class="field-group">
-    <div class="field">
-      <label for="goal-90">What does success look like in 90 days with PURA?</label>
-      <textarea id="goal-90" placeholder="Be specific — what would make PURA clearly worth it at the 90-day mark?" style="min-height:120px"></textarea>
-    </div>
-    <div class="field">
-      <label for="vision">Long-term practice vision</label>
-      <textarea id="vision" placeholder="Where do you see your practice in 3–5 years? What role does data and technology play?"></textarea>
-    </div>
-    <div class="field">
-      <label for="why-pura">Why did you specifically want to join PURA beta?</label>
-      <textarea id="why-pura" placeholder="What about PURA caught your attention? What problem are you hoping it solves?"></textarea>
-    </div>
-  </div>
-
-  <div class="nav-row">
-    <button class="btn-back" onclick="prevStep(3)">← Back</button>
-    <button class="btn-next" onclick="nextStep(3)">Continue →</button>
-  </div>
-</div>
-
-<!-- ── STEP 4: EXPECTATIONS ──────────────────────────────────────────────── -->
-<!-- [EDIT: STEP QUESTIONS] -->
-<div class="step" id="step-4">
-  <div class="step-eyebrow">Step 4 of 5</div>
-  <!-- [EDIT: STEP LABELS] -->
-  <h2 class="step-title">Expectations</h2>
-  <p class="step-subtitle">Honest answers here make the difference between a good beta experience and a great one.</p>
-
-  <div class="field-group">
-    <div class="field">
-      <label for="clinical-use">How do you plan to use wearable data clinically?</label>
-      <textarea id="clinical-use" placeholder="e.g. Reviewing before adjustments, sharing with patients, identifying stress patterns…"></textarea>
-    </div>
-    <div class="field">
-      <label for="first-patients">Which patients will you enroll first?</label>
-      <textarea id="first-patients" placeholder="e.g. Patients who already wear devices, athletes, those with chronic cases you want to track more closely…"></textarea>
-    </div>
-    <div class="field">
-      <label for="concerns">Any concerns or hesitations?</label>
-      <textarea id="concerns" placeholder="Be honest — this helps us serve you better. Concerns about tech setup, patient adoption, time commitment, anything…"></textarea>
-    </div>
-  </div>
-
-  <div class="nav-row">
-    <button class="btn-back" onclick="prevStep(4)">← Back</button>
-    <button class="btn-next" onclick="nextStep(4)">Review & Submit →</button>
-  </div>
-</div>
-
-<!-- ── STEP 5: CONFIRMATION ──────────────────────────────────────────────── -->
-<div class="step" id="step-5">
-  <div class="step-eyebrow">Step 5 of 5</div>
-
-  <div class="success-icon">✓</div>
-  <div class="success-title">Profile Complete</div>
-  <div class="success-sub">Your PURA dashboard is being configured. Review your answers below, then submit to notify our team.</div>
-  <div class="success-note"><strong>Joshua Santos</strong> will receive your onboarding summary within minutes.</div>
-
-  <div id="summary-container"></div>
-
-  <button class="btn-finish" onclick="submitOnboarding()" style="width:100%;margin-bottom:14px">Submit Onboarding Profile →</button>
-
-  <!-- [EDIT: REDIRECT URL] -->
-  <a href="dashboard.html" class="btn-dashboard">Continue to Dashboard →</a>
-
-  <div class="nav-row" style="margin-top:20px">
-    <button class="btn-back" onclick="prevStep(5)">← Edit answers</button>
-    <span></span>
-  </div>
-</div>
-
-</div><!-- /wizard -->
-</div><!-- /content -->
-</div><!-- /shell -->
 
 <script>
-let currentStep = 1;
-const TOTAL_STEPS = 5;
+var DCP = {
+  'harrison-coleman':{name:'Dr. Harrison Coleman',clinic:'Helix Austin',city:'Austin, TX',email:'harrison@helixaustin.com',lang:'en'},
+  'yina-cuevas':{name:'Dr. Yina Cuevas',clinic:'Mana Chiropractic',city:'Austin, TX',email:'yina@manachiropractic.com',lang:'en'},
+  'david-miranda':{name:'Dr. David Miranda',clinic:'Quito Tropical',city:'Miami, FL',email:'david@quitotropicalchiro.com',lang:'es'},
+  'bryant-ramirez':{name:'Bryant Ramirez',clinic:'Mycelium Chiropractic',city:'Austin, TX',email:'bryant@myceliumchiro.com',lang:'en'},
+  'ian-brewer':{name:'Ian Brewer',clinic:'Anointed Vessel Chiropractic',city:'Austin, TX',email:'ian@anointedvessel.com',lang:'en'},
+  'denis-chang':{name:'Dr. Denis Chang',clinic:'Optimize Health Chiropractic',city:'Miami, FL',email:'denis@optimizehealth.com',lang:'en'}
+};
+var slug = (new URLSearchParams(location.search)).get('dc')||'';
+var dc = DCP[slug]||null;
+var consentGiven = false;
 
-// Checkbox interactivity
-document.querySelectorAll('.check-item').forEach(item => {
-  item.addEventListener('click', () => {
-    const cb = item.querySelector('input[type=checkbox]');
-    cb.checked = !cb.checked;
-    item.classList.toggle('checked', cb.checked);
-  });
-});
-
-function goToStep(n) {
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('step-' + n).classList.add('active');
-  document.getElementById('step-counter').textContent = `Step ${n} of ${TOTAL_STEPS}`;
-  document.getElementById('progress-bar').style.width = (n / TOTAL_STEPS * 100) + '%';
-  currentStep = n;
-  window.scrollTo(0, 0);
+if(!dc){
+  document.getElementById('mainContent').style.display='none';
+  document.getElementById('errorPage').style.display='block';
+} else {
+  document.getElementById('inviteDC').textContent=dc.name;
+  document.getElementById('inviteClinic').textContent=dc.clinic;
+  document.getElementById('introBody').textContent='PURA Health works alongside your care with '+dc.name+'. Every day you check in takes 2 minutes. Every morning, '+dc.name+' reviews your data before they see patients. This is how great care gets better.';
+  document.getElementById('hiwDC').textContent=dc.name+' reviews your morning report';
+  document.getElementById('s2reasonLbl').textContent='Primary reason you see '+dc.name+' *';
+  document.getElementById('shareDataLbl').textContent='Comfortable sharing wearable data with '+dc.name+'?';
+  document.getElementById('consentText').textContent='I understand PURA is a wellness tracking tool, not a medical service. My data is shared with '+dc.name+' to support my care.';
 }
 
-function nextStep(from) {
-  if (from === TOTAL_STEPS - 1) buildSummary();
-  goToStep(from + 1);
+function startOnboarding(){ document.getElementById('introSection').style.display='none'; goStep(1); }
+
+function goStep(n){
+  [1,2,3,4,5].forEach(function(i){document.getElementById('step'+i).style.display='none';});
+  document.getElementById('step'+n).style.display='block';
+  document.getElementById('progressFill').style.width=(n/5*100)+'%';
+  scrollTo(0,0);
 }
 
-function prevStep(from) {
-  goToStep(from - 1);
+function nextStep(n){
+  if(n===1){
+    if(!document.getElementById('s1fn').value.trim()||!document.getElementById('s1ln').value.trim()||!document.getElementById('s1em').value.includes('@')){alert('Please fill in First Name, Last Name, and Email.');return;}
+  }
+  if(n===2){ if(!document.getElementById('s2reason').value.trim()){alert('Please describe your primary reason for care.');return;} }
+  if(n===4){
+    if(!document.getElementById('s4success').value.trim()){alert('Please describe your 90-day success vision.');return;}
+    buildSummary();
+  }
+  goStep(n+1);
 }
 
-function getChecked(containerId) {
-  const vals = [];
-  document.querySelectorAll(`#${containerId} input[type=checkbox]:checked`).forEach(cb => vals.push(cb.value));
-  return vals.join(', ') || '—';
+function toggle(el){ el.classList.toggle('checked'); }
+function toggleMax(el, gridId, max){
+  if(!el.classList.contains('checked')){
+    var checked=document.querySelectorAll('#'+gridId+' .check-item.checked').length;
+    if(checked>=max){alert('Please select up to '+max+' options.');return;}
+  }
+  el.classList.toggle('checked');
+}
+function selectRadio(hiddenId, el, val){
+  var parent=el.parentElement;
+  parent.querySelectorAll('.radio-item').forEach(function(r){r.classList.remove('selected');});
+  el.classList.add('selected');
+  document.getElementById(hiddenId).value=val;
+}
+function toggleConsent(){
+  consentGiven=!consentGiven;
+  var row=document.getElementById('consentRow');
+  var check=document.getElementById('consentCheck');
+  if(consentGiven){row.classList.add('checked');check.querySelector('svg').style.display='block';}
+  else{row.classList.remove('checked');check.querySelector('svg').style.display='none';}
+  document.getElementById('submitBtn').disabled=!consentGiven;
 }
 
-function val(id) { return (document.getElementById(id)?.value || '').trim() || '—'; }
-
-function buildSummary() {
-  const data = [
-    { section: 'Practice Identity', rows: [
-      ['Clinic Name', val('clinic-name')],
-      ['Location', val('location')],
-      ['Years in Practice', val('years')],
-      ['Team Size', val('team')],
-      ['Patients / Week', val('patients-week')],
-      ['EHR / Software', val('ehr')],
-    ]},
-    { section: 'Clinical Philosophy', rows: [
-      ['Techniques', getChecked('techniques')],
-      ['Demographics', getChecked('demographics')],
-      ['Outcome Measurement', val('outcomes')],
-    ]},
-    { section: 'Goals & Vision', rows: [
-      ['90-Day Success', val('goal-90')],
-      ['Long-Term Vision', val('vision')],
-      ['Why PURA', val('why-pura')],
-    ]},
-    { section: 'Expectations', rows: [
-      ['Clinical Use of Data', val('clinical-use')],
-      ['First Patients to Enroll', val('first-patients')],
-      ['Concerns / Hesitations', val('concerns')],
-    ]},
-  ];
-
-  const container = document.getElementById('summary-container');
-  container.innerHTML = data.map(section => `
-    <div class="summary-block">
-      <div class="summary-section">${section.section}</div>
-      ${section.rows.map(([k, v]) => `
-        <div class="summary-row">
-          <span class="summary-key">${k}</span>
-          <span class="summary-val">${v}</span>
-        </div>`).join('')}
-    </div>
-  `).join('');
+function getChecked(gridId){
+  var items=[]; document.querySelectorAll('#'+gridId+' .check-item.checked').forEach(function(el){items.push(el.querySelector('.check-label').textContent);});
+  return items.join(', ')||'None selected';
 }
 
-function submitOnboarding() {
-  const clinicName = val('clinic-name') || 'Your Clinic';
-  const body = `PURA ONBOARDING — ${clinicName}
-==========================================
+function buildSummary(){
+  document.getElementById('sum1').textContent=document.getElementById('s1fn').value+' '+document.getElementById('s1ln').value;
+  document.getElementById('sum2').textContent=document.getElementById('s1em').value;
+  document.getElementById('sum3').textContent=document.getElementById('s2reason').value;
+  document.getElementById('sum4').textContent=getChecked('condGrid');
+  document.getElementById('sum5').textContent=document.getElementById('s3device').value;
+  document.getElementById('sum6').textContent=getChecked('goalGrid');
+  document.getElementById('sum7').textContent=document.getElementById('s4success').value;
+  document.getElementById('sum8').textContent=document.getElementById('s4commit').value+'/10';
+}
 
-PRACTICE IDENTITY
-Clinic Name: ${val('clinic-name')}
-Location: ${val('location')}
-Years in Practice: ${val('years')}
-Team Size: ${val('team')}
-Patients / Week: ${val('patients-week')}
-EHR / Software: ${val('ehr')}
+async function doSubmit(){
+  var d={
+    patientFirstName:document.getElementById('s1fn').value.trim(),
+    patientLastName:document.getElementById('s1ln').value.trim(),
+    patientEmail:document.getElementById('s1em').value.trim(),
+    phone:document.getElementById('s1ph').value.trim(),
+    city:document.getElementById('s1city').value.trim(),
+    primaryReason:document.getElementById('s2reason').value.trim(),
+    duration:document.getElementById('s2duration').value,
+    conditions:getChecked('condGrid'),
+    meds:document.getElementById('s2meds').value.trim(),
+    injuries:document.getElementById('s2injuries').value.trim(),
+    device:document.getElementById('s3device').value,
+    healthApp:document.getElementById('healthApp').value,
+    shareData:document.getElementById('shareData').value,
+    goals:getChecked('goalGrid'),
+    success90:document.getElementById('s4success').value.trim(),
+    commitment:document.getElementById('s4commit').value
+  };
 
-CLINICAL PHILOSOPHY
-Techniques: ${getChecked('techniques')}
-Demographics: ${getChecked('demographics')}
-Outcome Measurement: ${val('outcomes')}
+  var btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='Submitting...';
 
-GOALS & VISION
-90-Day Success: ${val('goal-90')}
-Long-Term Vision: ${val('vision')}
-Why PURA: ${val('why-pura')}
+  var checkinURL=location.origin+'/checkin.html?dc='+slug;
+  var body='NEW PURA PATIENT ONBOARDING\n===========================\nDC: '+dc.name+' | '+dc.clinic+'\nDate: '+new Date().toLocaleString()+'\n\nPATIENT:\n  Name: '+d.patientFirstName+' '+d.patientLastName+'\n  Email: '+d.patientEmail+'\n  Phone: '+(d.phone||'N/A')+'\n  City: '+(d.city||'N/A')+'\n\nHEALTH BACKGROUND:\n  Primary reason: '+d.primaryReason+'\n  Duration as patient: '+d.duration+'\n  Conditions: '+d.conditions+'\n  Medications: '+(d.meds||'None')+'\n  Past injuries: '+(d.injuries||'None')+'\n\nWEARABLE:\n  Device: '+d.device+'\n  Health app: '+d.healthApp+'\n  Share data: '+d.shareData+'\n\nGOALS:\n  Priorities: '+d.goals+'\n  90-day success: '+d.success90+'\n  Commitment: '+d.commitment+'/10\n\nCheck-in link: '+checkinURL;
 
-EXPECTATIONS
-Clinical Use of Data: ${val('clinical-use')}
-First Patients to Enroll: ${val('first-patients')}
-Concerns / Hesitations: ${val('concerns')}
+  await Promise.all([
+    emailAdmin(d, body, checkinURL),
+    emailDC(d, body, checkinURL),
+    emailPatient(d, checkinURL)
+  ]);
 
-==========================================
-Submitted via PURA Onboarding Wizard`;
+  var key='pura_onboard_'+slug+'_'+d.patientFirstName;
+  localStorage.setItem(key, JSON.stringify(d));
 
-  // [EDIT: CONTACT EMAIL]
-  window.location.href = `mailto:viveapr@gmail.com?subject=PURA Onboarding Complete — ${encodeURIComponent(clinicName)}&body=${encodeURIComponent(body)}`;
+  goStep(5); // hide
+  [1,2,3,4,5].forEach(function(i){document.getElementById('step'+i).style.display='none';});
+  document.getElementById('introSection').style.display='none';
+  document.getElementById('progressFill').style.width='100%';
+  var ss=document.getElementById('successScreen');
+  ss.style.display='block';
+  document.getElementById('successH').textContent="You're all set, "+d.patientFirstName+'!';
+  document.getElementById('successSub').textContent='Your onboarding is complete. Check in every day at the link below — '+dc.name+' will see your data in the morning briefing.';
+  document.getElementById('checkinLinkText').textContent=checkinURL;
+  document.getElementById('successFooter').textContent='Bookmark this link. Your first check-in is the most important. Tomorrow, '+dc.name+' will see your data in the morning briefing.';
+  window._checkinURL=checkinURL;
+  scrollTo(0,0);
+}
+
+async function emailAdmin(d, body, checkinURL){
+  try{await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:'WEB3FORMS_ACCESS_KEY',subject:'PURA New Patient Onboarded — '+d.patientFirstName+' '+d.patientLastName+' — '+dc.clinic,from_name:'PURA Health',to:'viveapr@gmail.com',message:body})});}catch(e){}
+}
+async function emailDC(d, body, checkinURL){
+  try{await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:'WEB3FORMS_ACCESS_KEY',subject:'New patient onboarded on PURA — '+d.patientFirstName+' '+d.patientLastName,from_name:'PURA Health',to:dc.email,message:body+'\n\nPatient check-in link: '+checkinURL})});}catch(e){}
+}
+async function emailPatient(d, checkinURL){
+  try{await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:'WEB3FORMS_ACCESS_KEY',subject:'Welcome to PURA — Your daily check-in link from '+dc.name,from_name:'PURA Health · '+dc.clinic,to:d.patientEmail,message:'Hi '+d.patientFirstName+',\n\nWelcome to PURA Health. '+dc.name+' has set you up with daily health tracking as part of your care.\n\nYOUR DAILY CHECK-IN LINK:\n'+checkinURL+'\n\nBookmark this link. Your check-in takes 2 minutes and covers 7 health indicators:\n  • Pain level\n  • Sleep quality and hours\n  • Energy level\n  • Stress level\n  • Functional ability\n  • Mood\n\nEvery morning, '+dc.name+' reviews overnight check-ins before seeing patients. The more consistent you are, the more personalized your care becomes.\n\nAfter each check-in, PURA AI will give you a personalized analysis of your metrics.\n\nSee you tomorrow.\n\n— PURA Health\n'+dc.clinic})});}catch(e){}
+}
+
+function copyCheckinLink(){
+  if(!window._checkinURL)return;
+  navigator.clipboard.writeText(window._checkinURL).then(function(){alert('Link copied!');});
 }
 </script>
-
-<!--
-====================================================
-PURA ONBOARDING — EDITABLE SECTION
-====================================================
-[EDIT: STEP QUESTIONS]  — Add/remove questions inside each step's .field-group div
-[EDIT: STEP LABELS]     — Change step titles in <h2 class="step-title"> tags
-[EDIT: REDIRECT URL]    — Change dashboard.html link on Step 5 to your real dashboard URL
-[EDIT: CONTACT EMAIL]   — Change viveapr@gmail.com in the submitOnboarding() function
-[EDIT: PROGRESS BAR]    — Adjust step count by changing TOTAL_STEPS = 5 in the script
-====================================================
--->
 </body>
 </html>

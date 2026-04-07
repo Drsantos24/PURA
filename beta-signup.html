@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the PURA Beta</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;border-bottom:1px solid #1a1a1e}
+.logo{font-size:20px;font-weight:800;color:#c8ff00;letter-spacing:-0.5px}
+.nav-label{font-size:13px;color:#666}
+.hero{max-width:600px;margin:0 auto;padding:80px 24px 40px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:#1a1a1e;border:1px solid #2a2a2e;border-radius:100px;padding:6px 16px;font-size:12px;font-weight:600;color:#c8ff00;margin-bottom:32px;letter-spacing:0.5px}
+.badge-dot{width:6px;height:6px;background:#c8ff00;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+h1{font-size:clamp(32px,6vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:16px}
+h1 span{color:#c8ff00}
+.sub{font-size:17px;color:#888;line-height:1.6;margin-bottom:48px}
+.form-card{background:#0f0f12;border:1px solid #1a1a1e;border-radius:16px;padding:40px;margin-bottom:40px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:12px;font-weight:600;color:#888;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px}
+input,select,textarea{width:100%;background:#08080a;border:1px solid #2a2a2e;border-radius:8px;padding:14px 16px;font-size:15px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+input:focus,select:focus,textarea:focus{border-color:#c8ff00}
+select option{background:#08080a}
+textarea{resize:vertical;min-height:100px}
+.submit-btn{width:100%;background:#c8ff00;color:#08080a;border:none;border-radius:10px;padding:18px;font-size:17px;font-weight:700;cursor:pointer;transition:opacity 0.2s;margin-top:8px}
+.submit-btn:hover{opacity:0.9}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed}
+.spots-bar{background:#1a1a1e;border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.spots-icon{font-size:20px}
+.spots-text{font-size:14px;color:#aaa}<br>.spots-text strong{color:#c8ff00}
+.success{display:none;text-align:center;padding:60px 24px}
+.success-check{width:80px;height:80px;background:#c8ff00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px}
+.success h2{font-size:28px;font-weight:800;margin-bottom:12px}
+.success p{color:#888;font-size:16px;line-height:1.6}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}.hero{padding:40px 20px 24px}.form-card{padding:24px}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">PURA</div>
+  <div class="nav-label">Beta Application</div>
+</nav>
+
+<div id="formSection">
+  <div class="hero">
+    <div class="badge"><span class="badge-dot"></span>5 FOUNDING SPOTS</div>
+    <h1>Join the <span>PURA</span> Beta</h1>
+    <p class="sub">5 founding spots at $297/month. First approved, first in. We'll reach out within 24 hours.</p>
+
+    <div class="spots-bar">
+      <span class="spots-icon">⚡</span>
+      <span class="spots-text"><strong>$297/month</strong> — Founding rate. Locks in forever. Standard price is $497/mo after beta.</span>
+    </div>
+
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="fullName" placeholder="Dr. Jane Smith" required>
+        </div>
+        <div class="form-group">
+          <label>Clinic Name *</label>
+          <input type="text" id="clinicName" placeholder="Smith Chiropractic" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="email" placeholder="jane@yourClinic.com" required>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="(512) 555-0100">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>City, State *</label>
+          <input type="text" id="cityState" placeholder="Austin, TX" required>
+        </div>
+        <div class="form-group">
+          <label>Active Patients/Week *</label>
+          <select id="patientsPerWeek" required>
+            <option value="">Select range</option>
+            <option>Under 25</option>
+            <option>25–50</option>
+            <option>50–100</option>
+            <option>100–200</option>
+            <option>200+</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Wearables Your Patients Use</label>
+        <input type="text" id="wearables" placeholder="Apple Watch, Oura Ring, Whoop, none yet...">
+      </div>
+      <div class="form-group">
+        <label>Why do you want PURA in your practice? *</label>
+        <textarea id="whyPura" placeholder="Tell us about your clinical goals and what drew you to PURA..." required></textarea>
+      </div>
+      <button class="submit-btn" id="submitBtn" onclick="submitApplication()">Apply for Beta Access →</button>
+    </div>
+  </div>
+</div>
+
+<div class="success" id="successSection">
+  <div class="success-check">✓</div>
+  <h2>Application received.</h2>
+  <p>We'll reach out to <span id="confirmEmail" style="color:#c8ff00"></span> within 24 hours.<br><br>If approved, you'll get immediate access to your PURA dashboard, patient check-in link, and morning briefing system.</p>
+</div>
+
+<script>
+async function submitApplication() {
+  const fullName = document.getElementById('fullName').value.trim();
+  const clinicName = document.getElementById('clinicName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const patientsPerWeek = document.getElementById('patientsPerWeek').value;
+  const whyPura = document.getElementById('whyPura').value.trim();
+  const cityState = document.getElementById('cityState').value.trim();
+
+  if (!fullName || !clinicName || !email || !patientsPerWeek || !whyPura || !cityState) {
+    alert('Please fill in all required fields.');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: 'WEB3FORMS_ACCESS_KEY',
+        subject: `🆕 PURA Beta Application — ${fullName} — ${clinicName}`,
+        from_name: 'PURA Health Beta',
+        to: 'viveapr@gmail.com',
+        message: `NEW PURA BETA APPLICATION
+========================================
+Name: ${fullName}
+Clinic: ${clinicName}
+Email: ${email}
+Phone: ${document.getElementById('phone').value || 'Not provided'}
+Location: ${cityState}
+Patients/Week: ${patientsPerWeek}
+Wearables: ${document.getElementById('wearables').value || 'Not specified'}
+
+WHY PURA:
+${whyPura}
+
+Submitted: ${new Date().toLocaleString()}
+========================================`
+      })
+    });
+  } catch(e) { console.log('Email error:', e); }
+
+  document.getElementById('confirmEmail').textContent = email;
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('successSection').style.display = 'block';
+}
+</script>
+</body>
+</html>
