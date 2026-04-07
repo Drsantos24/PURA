@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURA Health — DC Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080a;--surface:#0f0f12;--surface2:#16161b;
+  --border:#222228;--border2:#2e2e38;
+  --accent:#c8ff00;--accent-dim:rgba(200,255,0,.1);
+  --text:#f0f0f6;--muted:#808090;--muted2:#50505e;
+  --green:#22c55e;--red:#ef4444;--radius:12px;
+}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+
+/* LAYOUT */
+.shell{min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{font-size:18px;font-weight:800;color:var(--accent);letter-spacing:.05em}
+.step-counter{font-size:13px;color:var(--muted);font-weight:500}
+
+/* PROGRESS BAR */
+<!-- [EDIT: PROGRESS BAR] -->
+.progress-outer{height:3px;background:var(--border);position:relative}
+.progress-inner{height:100%;background:var(--accent);transition:width .4s ease}
+
+/* CONTENT */
+.content{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px 80px}
+.wizard{max-width:600px;width:100%}
+
+/* STEPS */
+.step{display:none;animation:fadeUp .3s ease}
+.step.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.step-eyebrow{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+/* [EDIT: STEP LABELS] */
+.step-title{font-size:clamp(22px,4vw,32px);font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.step-subtitle{font-size:14px;color:var(--muted);margin-bottom:36px}
+
+/* FIELDS */
+.field-group{display:flex;flex-direction:column;gap:18px;margin-bottom:8px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{font-size:13px;font-weight:600;color:var(--text)}
+.label-note{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+input[type=text],input[type=number],select,textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;font:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--surface)}
+textarea{min-height:110px;resize:vertical}
+input[type=number]{-moz-appearance:textfield}
+
+/* CHECKBOX GROUP */
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;cursor:pointer;transition:all .2s;user-select:none}
+.check-item:hover{border-color:var(--border2)}
+.check-item.checked{border-color:var(--accent);background:var(--accent-dim)}
+.check-item input[type=checkbox]{display:none}
+.check-box{width:16px;height:16px;border-radius:4px;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.check-item.checked .check-box{background:var(--accent);border-color:var(--accent)}
+.check-mark{font-size:10px;color:var(--bg);font-weight:900;display:none}
+.check-item.checked .check-mark{display:block}
+.check-label{font-size:13px;font-weight:500}
+.check-item.checked .check-label{color:var(--accent)}
+
+/* STEP 5 SUMMARY */
+.summary-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px}
+.summary-section{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.summary-row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.summary-row:last-child{border-bottom:none}
+.summary-key{color:var(--muted);flex-shrink:0;min-width:160px;font-weight:500}
+.summary-val{color:var(--text);word-break:break-word}
+.success-icon{width:72px;height:72px;border-radius:50%;background:rgba(34,197,94,.15);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:32px}
+.success-title{font-size:26px;font-weight:800;text-align:center;margin-bottom:10px}
+.success-sub{font-size:14px;color:var(--muted);text-align:center;max-width:420px;margin:0 auto 32px}
+.success-note{background:var(--accent-dim);border:1px solid rgba(200,255,0,.2);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px}
+.success-note strong{color:var(--accent)}
+
+/* NAV */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:36px;padding-top:24px;border-top:1px solid var(--border)}
+.btn-back{background:transparent;border:1px solid var(--border2);color:var(--muted);font:inherit;font-size:14px;font-weight:500;padding:12px 24px;border-radius:8px;cursor:pointer;transition:all .2s}
+.btn-back:hover{border-color:var(--muted);color:var(--text)}
+.btn-next{background:var(--accent);color:var(--bg);font:inherit;font-size:14px;font-weight:700;padding:12px 32px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s;letter-spacing:-.01em}
+.btn-next:hover{opacity:.88}
+.btn-next:disabled{opacity:.4;cursor:default}
+.btn-finish{background:var(--green);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:12px 32px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s}
+.btn-finish:hover{opacity:.88}
+.btn-dashboard{background:var(--accent);color:var(--bg);font:inherit;font-size:15px;font-weight:700;padding:14px 36px;border-radius:10px;border:none;cursor:pointer;display:block;width:100%;text-align:center;text-decoration:none;transition:opacity .2s}
+.btn-dashboard:hover{opacity:.88}
+
+@media(max-width:560px){
+  .field-row{grid-template-columns:1fr}
+  .check-grid{grid-template-columns:1fr}
+  .content{padding:32px 16px 60px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <div class="logo">PURA</div>
+  <div class="step-counter" id="step-counter">Step 1 of 5</div>
+</header>
+
+<!-- [EDIT: PROGRESS BAR] -->
+<div class="progress-outer" data-total="5">
+  <div class="progress-inner" id="progress-bar" style="width:20%"></div>
+</div>
+
+<div class="content">
+<div class="wizard">
+
+<!-- ── STEP 1: PRACTICE IDENTITY ────────────────────────────────────────── -->
+<!-- [EDIT: STEP QUESTIONS] -->
+<div class="step active" id="step-1">
+  <div class="step-eyebrow">Step 1 of 5</div>
+  <!-- [EDIT: STEP LABELS] -->
+  <h2 class="step-title">Practice Identity</h2>
+  <p class="step-subtitle">Tell us about your clinic. This builds your PURA profile.</p>
+
+  <div class="field-group">
+    <div class="field-row">
+      <div class="field">
+        <label for="clinic-name">Clinic Name <span class="label-note">*</span></label>
+        <input type="text" id="clinic-name" placeholder="Smith Chiropractic" required>
+      </div>
+      <div class="field">
+        <label for="location">City, State <span class="label-note">*</span></label>
+        <input type="text" id="location" placeholder="Miami, FL" required>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="years">Years in Practice</label>
+        <select id="years">
+          <option value="">Select…</option>
+          <option>0–2 years</option>
+          <option>3–5 years</option>
+          <option>6–10 years</option>
+          <option>10+ years</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="team">Team Size</label>
+        <select id="team">
+          <option value="">Select…</option>
+          <option>Solo (just me)</option>
+          <option>1–2 staff</option>
+          <option>3–5 staff</option>
+          <option>5+ staff</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="patients-week">Active Patients / Week</label>
+        <input type="number" id="patients-week" placeholder="e.g. 80" min="1">
+      </div>
+      <div class="field">
+        <label for="ehr">Current EHR / Practice Software</label>
+        <input type="text" id="ehr" placeholder="ChiroTouch, Jane, None…">
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <span></span>
+    <button class="btn-next" onclick="nextStep(1)">Continue →</button>
+  </div>
+</div>
+
+<!-- ── STEP 2: CLINICAL PHILOSOPHY ──────────────────────────────────────── -->
+<!-- [EDIT: STEP QUESTIONS] -->
+<div class="step" id="step-2">
+  <div class="step-eyebrow">Step 2 of 5</div>
+  <!-- [EDIT: STEP LABELS] -->
+  <h2 class="step-title">Clinical Philosophy</h2>
+  <p class="step-subtitle">Your approach shapes how we configure your PURA Signal thresholds.</p>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Primary Technique(s) Used</label>
+      <div class="check-grid" id="techniques">
+        <label class="check-item"><input type="checkbox" value="Diversified"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Diversified</span></label>
+        <label class="check-item"><input type="checkbox" value="Gonstead"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Gonstead</span></label>
+        <label class="check-item"><input type="checkbox" value="Activator"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Activator</span></label>
+        <label class="check-item"><input type="checkbox" value="Thompson"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Thompson</span></label>
+        <label class="check-item"><input type="checkbox" value="SOT"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">SOT</span></label>
+        <label class="check-item"><input type="checkbox" value="Network"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Network</span></label>
+        <label class="check-item"><input type="checkbox" value="Other"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Other</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Patient Demographics Primarily Served</label>
+      <div class="check-grid" id="demographics">
+        <label class="check-item"><input type="checkbox" value="General"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">General</span></label>
+        <label class="check-item"><input type="checkbox" value="Pediatric"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Pediatric</span></label>
+        <label class="check-item"><input type="checkbox" value="Sports"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Sports</span></label>
+        <label class="check-item"><input type="checkbox" value="Prenatal"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Prenatal</span></label>
+        <label class="check-item"><input type="checkbox" value="Geriatric"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Geriatric</span></label>
+        <label class="check-item"><input type="checkbox" value="Auto Injury"><div class="check-box"><span class="check-mark">✓</span></div><span class="check-label">Auto Injury</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="outcomes">How do you currently measure patient outcomes?</label>
+      <textarea id="outcomes" placeholder="e.g. Pain scales, functional assessments, patient feedback, range of motion…"></textarea>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="prevStep(2)">← Back</button>
+    <button class="btn-next" onclick="nextStep(2)">Continue →</button>
+  </div>
+</div>
+
+<!-- ── STEP 3: GOALS & VISION ────────────────────────────────────────────── -->
+<!-- [EDIT: STEP QUESTIONS] -->
+<div class="step" id="step-3">
+  <div class="step-eyebrow">Step 3 of 5</div>
+  <!-- [EDIT: STEP LABELS] -->
+  <h2 class="step-title">Goals & Vision</h2>
+  <p class="step-subtitle">Your goals guide our onboarding and ongoing support.</p>
+
+  <div class="field-group">
+    <div class="field">
+      <label for="goal-90">What does success look like in 90 days with PURA?</label>
+      <textarea id="goal-90" placeholder="Be specific — what would make PURA clearly worth it at the 90-day mark?" style="min-height:120px"></textarea>
+    </div>
+    <div class="field">
+      <label for="vision">Long-term practice vision</label>
+      <textarea id="vision" placeholder="Where do you see your practice in 3–5 years? What role does data and technology play?"></textarea>
+    </div>
+    <div class="field">
+      <label for="why-pura">Why did you specifically want to join PURA beta?</label>
+      <textarea id="why-pura" placeholder="What about PURA caught your attention? What problem are you hoping it solves?"></textarea>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="prevStep(3)">← Back</button>
+    <button class="btn-next" onclick="nextStep(3)">Continue →</button>
+  </div>
+</div>
+
+<!-- ── STEP 4: EXPECTATIONS ──────────────────────────────────────────────── -->
+<!-- [EDIT: STEP QUESTIONS] -->
+<div class="step" id="step-4">
+  <div class="step-eyebrow">Step 4 of 5</div>
+  <!-- [EDIT: STEP LABELS] -->
+  <h2 class="step-title">Expectations</h2>
+  <p class="step-subtitle">Honest answers here make the difference between a good beta experience and a great one.</p>
+
+  <div class="field-group">
+    <div class="field">
+      <label for="clinical-use">How do you plan to use wearable data clinically?</label>
+      <textarea id="clinical-use" placeholder="e.g. Reviewing before adjustments, sharing with patients, identifying stress patterns…"></textarea>
+    </div>
+    <div class="field">
+      <label for="first-patients">Which patients will you enroll first?</label>
+      <textarea id="first-patients" placeholder="e.g. Patients who already wear devices, athletes, those with chronic cases you want to track more closely…"></textarea>
+    </div>
+    <div class="field">
+      <label for="concerns">Any concerns or hesitations?</label>
+      <textarea id="concerns" placeholder="Be honest — this helps us serve you better. Concerns about tech setup, patient adoption, time commitment, anything…"></textarea>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="prevStep(4)">← Back</button>
+    <button class="btn-next" onclick="nextStep(4)">Review & Submit →</button>
+  </div>
+</div>
+
+<!-- ── STEP 5: CONFIRMATION ──────────────────────────────────────────────── -->
+<div class="step" id="step-5">
+  <div class="step-eyebrow">Step 5 of 5</div>
+
+  <div class="success-icon">✓</div>
+  <div class="success-title">Profile Complete</div>
+  <div class="success-sub">Your PURA dashboard is being configured. Review your answers below, then submit to notify our team.</div>
+  <div class="success-note"><strong>Joshua Santos</strong> will receive your onboarding summary within minutes.</div>
+
+  <div id="summary-container"></div>
+
+  <button class="btn-finish" onclick="submitOnboarding()" style="width:100%;margin-bottom:14px">Submit Onboarding Profile →</button>
+
+  <!-- [EDIT: REDIRECT URL] -->
+  <a href="dashboard.html" class="btn-dashboard">Continue to Dashboard →</a>
+
+  <div class="nav-row" style="margin-top:20px">
+    <button class="btn-back" onclick="prevStep(5)">← Edit answers</button>
+    <span></span>
+  </div>
+</div>
+
+</div><!-- /wizard -->
+</div><!-- /content -->
+</div><!-- /shell -->
+
+<script>
+let currentStep = 1;
+const TOTAL_STEPS = 5;
+
+// Checkbox interactivity
+document.querySelectorAll('.check-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const cb = item.querySelector('input[type=checkbox]');
+    cb.checked = !cb.checked;
+    item.classList.toggle('checked', cb.checked);
+  });
+});
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+  document.getElementById('step-counter').textContent = `Step ${n} of ${TOTAL_STEPS}`;
+  document.getElementById('progress-bar').style.width = (n / TOTAL_STEPS * 100) + '%';
+  currentStep = n;
+  window.scrollTo(0, 0);
+}
+
+function nextStep(from) {
+  if (from === TOTAL_STEPS - 1) buildSummary();
+  goToStep(from + 1);
+}
+
+function prevStep(from) {
+  goToStep(from - 1);
+}
+
+function getChecked(containerId) {
+  const vals = [];
+  document.querySelectorAll(`#${containerId} input[type=checkbox]:checked`).forEach(cb => vals.push(cb.value));
+  return vals.join(', ') || '—';
+}
+
+function val(id) { return (document.getElementById(id)?.value || '').trim() || '—'; }
+
+function buildSummary() {
+  const data = [
+    { section: 'Practice Identity', rows: [
+      ['Clinic Name', val('clinic-name')],
+      ['Location', val('location')],
+      ['Years in Practice', val('years')],
+      ['Team Size', val('team')],
+      ['Patients / Week', val('patients-week')],
+      ['EHR / Software', val('ehr')],
+    ]},
+    { section: 'Clinical Philosophy', rows: [
+      ['Techniques', getChecked('techniques')],
+      ['Demographics', getChecked('demographics')],
+      ['Outcome Measurement', val('outcomes')],
+    ]},
+    { section: 'Goals & Vision', rows: [
+      ['90-Day Success', val('goal-90')],
+      ['Long-Term Vision', val('vision')],
+      ['Why PURA', val('why-pura')],
+    ]},
+    { section: 'Expectations', rows: [
+      ['Clinical Use of Data', val('clinical-use')],
+      ['First Patients to Enroll', val('first-patients')],
+      ['Concerns / Hesitations', val('concerns')],
+    ]},
+  ];
+
+  const container = document.getElementById('summary-container');
+  container.innerHTML = data.map(section => `
+    <div class="summary-block">
+      <div class="summary-section">${section.section}</div>
+      ${section.rows.map(([k, v]) => `
+        <div class="summary-row">
+          <span class="summary-key">${k}</span>
+          <span class="summary-val">${v}</span>
+        </div>`).join('')}
+    </div>
+  `).join('');
+}
+
+function submitOnboarding() {
+  const clinicName = val('clinic-name') || 'Your Clinic';
+  const body = `PURA ONBOARDING — ${clinicName}
+==========================================
+
+PRACTICE IDENTITY
+Clinic Name: ${val('clinic-name')}
+Location: ${val('location')}
+Years in Practice: ${val('years')}
+Team Size: ${val('team')}
+Patients / Week: ${val('patients-week')}
+EHR / Software: ${val('ehr')}
+
+CLINICAL PHILOSOPHY
+Techniques: ${getChecked('techniques')}
+Demographics: ${getChecked('demographics')}
+Outcome Measurement: ${val('outcomes')}
+
+GOALS & VISION
+90-Day Success: ${val('goal-90')}
+Long-Term Vision: ${val('vision')}
+Why PURA: ${val('why-pura')}
+
+EXPECTATIONS
+Clinical Use of Data: ${val('clinical-use')}
+First Patients to Enroll: ${val('first-patients')}
+Concerns / Hesitations: ${val('concerns')}
+
+==========================================
+Submitted via PURA Onboarding Wizard`;
+
+  // [EDIT: CONTACT EMAIL]
+  window.location.href = `mailto:viveapr@gmail.com?subject=PURA Onboarding Complete — ${encodeURIComponent(clinicName)}&body=${encodeURIComponent(body)}`;
+}
+</script>
+
+<!--
+====================================================
+PURA ONBOARDING — EDITABLE SECTION
+====================================================
+[EDIT: STEP QUESTIONS]  — Add/remove questions inside each step's .field-group div
+[EDIT: STEP LABELS]     — Change step titles in <h2 class="step-title"> tags
+[EDIT: REDIRECT URL]    — Change dashboard.html link on Step 5 to your real dashboard URL
+[EDIT: CONTACT EMAIL]   — Change viveapr@gmail.com in the submitOnboarding() function
+[EDIT: PROGRESS BAR]    — Adjust step count by changing TOTAL_STEPS = 5 in the script
+====================================================
+-->
+</body>
+</html>
