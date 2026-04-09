@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURA Health -- Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="pura-config.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#08080a;color:#f0f0f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:40px;max-width:400px;width:100%;text-align:center}
+.logo{font-size:24px;font-weight:700;color:#c8ff00;margin-bottom:8px}
+.clinic-name{font-size:16px;color:#888;margin-bottom:32px}
+h2{font-size:20px;font-weight:600;margin-bottom:8px}
+p{color:#666;font-size:14px;margin-bottom:28px}
+.field{margin-bottom:16px;text-align:left}
+label{font-size:12px;font-weight:500;color:#888;display:block;margin-bottom:6px}
+input{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:20px;text-align:center;letter-spacing:6px;outline:none}
+input:focus{border-color:#c8ff00}
+.btn{width:100%;background:#c8ff00;color:#08080a;font-size:16px;font-weight:700;padding:16px;border-radius:10px;border:none;cursor:pointer;margin-top:8px;font-family:'Inter',sans-serif}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.error{color:#ef4444;font-size:13px;margin-top:12px;display:none}
+.help{font-size:12px;color:#444;margin-top:20px}
+.help a{color:#666;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="card" id="login-card">
+  <div class="logo">PURA</div>
+  <div class="clinic-name" id="clinic-display">DC Portal</div>
+  <h2>Sign In</h2>
+  <p>Enter your PIN to access your clinic portal</p>
+  <div class="field">
+    <label>PIN</label>
+    <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="&bull;&bull;&bull;&bull;" autocomplete="current-password">
+  </div>
+  <button class="btn" id="login-btn" onclick="doLogin()">Sign In</button>
+  <div class="error" id="login-error"></div>
+  <div class="help">Forgot your PIN? <a href="mailto:viveapr@gmail.com">Contact PURA Support</a></div>
+</div>
+
+<div class="card" id="change-pin-card" style="display:none">
+  <div class="logo">PURA</div>
+  <h2>Set Your PIN</h2>
+  <p>This is your first login. Choose a new PIN to secure your portal.</p>
+  <div class="field">
+    <label>New PIN (4-6 digits)</label>
+    <input type="password" id="new-pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="New PIN">
+  </div>
+  <div class="field">
+    <label>Confirm PIN</label>
+    <input type="password" id="confirm-pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Confirm PIN">
+  </div>
+  <button class="btn" onclick="changePin()">Set PIN and Sign In</button>
+  <div class="error" id="pin-error"></div>
+</div>
+
+<script>
+var dcSlug = getDCSlug();
+var dc = getDC();
+var authId = null;
+
+window.addEventListener('DOMContentLoaded', function() {
+  if (!dc) { document.querySelector('.clinic-name').textContent = 'Invalid link'; return; }
+  document.getElementById('clinic-display').textContent = dc.clinic;
+  document.title = 'PURA -- ' + dc.clinic;
+  var session = getSession();
+  var sessSlug = getSessSlug();
+  if (session && sessSlug === dcSlug) {
+    window.location.href = 'portal.html?dc=' + dcSlug;
+  }
+  document.getElementById('pin-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+
+async function doLogin() {
+  var pin = document.getElementById('pin-input').value.trim();
+  if (!pin) return;
+  var btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Checking...';
+  var rows = await dbGet('dc_auth', 'slug=eq.' + dcSlug + '&select=id,pin,clinic_id,login_count');
+  if (!rows || !rows[0]) { showErr('Account not found. Contact viveapr@gmail.com'); btn.disabled=false; btn.textContent='Sign In'; return; }
+  var rec = rows[0];
+  authId = rec.id;
+  if (rec.pin !== pin) { showErr('Incorrect PIN. Try again.'); btn.disabled=false; btn.textContent='Sign In'; return; }
+  if (pin === '1234') { document.getElementById('login-card').style.display='none'; document.getElementById('change-pin-card').style.display='block'; return; }
+  await createSession(rec);
+}
+
+async function createSession(rec) {
+  var token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  var expires = new Date(Date.now() + 8*60*60*1000).toISOString();
+  await dbPatch('dc_auth', 'id=eq.' + rec.id, { session_token: token, session_expires: expires, last_login: new Date().toISOString(), login_count: (rec.login_count || 0) + 1 });
+  setSession(dcSlug, token);
+  await dbPost('notifications', { clinic_id: rec.clinic_id, dc_slug: dcSlug, type: 'login', subject: 'DC Login', body: dc.name + ' logged in', sent_to: [] });
+  window.location.href = 'portal.html?dc=' + dcSlug;
+}
+
+async function changePin() {
+  var np = document.getElementById('new-pin').value.trim();
+  var cp = document.getElementById('confirm-pin').value.trim();
+  if (np.length < 4) { showPinErr('PIN must be at least 4 digits'); return; }
+  if (np !== cp) { showPinErr('PINs do not match'); return; }
+  var rows = await dbGet('dc_auth', 'slug=eq.' + dcSlug + '&select=id,clinic_id,login_count');
+  if (!rows || !rows[0]) return;
+  var rec = rows[0];
+  await dbPatch('dc_auth', 'id=eq.' + rec.id, { pin: np });
+  await createSession(rec);
+}
+
+function showErr(msg) { var e = document.getElementById('login-error'); e.textContent = msg; e.style.display = 'block'; }
+function showPinErr(msg) { var e = document.getElementById('pin-error'); e.textContent = msg; e.style.display = 'block'; }
+</script>
+</body>
+</html>

@@ -1,45 +1,52 @@
-# PURA Health — Key Setup Guide
+# PURA Health -- Key Setup
 
-## All three keys go in ONE file: pura-config.js
+## 3 keys to add in pura-config.js
 
-### 1. Supabase Anon Key (database)
-1. Go to: https://supabase.com/dashboard/project/oljhhgodblludybhndgj
-2. Click Settings → API
-3. Copy the "anon public" key (long string starting with eyJ...)
-4. In pura-config.js, replace: YOUR_SUPABASE_ANON_KEY
+### 1. Supabase (database)
+Go to: supabase.com/dashboard/project/oljhhgodblludybhndgj
+Settings -> API -> copy "anon public" key
+Replace: YOUR_SUPABASE_ANON_KEY
 
-### 2. Anthropic API Key (AI responses)
-1. Go to: https://console.anthropic.com
-2. Click API Keys → Create Key → copy it
-3. In pura-config.js, replace: YOUR_ANTHROPIC_API_KEY
-Note: Uses claude-haiku-4-5-20251001 — fastest, most cost-efficient model.
+### 2. Anthropic API (AI responses)
+Go to: console.anthropic.com -> API Keys -> Create Key
+Replace: YOUR_ANTHROPIC_API_KEY
+Model: claude-haiku-4-5-20251001 (fastest, most efficient)
 
-### 3. Web3Forms Key (email notifications)
-1. Go to: https://web3forms.com
-2. Enter viveapr@gmail.com → click Get Free Key
-3. Copy the access key
-4. In pura-config.js, replace: YOUR_WEB3FORMS_KEY
+### 3. Web3Forms (free email notifications)
+Go to: web3forms.com -> enter viveapr@gmail.com -> Get Free Key
+Replace: YOUR_WEB3FORMS_KEY
 
-## After adding all 3 keys:
-```
-cd ~/PURA
-git add pura-config.js
-git commit -m "Add API keys"
-git push origin main
-```
+## After adding keys:
+git add pura-config.js && git commit -m "Add keys" && git push
 
-## Your links after setup:
+## DC Login System
+Default PIN: 1234 (all DCs forced to change on first login)
+Admin can reset any PIN: admin.html -> Manage DCs -> Reset PIN
 
-### Admin Dashboard (Joshua only)
-https://pura-delta.vercel.app/admin.html
-Password: pura2026santos
+## To change a DC name or clinic name:
+admin.html (password: pura2026santos) -> Manage DCs -> Edit -> Save
+Changes appear in DC portal on next page load.
 
-### Each DC gets exactly 2 links:
-- Portal (DC only): pura-delta.vercel.app/portal.html?dc=[slug]
-- Check-in (share with patients): pura-delta.vercel.app/checkin.html?dc=[slug]
+## To add a new DC:
+admin.html -> Add New DC -> fill form -> Save
+DC receives welcome email automatically with all 3 links.
 
-### Public beta interest form:
-https://pura-delta.vercel.app/beta.html
+## Permanent DC URLs (slugs never change):
+Login:    pura-delta.vercel.app/login.html?dc=[slug]
+Portal:   pura-delta.vercel.app/portal.html?dc=[slug]
+Checkin:  pura-delta.vercel.app/checkin.html?dc=[slug]
 
-## Future upgrade (when scaling beyond beta):
-Move ANTHROPIC_API_KEY to a Cloudflare Worker proxy to keep it server-side.
+Slugs: harrison-coleman | yina-cuevas | david-miranda | bryant-ramirez | ian-brewer | denis-chang
+
+## Admin: pura-delta.vercel.app/admin.html (password: pura2026santos)
+## Beta form: pura-delta.vercel.app/beta.html
+
+## What fires automatically on every patient check-in:
+1. PURA Signal calculated and stored in Supabase
+2. pura_index_history row saved (permanent research record)
+3. Alert engine checks signal/pain/stress thresholds
+4. If threshold breached: instant email to DC + admin copy + saved to alerts
+5. Thriving alert fires if signal >= 85
+6. AI generates personalized 3-paragraph patient response
+7. Check-in notification email sent to DC
+8. Admin copy logged

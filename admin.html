@@ -3,692 +3,612 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PURA Admin — Command Dashboard</title>
+<title>PURA Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="pura-config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Inter',-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
-
-  /* AUTH GATE */
-  #auth-gate{position:fixed;inset:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:9999;}
-  .auth-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:48px;width:360px;text-align:center;}
-  .auth-logo{font-size:32px;font-weight:800;color:#6366f1;margin-bottom:8px;}
-  .auth-sub{color:#64748b;font-size:14px;margin-bottom:32px;}
-  .auth-input{width:100%;padding:12px 16px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:15px;margin-bottom:16px;outline:none;}
-  .auth-input:focus{border-color:#6366f1;}
-  .auth-btn{width:100%;padding:12px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;}
-  .auth-btn:hover{background:#4f46e5;}
-  .auth-err{color:#ef4444;font-size:13px;margin-top:8px;display:none;}
-
-  /* LAYOUT */
-  #app{display:none;min-height:100vh;}
-  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#1e293b;border-right:1px solid #334155;padding:24px 0;display:flex;flex-direction:column;}
-  .sidebar-logo{padding:0 20px 24px;font-size:20px;font-weight:800;color:#6366f1;border-bottom:1px solid #334155;}
-  .sidebar-logo span{color:#e2e8f0;font-size:12px;display:block;font-weight:400;margin-top:2px;}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;color:#94a3b8;font-size:14px;font-weight:500;transition:all .15s;}
-  .nav-item:hover,.nav-item.active{background:#0f172a;color:#e2e8f0;}
-  .nav-item.active{border-right:3px solid #6366f1;}
-  .nav-icon{font-size:16px;width:20px;text-align:center;}
-  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid #334155;font-size:12px;color:#475569;}
-
-  .main{margin-left:220px;padding:32px;}
-  .page-header{margin-bottom:28px;}
-  .page-title{font-size:22px;font-weight:700;color:#f1f5f9;}
-  .page-sub{font-size:14px;color:#64748b;margin-top:4px;}
-
-  /* STAT CARDS */
-  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
-  .stat-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;}
-  .stat-label{font-size:12px;color:#64748b;font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
-  .stat-value{font-size:28px;font-weight:700;color:#f1f5f9;}
-  .stat-sub{font-size:12px;color:#64748b;margin-top:4px;}
-
-  /* TABS */
-  .tab-content{display:none;}
-  .tab-content.active{display:block;}
-
-  /* CHART */
-  .chart-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:24px;}
-  .chart-title{font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:16px;}
-  .chart-wrap{height:220px;}
-
-  /* TABLE */
-  .table-card{background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;margin-bottom:20px;}
-  .table-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;}
-  .table-title{font-size:15px;font-weight:600;color:#e2e8f0;}
-  table{width:100%;border-collapse:collapse;}
-  th{padding:10px 16px;text-align:left;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:#0f172a;}
-  td{padding:12px 16px;border-top:1px solid #1e293b;font-size:13px;color:#cbd5e1;}
-  tr:hover td{background:#0f172a22;}
-
-  /* BADGES */
-  .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;}
-  .badge-green{background:#14532d;color:#86efac;}
-  .badge-amber{background:#451a03;color:#fcd34d;}
-  .badge-red{background:#450a0a;color:#fca5a5;}
-  .badge-teal{background:#134e4a;color:#5eead4;}
-  .badge-gray{background:#1e293b;color:#94a3b8;border:1px solid #334155;}
-
-  /* SIGNAL PILL */
-  .signal-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;}
-
-  /* FILTERS */
-  .filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
-  .filter-select{padding:8px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;}
-  .filter-select:focus{border-color:#6366f1;}
-  .export-btn{padding:8px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;}
-  .export-btn:hover{border-color:#6366f1;color:#6366f1;}
-
-  /* BETA LEADS */
-  .lead-row td{vertical-align:top;}
-  .lead-notes{background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 8px;color:#e2e8f0;font-size:12px;width:200px;resize:none;height:56px;}
-  .lead-notes:focus{outline:none;border-color:#6366f1;}
-  .status-select{padding:4px 8px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-size:12px;outline:none;}
-  .email-btn{padding:4px 10px;background:#1e3a5f;border:1px solid #1d4ed8;border-radius:6px;color:#93c5fd;font-size:11px;cursor:pointer;border:none;margin-top:4px;display:block;}
-  .email-btn:hover{background:#1d4ed8;}
-
-  /* CLINIC CARD */
-  .clinic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
-  .clinic-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;}
-  .clinic-name{font-size:15px;font-weight:600;color:#f1f5f9;margin-bottom:4px;}
-  .clinic-city{font-size:12px;color:#64748b;margin-bottom:12px;}
-  .clinic-stat{display:flex;justify-content:space-between;font-size:13px;color:#94a3b8;padding:4px 0;border-top:1px solid #0f172a;}
-  .clinic-stat span:last-child{color:#e2e8f0;font-weight:500;}
-  .link-row{display:flex;gap:8px;margin-top:12px;}
-  .link-btn{flex:1;padding:7px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#6366f1;font-size:11px;text-align:center;cursor:pointer;text-decoration:none;word-break:break-all;}
-  .link-btn:hover{border-color:#6366f1;}
-
-  /* EMPTY STATE */
-  .empty{padding:48px;text-align:center;color:#475569;font-size:14px;}
-
-  /* LOADING */
-  .loading{color:#6366f1;font-size:13px;padding:16px;}
-
-  /* REFRESH */
-  .refresh-btn{padding:6px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;cursor:pointer;}
-  .refresh-btn:hover{border-color:#6366f1;color:#6366f1;}
-
-  @media(max-width:900px){
-    .stats-grid{grid-template-columns:repeat(2,1fr);}
-    .clinic-grid{grid-template-columns:1fr;}
-    .sidebar{width:60px;}
-    .sidebar-logo,.nav-item span,.sidebar-footer{display:none;}
-    .main{margin-left:60px;padding:20px;}
-  }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#08080a;color:#f0f0f0;min-height:100vh;overflow-x:hidden}
+#gate{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.gate-card{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:40px;max-width:360px;width:100%;text-align:center}
+.gate-logo{font-size:26px;font-weight:800;color:#c8ff00;margin-bottom:6px}
+.gate-sub{font-size:14px;color:#555;margin-bottom:28px}
+.gate-input{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:16px;outline:none;margin-bottom:12px}
+.gate-input:focus{border-color:#c8ff00}
+.gate-btn{width:100%;background:#c8ff00;color:#08080a;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.gate-err{color:#ef4444;font-size:13px;margin-top:10px;display:none}
+#app{display:none;flex-direction:row;min-height:100vh}
+.sidebar{width:220px;background:#0a0a0a;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sb-logo{padding:22px 18px 14px;border-bottom:1px solid #1f1f1f}
+.sb-logo .logo{font-size:20px;font-weight:800;color:#c8ff00}
+.sb-logo .sub{font-size:11px;color:#444;margin-top:3px}
+.sb-nav{flex:1;padding:10px 0}
+.sb-item{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;font-size:13px;font-weight:500;color:#666;border-left:3px solid transparent;transition:all 0.15s}
+.sb-item:hover{color:#f0f0f0;background:rgba(255,255,255,0.03)}
+.sb-item.active{color:#c8ff00;background:rgba(200,255,0,0.06);border-left-color:#c8ff00}
+.sb-item .icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.sb-bottom{padding:14px 18px;border-top:1px solid #1f1f1f}
+.signout-btn{width:100%;background:none;border:1px solid #2a2a2a;border-radius:8px;padding:10px;color:#666;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.signout-btn:hover{color:#f0f0f0;border-color:#444}
+.main{margin-left:220px;flex:1;padding:32px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.page-hdr{margin-bottom:24px}
+.page-hdr h1{font-size:22px;font-weight:700;margin-bottom:4px}
+.page-hdr p{color:#555;font-size:13px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:18px;text-align:center}
+.stat-num{font-size:30px;font-weight:800;color:#c8ff00;line-height:1}
+.stat-lbl{font-size:11px;color:#666;margin-top:6px}
+.card{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:22px;margin-bottom:20px}
+.section-title{font-size:11px;font-weight:700;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #1f1f1f}
+.chart-wrap{height:200px;position:relative;margin-top:8px}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.5px;padding:8px 12px;text-align:left;border-bottom:1px solid #1f1f1f}
+td{padding:10px 12px;border-bottom:1px solid #0f0f0f;font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{display:inline-block;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700}
+.badge-green{background:rgba(34,197,94,0.15);color:#22c55e}
+.badge-amber{background:rgba(245,158,11,0.15);color:#f59e0b}
+.badge-red{background:rgba(239,68,68,0.15);color:#ef4444}
+.badge-blue{background:rgba(99,102,241,0.15);color:#818cf8}
+.badge-gray{background:rgba(255,255,255,0.08);color:#888}
+.dc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
+.dc-card{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:22px;transition:border-color 0.15s}
+.dc-card:hover{border-color:#2a2a2a}
+.dc-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.dc-slug-pill{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:3px 8px;font-size:11px;color:#555;font-family:monospace}
+.dc-name{font-size:16px;font-weight:700;margin-bottom:2px}
+.dc-clinic{font-size:13px;color:#888}
+.dc-stats{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid #1f1f1f}
+.dc-stat{text-align:center}
+.dc-stat .n{font-size:18px;font-weight:700;color:#c8ff00}
+.dc-stat .l{font-size:11px;color:#555}
+.dc-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.dc-btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#888;font-family:'Inter',sans-serif;transition:all 0.15s}
+.dc-btn:hover{border-color:#c8ff00;color:#c8ff00}
+.edit-form{margin-top:14px;padding-top:14px;border-top:1px solid #1f1f1f;display:none}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:7px;padding:9px 12px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:13px;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:#c8ff00}
+.save-btn{padding:9px 18px;background:#c8ff00;color:#08080a;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.cancel-btn{padding:9px 18px;background:none;border:1px solid #2a2a2a;border-radius:8px;color:#888;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.cancel-btn:hover{border-color:#444;color:#f0f0f0}
+.export-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.export-btn{padding:11px 20px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.export-btn:hover{border-color:#c8ff00;color:#c8ff00}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter-input{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:9px 12px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:13px;outline:none}
+.filter-input:focus{border-color:#c8ff00}
+.loading-row{padding:32px;text-align:center;color:#555;font-size:13px}
+.status-sel{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;padding:5px 8px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:12px;outline:none;cursor:pointer}
+.notes-input{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;padding:5px 8px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:12px;outline:none;width:160px}
+.new-dc-section{margin-bottom:22px}
+.new-dc-section h3{font-size:13px;font-weight:700;color:#888;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #1f1f1f;text-transform:uppercase;letter-spacing:0.5px}
 </style>
 </head>
 <body>
 
-<!-- AUTH GATE -->
-<div id="auth-gate">
-  <div class="auth-card">
-    <div class="auth-logo">PURA</div>
-    <div class="auth-sub">Admin Command Dashboard</div>
-    <input class="auth-input" type="password" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">Sign In</button>
-    <div class="auth-err" id="auth-err">Incorrect password. Try again.</div>
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">PURA</div>
+    <div class="gate-sub">Admin Dashboard</div>
+    <input type="password" class="gate-input" id="gate-pw" placeholder="Admin password" onkeydown="if(event.key==='Enter')checkGate()">
+    <button class="gate-btn" onclick="checkGate()">Sign In</button>
+    <div class="gate-err" id="gate-err">Incorrect password.</div>
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="app">
   <div class="sidebar">
-    <div class="sidebar-logo">PURA <span>Admin v1.0</span></div>
-    <nav id="sidebar-nav">
-      <div class="nav-item active" onclick="showTab('overview')" data-tab="overview">
-        <span class="nav-icon">📊</span><span>Overview</span>
-      </div>
-      <div class="nav-item" onclick="showTab('clinics')" data-tab="clinics">
-        <span class="nav-icon">🏥</span><span>Clinics</span>
-      </div>
-      <div class="nav-item" onclick="showTab('patients')" data-tab="patients">
-        <span class="nav-icon">👥</span><span>Patients</span>
-      </div>
-      <div class="nav-item" onclick="showTab('checkins')" data-tab="checkins">
-        <span class="nav-icon">📋</span><span>Check-ins</span>
-      </div>
-      <div class="nav-item" onclick="showTab('leads')" data-tab="leads">
-        <span class="nav-icon">⭐</span><span>Beta Leads</span>
-      </div>
-    </nav>
-    <div class="sidebar-footer">Joshua Santos · Admin</div>
+    <div class="sb-logo">
+      <div class="logo">PURA</div>
+      <div class="sub">Admin Dashboard</div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="showTab('overview')" data-tab="overview"><span class="icon">&#128202;</span>Overview</div>
+      <div class="sb-item" onclick="showTab('dcs')" data-tab="dcs"><span class="icon">&#128104;</span>Manage DCs</div>
+      <div class="sb-item" onclick="showTab('patients')" data-tab="patients"><span class="icon">&#128101;</span>All Patients</div>
+      <div class="sb-item" onclick="showTab('data')" data-tab="data"><span class="icon">&#128203;</span>Data &amp; Export</div>
+      <div class="sb-item" onclick="showTab('leads')" data-tab="leads"><span class="icon">&#128229;</span>Beta Leads</div>
+      <div class="sb-item" onclick="showTab('adddc')" data-tab="adddc"><span class="icon">&#10133;</span>Add New DC</div>
+    </div>
+    <div class="sb-bottom">
+      <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
+    </div>
   </div>
 
   <div class="main">
+    <div class="tab-panel active" id="tab-overview">
+      <div class="page-hdr"><h1>Overview</h1><p>Platform-wide metrics</p></div>
+      <div class="stat-grid" id="overview-stats"><div class="loading-row">Loading stats...</div></div>
+      <div class="card">
+        <div class="section-title">30-Day PURA Signal Trend</div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card"><div class="section-title">Recent Alerts</div><div id="recent-alerts"></div></div>
+        <div class="card"><div class="section-title">Recent Beta Leads</div><div id="recent-leads"></div></div>
+      </div>
+    </div>
 
-    <!-- OVERVIEW TAB -->
-    <div id="tab-overview" class="tab-content active">
-      <div class="page-header">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <div class="page-title">Command Overview</div>
-            <div class="page-sub" id="overview-date">Loading...</div>
+    <div class="tab-panel" id="tab-dcs">
+      <div class="page-hdr"><h1>Manage DCs</h1><p>Edit clinic info and reset PINs</p></div>
+      <div class="dc-grid" id="dc-grid"><div class="loading-row">Loading clinics...</div></div>
+    </div>
+
+    <div class="tab-panel" id="tab-patients">
+      <div class="page-hdr"><h1>All Patients</h1><p>All patients across all clinics</p></div>
+      <div class="filter-row">
+        <input class="filter-input" id="pt-search" placeholder="Search name or email..." oninput="filterPts()">
+        <select class="filter-input" id="pt-clinic-filter" onchange="filterPts()"><option value="">All Clinics</option></select>
+      </div>
+      <div class="card"><div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Name</th><th>Clinic</th><th>Email</th><th>Device</th><th>Signal</th><th>Last Check-in</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="pt-tbody"><tr><td colspan="8" class="loading-row">Loading...</td></tr></tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <div class="tab-panel" id="tab-data">
+      <div class="page-hdr"><h1>Data &amp; Export</h1><p>Download Excel reports</p></div>
+      <div class="filter-row">
+        <input type="date" class="filter-input" id="exp-from">
+        <input type="date" class="filter-input" id="exp-to">
+        <select class="filter-input" id="exp-clinic"><option value="">All Clinics</option></select>
+      </div>
+      <div class="export-btns">
+        <button class="export-btn" onclick="exportCheckins()">&#128190; Check-ins (.xlsx)</button>
+        <button class="export-btn" onclick="exportTrends()">&#128200; Patient Trends (.xlsx)</button>
+        <button class="export-btn" onclick="exportLeads()">&#128229; Beta Leads (.xlsx)</button>
+      </div>
+      <div class="card"><div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Date</th><th>Patient</th><th>Clinic</th><th>Signal</th><th>Pain</th><th>Sleep</th><th>Energy</th><th>Stress</th><th>Device</th></tr></thead>
+          <tbody id="data-tbody"><tr><td colspan="9" class="loading-row">Loading...</td></tr></tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <div class="tab-panel" id="tab-leads">
+      <div class="page-hdr"><h1>Beta Leads</h1><p>Interest form submissions</p></div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+        <input class="filter-input" id="lead-search" placeholder="Search leads..." oninput="filterLeads()">
+        <select class="filter-input" id="bulk-status">
+          <option value="contacted">Contacted</option>
+          <option value="demo_scheduled">Demo Scheduled</option>
+          <option value="onboarded">Onboarded</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <button class="save-btn" onclick="bulkUpdateLeads()">Bulk Update Selected</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table>
+          <thead><tr><th><input type="checkbox" id="select-all-leads" onclick="toggleAllLeads(this)"></th><th>Name</th><th>Clinic</th><th>Email</th><th>City</th><th>Pts/Wk</th><th>Status</th><th>Notes</th><th>Date</th></tr></thead>
+          <tbody id="leads-tbody"><tr><td colspan="9" class="loading-row">Loading leads...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-adddc">
+      <div class="page-hdr"><h1>Add New DC</h1><p>Onboard a new beta clinic</p></div>
+      <div class="card">
+        <div class="new-dc-section">
+          <h3>DC Information</h3>
+          <div class="form-row-2">
+            <div class="form-group"><label>DC Full Name *</label><input type="text" id="ndc-name" placeholder="Dr. Jane Smith" oninput="autoSlug()"></div>
+            <div class="form-group"><label>Clinic Name *</label><input type="text" id="ndc-clinic" placeholder="Smith Chiropractic"></div>
           </div>
-          <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
-        </div>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Beta Clinics</div>
-          <div class="stat-value" id="stat-clinics">—</div>
-          <div class="stat-sub">Active DCs</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Patients</div>
-          <div class="stat-value" id="stat-patients">—</div>
-          <div class="stat-sub">Enrolled</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Check-ins Today</div>
-          <div class="stat-value" id="stat-today">—</div>
-          <div class="stat-sub" id="stat-today-sub">Loading...</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Check-ins</div>
-          <div class="stat-value" id="stat-total-checkins">—</div>
-          <div class="stat-sub">All time</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Avg PURA Signal</div>
-          <div class="stat-value" id="stat-avg-signal">—</div>
-          <div class="stat-sub">Last 7 days</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Active Alerts</div>
-          <div class="stat-value" id="stat-alerts" style="color:#ef4444;">—</div>
-          <div class="stat-sub">Signal &lt; 40</div>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">PURA Signal — 30 Day Trend</div>
-        <div class="chart-wrap"><canvas id="signal-chart"></canvas></div>
-      </div>
-      <div class="table-card">
-        <div class="table-header"><div class="table-title">Recent Check-ins</div></div>
-        <div id="recent-checkins-body">
-          <div class="loading">Loading...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CLINICS TAB -->
-    <div id="tab-clinics" class="tab-content">
-      <div class="page-header">
-        <div class="page-title">Beta Clinics</div>
-        <div class="page-sub">All active DC partners in the beta program</div>
-      </div>
-      <div class="clinic-grid" id="clinics-grid">
-        <div class="loading">Loading...</div>
-      </div>
-    </div>
-
-    <!-- PATIENTS TAB -->
-    <div id="tab-patients" class="tab-content">
-      <div class="page-header">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <div class="page-title">All Patients</div>
-            <div class="page-sub">Every enrolled patient across all clinics</div>
+          <div class="form-row-2">
+            <div class="form-group"><label>Email *</label><input type="email" id="ndc-email" placeholder="jane@smithchiro.com"></div>
+            <div class="form-group"><label>Phone</label><input type="text" id="ndc-phone" placeholder="(512) 555-0100"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group"><label>City</label><input type="text" id="ndc-city" placeholder="Austin"></div>
+            <div class="form-group"><label>State</label><input type="text" id="ndc-state" placeholder="TX" maxlength="2"></div>
           </div>
         </div>
-      </div>
-      <div class="filters">
-        <select class="filter-select" id="patient-clinic-filter" onchange="filterPatients()">
-          <option value="">All Clinics</option>
-        </select>
-      </div>
-      <div class="table-card">
-        <div class="table-header">
-          <div class="table-title">Patients</div>
+        <div class="new-dc-section">
+          <h3>Portal Setup</h3>
+          <div class="form-row-2">
+            <div class="form-group"><label>URL Slug * <span style="color:#444;font-size:10px">(auto-generated)</span></label><input type="text" id="ndc-slug" placeholder="jane-smith"></div>
+            <div class="form-group"><label>Initial PIN</label><input type="text" id="ndc-pin" value="1234" maxlength="6"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group"><label>Specialty</label><input type="text" id="ndc-specialty" placeholder="Family Chiropractic"></div>
+            <div class="form-group"><label>Language</label><select id="ndc-lang"><option value="en">English</option><option value="es">Spanish</option></select></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group"><label>Instagram</label><input type="text" id="ndc-ig" placeholder="@smithchiro"></div>
+            <div class="form-group"><label>Website</label><input type="text" id="ndc-web" placeholder="smithchiro.com"></div>
+          </div>
         </div>
-        <div id="patients-body"><div class="loading">Loading...</div></div>
+        <div id="add-dc-err" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>
+        <button class="save-btn" style="width:100%;padding:14px;font-size:15px" onclick="addNewDC()">Add DC &amp; Send Welcome Email</button>
       </div>
     </div>
-
-    <!-- CHECK-INS TAB -->
-    <div id="tab-checkins" class="tab-content">
-      <div class="page-header">
-        <div class="page-title">Check-in Records</div>
-        <div class="page-sub">All patient submissions with full signal data</div>
-      </div>
-      <div class="filters">
-        <select class="filter-select" id="ci-clinic-filter" onchange="filterCheckins()">
-          <option value="">All Clinics</option>
-        </select>
-        <select class="filter-select" id="ci-date-filter" onchange="filterCheckins()">
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="90">Last 90 days</option>
-          <option value="">All time</option>
-        </select>
-        <button class="export-btn" onclick="exportRaw()">📥 Export Raw Data</button>
-        <button class="export-btn" onclick="exportDailyAvg()">📊 Daily Averages</button>
-        <button class="export-btn" onclick="exportClinicSummary()">🏥 Clinic Summary</button>
-      </div>
-      <div class="table-card">
-        <div class="table-header"><div class="table-title">Check-ins</div></div>
-        <div id="checkins-body"><div class="loading">Loading...</div></div>
-      </div>
-    </div>
-
-    <!-- BETA LEADS TAB -->
-    <div id="tab-leads" class="tab-content">
-      <div class="page-header">
-        <div class="page-title">Beta Leads</div>
-        <div class="page-sub">Interest form submissions from beta.html</div>
-      </div>
-      <div class="table-card">
-        <div class="table-header">
-          <div class="table-title">Leads</div>
-          <div style="font-size:12px;color:#64748b;" id="leads-count"></div>
-        </div>
-        <div id="leads-body"><div class="loading">Loading...</div></div>
-      </div>
-    </div>
-
-  </div><!-- /main -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <script>
-// AUTH
-function checkAuth() {
-  const pw = document.getElementById('pw-input').value;
-  if (pw === 'pura2026santos') {
+var _allLeads = [];
+var _allPts = [];
+var _chartInst = null;
+
+function checkGate() {
+  var pw = document.getElementById('gate-pw').value;
+  if (pw === PURA.ADMIN_PASS) {
     sessionStorage.setItem('pura_admin', '1');
-    document.getElementById('auth-gate').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    initAdmin();
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    showTab(sessionStorage.getItem('pura_admin_tab') || 'overview');
   } else {
-    document.getElementById('auth-err').style.display = 'block';
-    document.getElementById('pw-input').value = '';
+    var err = document.getElementById('gate-err');
+    err.style.display = 'block';
+    err.textContent = 'Incorrect password.';
   }
 }
 
-// Auto-auth if already logged in this session
-if (sessionStorage.getItem('pura_admin') === '1') {
-  document.getElementById('auth-gate').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-}
+window.addEventListener('DOMContentLoaded', function() {
+  if (sessionStorage.getItem('pura_admin') === '1') {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    showTab(sessionStorage.getItem('pura_admin_tab') || 'overview');
+  }
+  document.getElementById('gate-pw').addEventListener('keydown', function(e) { if (e.key === 'Enter') checkGate(); });
+});
 
-// NAV
+function doSignOut() { sessionStorage.removeItem('pura_admin'); location.reload(); }
+
 function showTab(name) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  document.querySelector(`[data-tab="${name}"]`).classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.sb-item').forEach(function(i) { i.classList.remove('active'); });
+  var panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  var item = document.querySelector('[data-tab="' + name + '"]');
+  if (item) item.classList.add('active');
+  sessionStorage.setItem('pura_admin_tab', name);
+  if (name === 'overview') loadOverview();
+  else if (name === 'dcs') loadDCs();
+  else if (name === 'patients') loadAllPts();
+  else if (name === 'data') loadDataTab();
+  else if (name === 'leads') loadLeads();
 }
 
-// DATA
-let allCheckins = [];
-let allPatients = [];
-let allLeads = [];
-
-async function initAdmin() {
-  document.getElementById('overview-date').textContent = today();
-  await loadAll();
+async function loadOverview() {
+  var statsEl = document.getElementById('overview-stats');
+  var results = await Promise.all([
+    dbGet('clinics', 'status=eq.beta&select=id'),
+    dbGet('patients', 'select=id'),
+    dbGet('daily_checkins', 'checkin_date=eq.' + todayISO() + '&select=id'),
+    dbGet('daily_checkins', 'select=id'),
+    dbGet('daily_checkins', 'select=pura_index'),
+    dbGet('alerts', 'status=eq.pending&select=id')
+  ]);
+  var betaCnt = results[0] ? results[0].length : 0;
+  var ptCnt = results[1] ? results[1].length : 0;
+  var todayCnt = results[2] ? results[2].length : 0;
+  var totalCi = results[3] ? results[3].length : 0;
+  var sigs = results[4] ? results[4].map(function(r) { return r.pura_index; }).filter(function(v) { return v; }) : [];
+  var avgSig = sigs.length > 0 ? Math.round(sigs.reduce(function(a, b) { return a + b; }, 0) / sigs.length) : 0;
+  var alertCnt = results[5] ? results[5].length : 0;
+  var sc = avgSig >= 80 ? '#22c55e' : avgSig >= 65 ? '#6ee7b7' : avgSig >= 40 ? '#f59e0b' : '#ef4444';
+  statsEl.innerHTML = '<div class="stat-card"><div class="stat-num">' + betaCnt + '</div><div class="stat-lbl">Beta Clinics</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + ptCnt + '</div><div class="stat-lbl">Total Patients</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + todayCnt + '</div><div class="stat-lbl">Check-ins Today</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + totalCi + '</div><div class="stat-lbl">Total Check-ins</div></div>' +
+    '<div class="stat-card"><div class="stat-num" style="color:' + sc + '">' + avgSig + '</div><div class="stat-lbl">Avg PURA Signal</div></div>' +
+    '<div class="stat-card"><div class="stat-num" style="color:#ef4444">' + alertCnt + '</div><div class="stat-lbl">Active Alerts</div></div>';
+  loadTrendChart();
+  loadRecentAlerts();
+  loadRecentLeads();
 }
 
-async function loadAll() {
-  await Promise.all([loadCheckins(), loadPatients(), loadLeads()]);
-  renderOverview();
-  renderClinics();
-  renderPatientsTab();
-  renderCheckinsTab();
-  renderLeadsTab();
-  buildChart();
+async function loadTrendChart() {
+  var rows = await dbGet('daily_checkins', 'checkin_date=gte.' + daysAgo(30) + '&select=checkin_date,pura_index&order=checkin_date.asc&limit=2000');
+  if (!rows || rows.length === 0) return;
+  var byDate = {};
+  rows.forEach(function(r) { if (!byDate[r.checkin_date]) byDate[r.checkin_date] = []; byDate[r.checkin_date].push(r.pura_index); });
+  var labels = Object.keys(byDate).sort();
+  var data = labels.map(function(d) {
+    var vals = byDate[d].filter(function(v) { return v; });
+    return vals.length ? Math.round(vals.reduce(function(a, b) { return a + b; }, 0) / vals.length) : 0;
+  });
+  var ctx = document.getElementById('trendChart').getContext('2d');
+  if (_chartInst) _chartInst.destroy();
+  _chartInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels: labels.map(function(d) { return d.slice(5); }), datasets: [{ label: 'Avg Signal', data: data, borderColor: '#c8ff00', backgroundColor: 'rgba(200,255,0,0.08)', borderWidth: 2, pointRadius: 2, tension: 0.4, fill: true }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555', font: { size: 10 } } }, y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555', font: { size: 10 } } } } }
+  });
 }
 
-async function loadCheckins() {
-  try {
-    const data = await dbSelect('check_ins', 'order=created_at.desc&limit=500');
-    if (Array.isArray(data)) allCheckins = data;
-  } catch(e) { console.error(e); }
+async function loadRecentAlerts() {
+  var el = document.getElementById('recent-alerts');
+  var rows = await dbGet('alerts', 'order=created_at.desc&limit=5');
+  if (!rows || rows.length === 0) { el.innerHTML = '<div style="color:#555;font-size:13px;padding:8px 0">No alerts.</div>'; return; }
+  el.innerHTML = rows.map(function(a) {
+    var dt = a.created_at ? new Date(a.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+    var cls = (a.alert_type === 'alert_drop' || a.alert_type === 'alert_pain') ? 'badge-red' : 'badge-amber';
+    return '<div style="padding:8px 0;border-bottom:1px solid #0f0f0f;font-size:13px;display:flex;justify-content:space-between;align-items:center"><span>' + (a.alert_message || a.alert_type) + '</span><span class="badge ' + cls + '" style="margin-left:8px">' + dt + '</span></div>';
+  }).join('');
 }
 
-async function loadPatients() {
-  try {
-    const data = await dbSelect('patients', 'order=created_at.desc&limit=500');
-    if (Array.isArray(data)) allPatients = data;
-  } catch(e) { console.error(e); }
+async function loadRecentLeads() {
+  var el = document.getElementById('recent-leads');
+  var rows = await dbGet('beta_interests', 'order=created_at.desc&limit=5');
+  if (!rows || rows.length === 0) { el.innerHTML = '<div style="color:#555;font-size:13px;padding:8px 0">No leads.</div>'; return; }
+  el.innerHTML = rows.map(function(l) {
+    var dt = l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+    return '<div style="padding:8px 0;border-bottom:1px solid #0f0f0f;font-size:13px;display:flex;justify-content:space-between"><span>' + (l.full_name || '') + ' -- ' + (l.clinic_name || '') + '</span><span style="color:#555;font-size:11px">' + dt + '</span></div>';
+  }).join('');
+}
+
+async function loadDCs() {
+  var grid = document.getElementById('dc-grid');
+  grid.innerHTML = '<div class="loading-row">Loading clinics...</div>';
+  var clinics = await dbGet('clinics', 'select=id,name,owner_name,email,phone,city,state,status,slug,instagram,website,specialty,years_in_practice&order=owner_name.asc');
+  if (!clinics || clinics.length === 0) { grid.innerHTML = '<div class="loading-row" style="color:#555">No clinics found.</div>'; return; }
+  var ptCounts = await dbGet('patients', 'select=clinic_id');
+  var ciRows = await dbGet('daily_checkins', 'select=clinic_id,pura_index,created_at&limit=5000');
+  var ptMap = {}, ciMap = {}, sigMap = {}, lastMap = {};
+  if (ptCounts) ptCounts.forEach(function(p) { ptMap[p.clinic_id] = (ptMap[p.clinic_id] || 0) + 1; });
+  if (ciRows) ciRows.forEach(function(c) {
+    ciMap[c.clinic_id] = (ciMap[c.clinic_id] || 0) + 1;
+    if (c.pura_index) { if (!sigMap[c.clinic_id]) sigMap[c.clinic_id] = []; sigMap[c.clinic_id].push(c.pura_index); }
+    if (!lastMap[c.clinic_id] || c.created_at > lastMap[c.clinic_id]) lastMap[c.clinic_id] = c.created_at;
+  });
+  var html = '';
+  clinics.forEach(function(c) {
+    var ptCnt = ptMap[c.id] || 0;
+    var ciCnt = ciMap[c.id] || 0;
+    var sigs = sigMap[c.id] || [];
+    var avgSig = sigs.length > 0 ? Math.round(sigs.reduce(function(a, b) { return a + b; }, 0) / sigs.length) : 0;
+    var lastDt = lastMap[c.id] ? new Date(lastMap[c.id]).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : 'Never';
+    var slug = c.slug || '';
+    var statusCls = c.status === 'active' ? 'badge-green' : c.status === 'beta' ? 'badge-blue' : 'badge-gray';
+    var id = c.id;
+    var ownSafe = (c.owner_name || 'Unknown').replace(/'/g, '');
+    var nameSafe = (c.name || '').replace(/'/g, '');
+    html += '<div class="dc-card">';
+    html += '<div class="dc-card-top"><div><div class="dc-slug-pill">' + slug + '</div><div class="dc-name" style="margin-top:6px">' + (c.owner_name || 'Unknown') + '</div><div class="dc-clinic">' + (c.name || '') + '</div><div style="font-size:12px;color:#555;margin-top:2px">' + (c.city || '') + (c.state ? ', ' + c.state : '') + '</div></div><span class="badge ' + statusCls + '">' + (c.status || 'beta') + '</span></div>';
+    html += '<div style="font-size:12px;color:#666;margin-top:8px">' + (c.email || '') + '</div>';
+    html += '<div class="dc-stats"><div class="dc-stat"><div class="n">' + ptCnt + '</div><div class="l">Patients</div></div><div class="dc-stat"><div class="n">' + ciCnt + '</div><div class="l">Check-ins</div></div><div class="dc-stat"><div class="n" style="color:' + (avgSig >= 65 ? '#22c55e' : '#f59e0b') + '">' + avgSig + '</div><div class="l">Avg Signal</div></div><div class="dc-stat"><div class="n" style="font-size:11px;color:#666">' + lastDt + '</div><div class="l">Last Activity</div></div></div>';
+    html += '<div class="dc-actions"><a class="dc-btn" href="portal.html?dc=' + slug + '" target="_blank" style="text-decoration:none">Portal &rarr;</a><button class="dc-btn" onclick="toggleEdit(\'' + id + '\')">&#9998; Edit</button><button class="dc-btn" onclick="resetPin(\'' + slug + '\')">Reset PIN</button></div>';
+    html += '<div class="edit-form" id="edit-form-' + id + '">';
+    html += '<div class="form-row-2"><div class="form-group"><label>DC Name</label><input type="text" id="ef-name-' + id + '" value="' + (c.owner_name || '') + '"></div><div class="form-group"><label>Clinic Name</label><input type="text" id="ef-clinic-' + id + '" value="' + (c.name || '') + '"></div></div>';
+    html += '<div class="form-row-2"><div class="form-group"><label>Email</label><input type="email" id="ef-email-' + id + '" value="' + (c.email || '') + '"></div><div class="form-group"><label>Phone</label><input type="text" id="ef-phone-' + id + '" value="' + (c.phone || '') + '"></div></div>';
+    html += '<div class="form-row-2"><div class="form-group"><label>City</label><input type="text" id="ef-city-' + id + '" value="' + (c.city || '') + '"></div><div class="form-group"><label>State</label><input type="text" id="ef-state-' + id + '" value="' + (c.state || '') + '" maxlength="2"></div></div>';
+    html += '<div class="form-row-2"><div class="form-group"><label>Instagram</label><input type="text" id="ef-ig-' + id + '" value="' + (c.instagram || '') + '"></div><div class="form-group"><label>Website</label><input type="text" id="ef-web-' + id + '" value="' + (c.website || '') + '"></div></div>';
+    html += '<div class="form-row-2"><div class="form-group"><label>Specialty</label><input type="text" id="ef-spec-' + id + '" value="' + (c.specialty || '') + '"></div><div class="form-group"><label>Years in Practice</label><input type="number" id="ef-yrs-' + id + '" value="' + (c.years_in_practice || '') + '"></div></div>';
+    html += '<div style="display:flex;gap:8px;margin-top:4px"><button class="save-btn" onclick="saveEdit(\'' + id + '\')">Save Changes</button><button class="cancel-btn" onclick="toggleEdit(\'' + id + '\')">Cancel</button></div>';
+    html += '</div></div>';
+  });
+  grid.innerHTML = html;
+}
+
+function toggleEdit(id) {
+  var f = document.getElementById('edit-form-' + id);
+  f.style.display = f.style.display === 'block' ? 'none' : 'block';
+}
+
+async function saveEdit(id) {
+  var body = {
+    owner_name: document.getElementById('ef-name-' + id).value.trim(),
+    name: document.getElementById('ef-clinic-' + id).value.trim(),
+    email: document.getElementById('ef-email-' + id).value.trim(),
+    phone: document.getElementById('ef-phone-' + id).value.trim(),
+    city: document.getElementById('ef-city-' + id).value.trim(),
+    state: document.getElementById('ef-state-' + id).value.trim(),
+    instagram: document.getElementById('ef-ig-' + id).value.trim(),
+    website: document.getElementById('ef-web-' + id).value.trim(),
+    specialty: document.getElementById('ef-spec-' + id).value.trim(),
+    years_in_practice: parseInt(document.getElementById('ef-yrs-' + id).value) || null
+  };
+  await dbPatch('clinics', 'id=eq.' + id, body);
+  toast('Saved');
+  toggleEdit(id);
+  loadDCs();
+}
+
+async function resetPin(slug) {
+  await dbPatch('dc_auth', 'slug=eq.' + slug, { pin: '1234' });
+  toast('PIN reset to 1234 for ' + slug);
+}
+
+async function loadAllPts() {
+  var pts = await dbGet('patients', 'select=id,clinic_id,first_name,last_name,email,device_type,avg_pura_signal,last_checkin_date,total_checkins,status&order=last_checkin_date.desc.nullslast&limit=500');
+  var clinics = await dbGet('clinics', 'select=id,name');
+  var cm = {};
+  if (clinics) { clinics.forEach(function(c) { cm[c.id] = c.name; }); var sel = document.getElementById('pt-clinic-filter'); sel.innerHTML = '<option value="">All Clinics</option>' + clinics.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join(''); }
+  _allPts = pts || [];
+  window._ptCM = cm;
+  renderPtTable(_allPts, cm);
+}
+
+function filterPts() {
+  var q = document.getElementById('pt-search').value.toLowerCase();
+  var cl = document.getElementById('pt-clinic-filter').value;
+  renderPtTable(_allPts.filter(function(p) {
+    return (!q || ((p.first_name || '') + ' ' + (p.last_name || '') + ' ' + (p.email || '')).toLowerCase().includes(q)) && (!cl || p.clinic_id === cl);
+  }), window._ptCM || {});
+}
+
+function renderPtTable(pts, cm) {
+  var tbody = document.getElementById('pt-tbody');
+  if (!pts || pts.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#555;padding:24px">No patients found.</td></tr>'; return; }
+  tbody.innerHTML = pts.map(function(p) {
+    var sig = p.avg_pura_signal || 0;
+    var sc = sig >= 80 ? '#22c55e' : sig >= 65 ? '#6ee7b7' : sig >= 40 ? '#f59e0b' : '#ef4444';
+    return '<tr><td>' + (p.first_name || '') + ' ' + (p.last_name || '') + '</td><td>' + (cm[p.clinic_id] || '--') + '</td><td style="color:#666;font-size:12px">' + (p.email || '--') + '</td><td>' + (p.device_type || '--') + '</td><td style="color:' + sc + ';font-weight:700">' + (sig || '--') + '</td><td>' + (p.last_checkin_date ? relTime(p.last_checkin_date) : 'Never') + '</td><td>' + (p.total_checkins || 0) + '</td><td><span class="badge ' + (p.status === 'active' ? 'badge-green' : 'badge-gray') + '">' + (p.status || 'active') + '</span></td></tr>';
+  }).join('');
+}
+
+async function loadDataTab() {
+  var clinics = await dbGet('clinics', 'select=id,name');
+  if (clinics) {
+    window._cm2 = {};
+    clinics.forEach(function(c) { window._cm2[c.id] = c.name; });
+    document.getElementById('exp-clinic').innerHTML = '<option value="">All Clinics</option>' + clinics.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join('');
+  }
+  var rows = await dbGet('daily_checkins', 'order=created_at.desc&limit=100&select=checkin_date,patient_first_name,patient_last_name,clinic_id,pura_index,pain_level,sleep_quality,energy_level,stress_level,device_type');
+  var cm = window._cm2 || {};
+  var tbody = document.getElementById('data-tbody');
+  if (!rows || rows.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#555;padding:24px">No check-ins.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(function(r) {
+    var sc = (r.pura_index || 0) >= 80 ? '#22c55e' : (r.pura_index || 0) >= 65 ? '#6ee7b7' : (r.pura_index || 0) >= 40 ? '#f59e0b' : '#ef4444';
+    return '<tr><td>' + (r.checkin_date || '') + '</td><td>' + (r.patient_first_name || '') + ' ' + (r.patient_last_name || '') + '</td><td>' + (cm[r.clinic_id] || '--') + '</td><td style="color:' + sc + ';font-weight:700">' + (r.pura_index || '--') + '</td><td>' + (r.pain_level || '--') + '</td><td>' + (r.sleep_quality || '--') + '</td><td>' + (r.energy_level || '--') + '</td><td>' + (r.stress_level || '--') + '</td><td>' + (r.device_type || '--') + '</td></tr>';
+  }).join('');
+}
+
+async function exportCheckins() {
+  var from = document.getElementById('exp-from').value;
+  var to = document.getElementById('exp-to').value;
+  var clinic = document.getElementById('exp-clinic').value;
+  var params = 'order=checkin_date.desc&limit=5000';
+  if (from) params += '&checkin_date=gte.' + from;
+  if (to) params += '&checkin_date=lte.' + to;
+  if (clinic) params += '&clinic_id=eq.' + clinic;
+  var rows = await dbGet('daily_checkins', params);
+  if (!rows || rows.length === 0) { toast('No data found', 'warn'); return; }
+  var wb = XLSX.utils.book_new();
+  var raw = rows.map(function(r) { return { Date: r.checkin_date, Patient: (r.patient_first_name || '') + ' ' + (r.patient_last_name || ''), Email: r.patient_email, Clinic: r.clinic_id, Signal: r.pura_index, Grade: r.pura_grade, Pain: r.pain_level, SleepQ: r.sleep_quality, SleepH: r.sleep_hours, Energy: r.energy_level, Stress: r.stress_level, Function: r.functional_ability, Mood: r.mood, Device: r.device_type, Notes: r.patient_note }; });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(raw), 'Raw');
+  var byDate = {};
+  rows.forEach(function(r) { if (!byDate[r.checkin_date]) byDate[r.checkin_date] = []; byDate[r.checkin_date].push(r); });
+  var daily = Object.keys(byDate).sort().map(function(d) {
+    var rs = byDate[d];
+    var avg = function(f) { var v = rs.map(function(r) { return r[f]; }).filter(function(x) { return x != null; }); return v.length ? Math.round(v.reduce(function(a, b) { return a + b; }, 0) / v.length * 10) / 10 : 0; };
+    return { Date: d, Count: rs.length, AvgSignal: avg('pura_index'), AvgPain: avg('pain_level'), AvgSleep: avg('sleep_quality'), AvgEnergy: avg('energy_level'), AvgStress: avg('stress_level'), Thriving: rs.filter(function(r) { return r.pura_index >= 80; }).length, OnTrack: rs.filter(function(r) { return r.pura_index >= 65 && r.pura_index < 80; }).length, Attention: rs.filter(function(r) { return r.pura_index >= 40 && r.pura_index < 65; }).length, Alert: rs.filter(function(r) { return r.pura_index < 40; }).length };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(daily), 'Daily Averages');
+  var byCl = {};
+  rows.forEach(function(r) { if (!byCl[r.clinic_id]) byCl[r.clinic_id] = []; byCl[r.clinic_id].push(r); });
+  var cm = window._cm2 || {};
+  var clinicSum = Object.keys(byCl).map(function(cid) {
+    var rs = byCl[cid];
+    var sigs = rs.map(function(r) { return r.pura_index; }).filter(function(v) { return v; });
+    var avg = sigs.length ? Math.round(sigs.reduce(function(a, b) { return a + b; }, 0) / sigs.length) : 0;
+    var uniq = new Set(rs.map(function(r) { return r.patient_email; })).size;
+    return { Clinic: cm[cid] || cid, TotalCheckins: rs.length, UniquePatients: uniq, AvgSignal: avg, High: sigs.length ? Math.max.apply(null, sigs) : 0, Low: sigs.length ? Math.min.apply(null, sigs) : 0, PctThriving: (Math.round(rs.filter(function(r) { return r.pura_index >= 80; }).length / rs.length * 100)) + '%', PctOnTrack: (Math.round(rs.filter(function(r) { return r.pura_index >= 65; }).length / rs.length * 100)) + '%' };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clinicSum), 'Clinic Summary');
+  XLSX.writeFile(wb, 'pura-checkins-' + todayISO() + '.xlsx');
+  toast('Exported ' + rows.length + ' check-ins');
+}
+
+async function exportTrends() {
+  var rows = await dbGet('pura_index_history', 'order=patient_id.asc,recorded_date.asc&limit=5000');
+  if (!rows || rows.length === 0) { toast('No trend data', 'warn'); return; }
+  var byPt = {};
+  rows.forEach(function(r) { if (!byPt[r.patient_id]) byPt[r.patient_id] = []; byPt[r.patient_id].push(r); });
+  var pts = await dbGet('patients', 'select=id,first_name,last_name&limit=500');
+  var pm = {};
+  if (pts) pts.forEach(function(p) { pm[p.id] = (p.first_name || '') + ' ' + (p.last_name || ''); });
+  var wb = XLSX.utils.book_new();
+  Object.keys(byPt).forEach(function(pid) {
+    var pr = byPt[pid];
+    var sd = pr.map(function(r, i) {
+      var w = pr.slice(Math.max(0, i - 6), i + 1).map(function(x) { return x.pura_index; }).filter(function(v) { return v; });
+      return { Date: r.recorded_date, Signal: r.pura_index, Grade: r.pura_grade, Pain: r.pain_level, SleepH: r.sleep_hours, SleepQ: r.sleep_quality, Energy: r.energy_level, Stress: r.stress_level, Avg7Day: w.length ? Math.round(w.reduce(function(a, b) { return a + b; }, 0) / w.length) : r.pura_index };
+    });
+    var sn = (pm[pid] || pid).substring(0, 31).replace(/[^a-zA-Z0-9 ]/g, '') || 'Patient';
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sd), sn);
+  });
+  XLSX.writeFile(wb, 'pura-trends-' + todayISO() + '.xlsx');
+  toast('Exported trend data');
+}
+
+async function exportLeads() {
+  var rows = await dbGet('beta_interests', 'order=created_at.desc&limit=1000');
+  if (!rows || rows.length === 0) { toast('No leads', 'warn'); return; }
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Beta Leads');
+  XLSX.writeFile(wb, 'pura-beta-leads-' + todayISO() + '.xlsx');
+  toast('Exported ' + rows.length + ' leads');
 }
 
 async function loadLeads() {
-  try {
-    const data = await dbSelect('beta_interests', 'order=created_at.desc&limit=200');
-    if (Array.isArray(data)) allLeads = data;
-  } catch(e) { console.error(e); }
+  var rows = await dbGet('beta_interests', 'order=created_at.desc&limit=200');
+  _allLeads = rows || [];
+  renderLeads(_allLeads);
 }
 
-// OVERVIEW
-function renderOverview() {
-  const dcSlugs = Object.keys(DC_PROFILES);
-  document.getElementById('stat-clinics').textContent = dcSlugs.length;
-  document.getElementById('stat-patients').textContent = allPatients.length || '—';
-
-  const todayStr = todayISO();
-  const todayCheckins = allCheckins.filter(c => (c.created_at||'').startsWith(todayStr));
-  document.getElementById('stat-today').textContent = todayCheckins.length;
-  document.getElementById('stat-today-sub').textContent = todayStr;
-
-  document.getElementById('stat-total-checkins').textContent = allCheckins.length;
-
-  const week = getDateDaysAgo(7);
-  const recentSignals = allCheckins
-    .filter(c => (c.created_at||'') >= week && c.pura_signal != null)
-    .map(c => c.pura_signal);
-  const avg = recentSignals.length
-    ? Math.round(recentSignals.reduce((a,b) => a+b, 0) / recentSignals.length)
-    : null;
-  document.getElementById('stat-avg-signal').textContent = avg ?? '—';
-
-  const alerts = allCheckins.filter(c =>
-    (c.created_at||'').startsWith(todayStr) && c.pura_signal < 40
-  ).length;
-  document.getElementById('stat-alerts').textContent = alerts;
-
-  // Recent check-ins table
-  const recent = allCheckins.slice(0, 10);
-  if (!recent.length) {
-    document.getElementById('recent-checkins-body').innerHTML = '<div class="empty">No check-ins yet.</div>';
-    return;
-  }
-  let html = '<table><thead><tr><th>Patient</th><th>Clinic</th><th>Signal</th><th>Pain</th><th>Energy</th><th>Date</th></tr></thead><tbody>';
-  recent.forEach(c => {
-    const s = c.pura_signal ?? '—';
-    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === c.clinic_id);
-    html += `<tr>
-      <td>${c.patient_name || c.patient_id || '—'}</td>
-      <td>${dc ? dc.clinic : (c.clinic_id||'—').slice(0,8)+'...'}</td>
-      <td>${s !== '—' ? `<span class="signal-pill" style="background:${signalColor(s)}22;color:${signalColor(s)}">${s} ${signalLabel(s)}</span>` : '—'}</td>
-      <td>${c.pain ?? '—'}/10</td>
-      <td>${c.energy ?? '—'}/10</td>
-      <td>${(c.created_at||'').slice(0,10)}</td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('recent-checkins-body').innerHTML = html;
+function filterLeads() {
+  var q = document.getElementById('lead-search').value.toLowerCase();
+  renderLeads(_allLeads.filter(function(l) { return !q || ((l.full_name || '') + ' ' + (l.clinic_name || '') + ' ' + (l.email || '')).toLowerCase().includes(q); }));
 }
 
-// CHART
-function buildChart() {
-  const ctx = document.getElementById('signal-chart').getContext('2d');
-  const days = 30;
-  const labels = [];
-  const values = [];
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const iso = d.toISOString().split('T')[0];
-    labels.push(iso.slice(5)); // MM-DD
-    const dayCheckins = allCheckins.filter(c =>
-      (c.created_at||'').startsWith(iso) && c.pura_signal != null
-    );
-    const avg = dayCheckins.length
-      ? Math.round(dayCheckins.reduce((a,b) => a + b.pura_signal, 0) / dayCheckins.length)
-      : null;
-    values.push(avg);
-  }
-
-  if (window._signalChart) window._signalChart.destroy();
-  window._signalChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Avg PURA Signal',
-        data: values,
-        borderColor: '#6366f1',
-        backgroundColor: 'rgba(99,102,241,0.1)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 3,
-        pointBackgroundColor: '#6366f1',
-        spanGaps: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: '#1e293b' } },
-        y: { min: 0, max: 100, ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
-      }
-    }
-  });
+function renderLeads(leads) {
+  var tbody = document.getElementById('leads-tbody');
+  if (!leads || leads.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#555;padding:24px">No leads.</td></tr>'; return; }
+  var statuses = ['new','contacted','demo_scheduled','onboarded','rejected'];
+  tbody.innerHTML = leads.map(function(l) {
+    var dt = l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+    var opts = statuses.map(function(s) { return '<option value="' + s + '"' + (l.status === s ? ' selected' : '') + '>' + s.replace('_', ' ') + '</option>'; }).join('');
+    return '<tr><td><input type="checkbox" class="lead-cb" value="' + l.id + '"></td><td>' + (l.full_name || '') + '</td><td>' + (l.clinic_name || '') + '</td><td style="font-size:12px;color:#666">' + (l.email || '') + '</td><td>' + (l.city_state || '') + '</td><td style="text-align:center">' + (l.patients_per_week || '--') + '</td><td><select class="status-sel" onchange="updateLeadStatus(\'' + l.id + '\',this.value)">' + opts + '</select></td><td><input class="notes-input" type="text" value="' + (l.notes || '').replace(/"/g, '') + '" onblur="saveLeadNotes(\'' + l.id + '\',this.value)"></td><td style="color:#555;font-size:11px">' + dt + '</td></tr>';
+  }).join('');
 }
 
-// CLINICS
-function renderClinics() {
-  const dcSlugs = Object.keys(DC_PROFILES);
-  let html = '';
-  dcSlugs.forEach(slug => {
-    const dc = DC_PROFILES[slug];
-    const pts = allPatients.filter(p => p.clinic_id === dc.clinic_id).length;
-    const cis = allCheckins.filter(c => c.clinic_id === dc.clinic_id).length;
-    const todayCis = allCheckins.filter(c =>
-      c.clinic_id === dc.clinic_id && (c.created_at||'').startsWith(todayISO())
-    ).length;
-    const signals = allCheckins
-      .filter(c => c.clinic_id === dc.clinic_id && c.pura_signal != null)
-      .map(c => c.pura_signal);
-    const avgSig = signals.length
-      ? Math.round(signals.reduce((a,b)=>a+b,0)/signals.length) : null;
-
-    html += `<div class="clinic-card">
-      <div class="clinic-name">${dc.name}</div>
-      <div class="clinic-city">${dc.clinic} · ${dc.city}</div>
-      <div class="clinic-stat"><span>Patients</span><span>${pts}</span></div>
-      <div class="clinic-stat"><span>Total Check-ins</span><span>${cis}</span></div>
-      <div class="clinic-stat"><span>Today</span><span>${todayCis}</span></div>
-      <div class="clinic-stat"><span>Avg Signal</span><span>${avgSig ? `<span style="color:${signalColor(avgSig)}">${avgSig}</span>` : '—'}</span></div>
-      <div class="link-row">
-        <a class="link-btn" href="portal.html?dc=${slug}" target="_blank">Portal ↗</a>
-        <a class="link-btn" href="checkin.html?dc=${slug}" target="_blank">Check-in ↗</a>
-      </div>
-    </div>`;
-  });
-  document.getElementById('clinics-grid').innerHTML = html;
-
-  // Populate clinic filters
-  ['patient-clinic-filter','ci-clinic-filter'].forEach(id => {
-    const sel = document.getElementById(id);
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">All Clinics</option>';
-    dcSlugs.forEach(slug => {
-      const dc = DC_PROFILES[slug];
-      sel.innerHTML += `<option value="${dc.clinic_id}">${dc.name}</option>`;
-    });
-    sel.value = cur;
-  });
+async function updateLeadStatus(id, status) { await dbPatch('beta_interests', 'id=eq.' + id, { status: status }); toast('Status updated'); }
+async function saveLeadNotes(id, notes) { await dbPatch('beta_interests', 'id=eq.' + id, { notes: notes }); }
+function toggleAllLeads(cb) { document.querySelectorAll('.lead-cb').forEach(function(el) { el.checked = cb.checked; }); }
+async function bulkUpdateLeads() {
+  var status = document.getElementById('bulk-status').value;
+  var ids = Array.from(document.querySelectorAll('.lead-cb:checked')).map(function(el) { return el.value; });
+  if (ids.length === 0) { toast('No leads selected', 'warn'); return; }
+  await Promise.all(ids.map(function(id) { return dbPatch('beta_interests', 'id=eq.' + id, { status: status }); }));
+  toast('Updated ' + ids.length + ' leads');
+  loadLeads();
 }
 
-// PATIENTS TAB
-function renderPatientsTab() { filterPatients(); }
-
-function filterPatients() {
-  const clinicFilter = document.getElementById('patient-clinic-filter')?.value || '';
-  let pts = allPatients;
-  if (clinicFilter) pts = pts.filter(p => p.clinic_id === clinicFilter);
-
-  if (!pts.length) {
-    document.getElementById('patients-body').innerHTML = '<div class="empty">No patients found.</div>';
-    return;
-  }
-
-  let html = `<table><thead><tr>
-    <th>Name</th><th>Email</th><th>Phone</th><th>Clinic</th><th>Enrolled</th>
-  </tr></thead><tbody>`;
-  pts.forEach(p => {
-    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === p.clinic_id);
-    html += `<tr>
-      <td>${p.first_name||''} ${p.last_name||''}</td>
-      <td>${p.email||'—'}</td>
-      <td>${p.phone||'—'}</td>
-      <td>${dc ? dc.name : '—'}</td>
-      <td>${(p.created_at||'').slice(0,10)}</td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('patients-body').innerHTML = html;
+function autoSlug() {
+  var n = document.getElementById('ndc-name').value.trim().toLowerCase();
+  document.getElementById('ndc-slug').value = n.replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 40);
 }
 
-// CHECK-INS TAB
-function renderCheckinsTab() { filterCheckins(); }
-
-function filterCheckins() {
-  const clinicFilter = document.getElementById('ci-clinic-filter')?.value || '';
-  const daysFilter = document.getElementById('ci-date-filter')?.value || '';
-
-  let cis = allCheckins;
-  if (clinicFilter) cis = cis.filter(c => c.clinic_id === clinicFilter);
-  if (daysFilter) {
-    const cutoff = getDateDaysAgo(parseInt(daysFilter));
-    cis = cis.filter(c => (c.created_at||'') >= cutoff);
-  }
-
-  if (!cis.length) {
-    document.getElementById('checkins-body').innerHTML = '<div class="empty">No check-ins match filters.</div>';
-    return;
-  }
-
-  let html = `<table><thead><tr>
-    <th>Patient</th><th>Clinic</th><th>Signal</th><th>Pain</th><th>Sleep</th><th>Energy</th><th>Stress</th><th>Mood</th><th>Date</th>
-  </tr></thead><tbody>`;
-  cis.forEach(c => {
-    const s = c.pura_signal ?? null;
-    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === c.clinic_id);
-    html += `<tr>
-      <td>${c.patient_name || '—'}</td>
-      <td style="font-size:11px">${dc ? dc.clinic : '—'}</td>
-      <td>${s != null ? `<span class="signal-pill" style="background:${signalColor(s)}22;color:${signalColor(s)};font-size:11px">${s}</span>` : '—'}</td>
-      <td>${c.pain ?? '—'}</td>
-      <td>${c.sleep_quality ?? '—'}</td>
-      <td>${c.energy ?? '—'}</td>
-      <td>${c.stress ?? '—'}</td>
-      <td>${c.mood ?? '—'}</td>
-      <td style="font-size:11px">${(c.created_at||'').slice(0,10)}</td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('checkins-body').innerHTML = html;
+async function addNewDC() {
+  var name = document.getElementById('ndc-name').value.trim();
+  var clinic = document.getElementById('ndc-clinic').value.trim();
+  var email = document.getElementById('ndc-email').value.trim();
+  var phone = document.getElementById('ndc-phone').value.trim();
+  var city = document.getElementById('ndc-city').value.trim();
+  var state = document.getElementById('ndc-state').value.trim();
+  var slug = document.getElementById('ndc-slug').value.trim();
+  var pin = document.getElementById('ndc-pin').value.trim() || '1234';
+  var specialty = document.getElementById('ndc-specialty').value.trim();
+  var ig = document.getElementById('ndc-ig').value.trim();
+  var web = document.getElementById('ndc-web').value.trim();
+  var errEl = document.getElementById('add-dc-err');
+  if (!name || !clinic || !email || !slug) { errEl.textContent = 'Name, clinic, email and slug are required.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  var existing = await dbGet('dc_auth', 'slug=eq.' + slug + '&select=id');
+  if (existing && existing[0]) { errEl.textContent = 'Slug "' + slug + '" is already taken.'; errEl.style.display = 'block'; return; }
+  var clinicRec = await dbPost('clinics', { name: clinic, owner_name: name, email: email, phone: phone, city: city, state: state, slug: slug, status: 'beta', specialty: specialty, instagram: ig, website: web });
+  var cid = clinicRec && clinicRec[0] ? clinicRec[0].id : null;
+  if (!cid) { toast('Error creating clinic', 'error'); return; }
+  await Promise.all([
+    dbPost('dc_auth', { clinic_id: cid, slug: slug, pin: pin }),
+    dbPost('alert_thresholds', { clinic_id: cid, dc_slug: slug, signal_low_threshold: 50, signal_high_threshold: 85, pain_high_threshold: 7, stress_high_threshold: 8, no_checkin_days: 3, notify_dc_email: true, notify_admin_email: true })
+  ]);
+  var base = PURA.BASE;
+  var body = 'Welcome to PURA Health Beta, ' + name + '!\n\nYour clinic "' + clinic + '" is now live.\n\nYour 3 links:\n1. Login: ' + base + '/login.html?dc=' + slug + '\n2. Portal: ' + base + '/portal.html?dc=' + slug + '\n3. Patient Check-in: ' + base + '/checkin.html?dc=' + slug + '\n\nInitial PIN: ' + pin + ' (you will be prompted to change on first login)\n\nQuestions? Reply to this email or contact viveapr@gmail.com\n\n-- PURA Health Team';
+  var adminBody = 'New DC: ' + name + ' | ' + clinic + '\nEmail: ' + email + '\nSlug: ' + slug + '\nCity: ' + city + ', ' + state;
+  await Promise.all([
+    sendMail(email, 'Welcome to PURA Beta -- Your Portal is Ready', body, 'PURA Health'),
+    mailAdmin('New DC added -- ' + clinic, adminBody)
+  ]);
+  toast('DC added. Welcome email sent.');
+  ['ndc-name','ndc-clinic','ndc-email','ndc-phone','ndc-city','ndc-state','ndc-slug','ndc-specialty','ndc-ig','ndc-web'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('ndc-pin').value = '1234';
+  showTab('dcs');
 }
-
-// BETA LEADS
-function renderLeadsTab() {
-  if (!allLeads.length) {
-    document.getElementById('leads-body').innerHTML = '<div class="empty">No beta leads yet. Share beta.html to collect interest.</div>';
-    document.getElementById('leads-count').textContent = '0 leads';
-    return;
-  }
-  document.getElementById('leads-count').textContent = `${allLeads.length} lead${allLeads.length !== 1 ? 's' : ''}`;
-
-  let html = `<table><thead><tr>
-    <th>Name</th><th>Clinic</th><th>Email</th><th>City</th><th>Pts/wk</th><th>Status</th><th>Notes</th><th>Actions</th>
-  </tr></thead><tbody>`;
-  allLeads.forEach(lead => {
-    const statusOpts = ['new','contacted','demo_scheduled','converted','not_interested']
-      .map(s => `<option value="${s}" ${lead.status === s ? 'selected' : ''}>${s.replace(/_/g,' ')}</option>`)
-      .join('');
-    html += `<tr class="lead-row">
-      <td>${lead.full_name||'—'}</td>
-      <td>${lead.clinic_name||'—'}</td>
-      <td style="font-size:11px">${lead.email||'—'}</td>
-      <td style="font-size:11px">${lead.city||'—'}</td>
-      <td>${lead.patients_per_week||'—'}</td>
-      <td>
-        <select class="status-select" onchange="updateLeadStatus('${lead.id}', this.value)">
-          ${statusOpts}
-        </select>
-      </td>
-      <td>
-        <textarea class="lead-notes" onblur="updateLeadNotes('${lead.id}', this.value)">${lead.notes||''}</textarea>
-      </td>
-      <td>
-        <button class="email-btn" onclick="emailLead('${lead.email}','${lead.full_name}')">✉ Email</button>
-      </td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('leads-body').innerHTML = html;
-}
-
-async function updateLeadStatus(id, status) {
-  await dbUpdate('beta_interests', id, { status });
-}
-async function updateLeadNotes(id, notes) {
-  await dbUpdate('beta_interests', id, { notes });
-}
-function emailLead(email, name) {
-  window.open(`mailto:${email}?subject=PURA Health Beta&body=Hi ${name},%0A%0AThanks for your interest in PURA Health...`);
-}
-
-// EXCEL EXPORTS
-function exportRaw() {
-  const rows = allCheckins.map(c => {
-    const dc = Object.values(DC_PROFILES).find(d => d.clinic_id === c.clinic_id);
-    return {
-      Date: (c.created_at||'').slice(0,10),
-      Patient: c.patient_name || c.patient_id || '',
-      Clinic: dc ? dc.name : '',
-      'PURA Signal': c.pura_signal,
-      Pain: c.pain, 'Sleep Quality': c.sleep_quality,
-      'Sleep Hours': c.sleep_hours, Energy: c.energy,
-      Stress: c.stress, Functional: c.functional, Mood: c.mood,
-      Notes: c.notes || ''
-    };
-  });
-  downloadExcel([{ name: 'Raw Check-ins', data: rows }], 'PURA_Raw_Checkins.xlsx');
-}
-
-function exportDailyAvg() {
-  const byDay = {};
-  allCheckins.forEach(c => {
-    const d = (c.created_at||'').slice(0,10);
-    if (!byDay[d]) byDay[d] = [];
-    if (c.pura_signal != null) byDay[d].push(c.pura_signal);
-  });
-  const rows = Object.keys(byDay).sort().map(d => ({
-    Date: d,
-    'Avg Signal': byDay[d].length ? Math.round(byDay[d].reduce((a,b)=>a+b,0)/byDay[d].length) : '',
-    'Check-ins': byDay[d].length
-  }));
-  downloadExcel([{ name: 'Daily Averages', data: rows }], 'PURA_Daily_Averages.xlsx');
-}
-
-function exportClinicSummary() {
-  const rows = Object.values(DC_PROFILES).map(dc => {
-    const cis = allCheckins.filter(c => c.clinic_id === dc.clinic_id);
-    const signals = cis.filter(c => c.pura_signal != null).map(c => c.pura_signal);
-    const avg = signals.length ? Math.round(signals.reduce((a,b)=>a+b,0)/signals.length) : '';
-    return {
-      DC: dc.name, Clinic: dc.clinic, City: dc.city,
-      Patients: allPatients.filter(p => p.clinic_id === dc.clinic_id).length,
-      'Total Check-ins': cis.length,
-      'Avg Signal': avg
-    };
-  });
-  downloadExcel([{ name: 'Clinic Summary', data: rows }], 'PURA_Clinic_Summary.xlsx');
-}
-
-function downloadExcel(sheets, filename) {
-  const wb = XLSX.utils.book_new();
-  sheets.forEach(s => {
-    const ws = XLSX.utils.json_to_sheet(s.data);
-    XLSX.utils.book_append_sheet(wb, ws, s.name);
-  });
-  XLSX.writeFile(wb, filename);
-}
-
-// INIT
-document.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('pura_admin') === '1') {
-    initAdmin();
-  }
-});
 </script>
 </body>
 </html>

@@ -4,631 +4,1013 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PURA Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="pura-config.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#08080a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;display:flex}
-#error-page{display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:40px}
-#error-page h2{font-size:24px;font-weight:700;color:#ef4444}
-#error-page p{color:#555;font-size:15px}
-#app{display:none;flex:1}
-/* SIDEBAR */
-#sidebar{width:240px;position:fixed;left:0;top:0;height:100vh;background:#0a0a0a;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;z-index:20;overflow-y:auto}
-.sb-top{padding:24px}
-.sb-logo{font-size:20px;font-weight:700;color:#c8ff00;letter-spacing:-0.5px}
-.sb-dc-name{font-size:15px;font-weight:500;color:#fff;margin-top:16px;line-height:1.3}
-.sb-clinic{font-size:13px;color:#888;margin-top:2px}
-.sb-city{font-size:12px;color:#555;margin-top:2px}
-.sb-nav{margin-top:32px;flex:1}
-.nav-item{display:flex;align-items:center;padding:12px 24px;cursor:pointer;font-size:14px;color:#666;transition:color 0.15s,background 0.15s;border-left:3px solid transparent}
-.nav-item:hover{color:#aaa;background:#141414}
-.nav-item.active{color:#fff;border-left-color:#c8ff00;background:rgba(200,255,0,0.05)}
-.nav-icon{font-size:18px;margin-right:10px;flex-shrink:0}
-.sb-bottom{position:absolute;bottom:24px;left:24px;right:24px}
-#copy-link-btn{width:100%;background:#1a1a1a;border:1px solid #2a2a2a;color:#c8ff00;border-radius:8px;padding:12px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:background 0.2s}
-#copy-link-btn:hover{background:#222}
-.sb-hint{font-size:11px;color:#444;text-align:center;margin-top:8px}
-/* MAIN */
-#main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
-#topbar{height:60px;border-bottom:1px solid #1f1f1f;padding:0 32px;display:flex;align-items:center;justify-content:space-between;background:#08080a;position:sticky;top:0;z-index:10}
-.topbar-left{font-size:15px;font-weight:500;color:#fff}
-.topbar-right{font-size:13px;color:#555}
-.tab-panel{display:none;padding:32px;flex:1}
+body{font-family:'Inter',sans-serif;background:#08080a;color:#f0f0f0;min-height:100vh;overflow-x:hidden}
+#err{display:none;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px}
+#err h2{color:#ef4444;font-size:24px;margin-bottom:12px}
+#err p{color:#666;font-size:15px}
+#app{display:none;flex-direction:row;min-height:100vh}
+.sidebar{width:240px;background:#0a0a0a;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sb-logo{padding:24px 20px 16px;border-bottom:1px solid #1f1f1f}
+.sb-logo .logo{font-size:22px;font-weight:800;color:#c8ff00;letter-spacing:-0.5px}
+.sb-logo .dc-name{font-size:13px;color:#666;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-logo .clinic-name{font-size:12px;color:#444;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-nav{flex:1;padding:12px 0}
+.sb-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;font-size:14px;font-weight:500;color:#666;transition:all 0.15s;border-left:3px solid transparent;white-space:nowrap}
+.sb-item:hover{color:#f0f0f0;background:rgba(255,255,255,0.03)}
+.sb-item.active{color:#c8ff00;background:rgba(200,255,0,0.06);border-left-color:#c8ff00}
+.sb-item .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sb-bottom{padding:16px 20px;border-top:1px solid #1f1f1f}
+.sb-link-btn{width:100%;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#888;font-size:12px;font-weight:500;cursor:pointer;margin-bottom:8px;text-align:left;font-family:'Inter',sans-serif;transition:border-color 0.15s}
+.sb-link-btn:hover{border-color:#c8ff00;color:#c8ff00}
+.signout-btn{width:100%;background:none;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#666;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.signout-btn:hover{background:#1a1a1a;color:#f0f0f0;border-color:#444}
+.main{margin-left:240px;flex:1;padding:32px;min-height:100vh}
+.tab-panel{display:none}
 .tab-panel.active{display:block}
-/* CARDS */
-.card{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:28px;margin-bottom:20px}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
-.card-title{font-size:16px;font-weight:600}
-.card-sub{font-size:13px;color:#555}
-/* BRIEFING */
-.briefing-body{font-size:15px;color:#ccc;line-height:1.8}
-.briefing-body h3{color:#c8ff00;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin:20px 0 8px}
-.briefing-body br+br{display:none}
-.ghost-btn{background:transparent;border:1px solid #2a2a2a;color:#888;border-radius:8px;padding:8px 14px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:border-color 0.2s,color 0.2s}
-.ghost-btn:hover{border-color:#555;color:#fff}
-.ghost-btn:disabled{opacity:0.4;cursor:not-allowed}
-.spinner-inline{display:inline-block;width:16px;height:16px;border:2px solid #1f1f1f;border-top-color:#c8ff00;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loader-row{display:flex;align-items:center;gap:10px;color:#555;font-size:14px;padding:12px 0}
-/* DEMO BANNER */
-.demo-banner{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 16px;font-size:13px;color:#f59e0b;margin-bottom:16px}
-/* CHECKIN CARDS */
-.ci-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:16px}
-.ci-card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;padding:18px}
-.ci-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.ci-name{font-size:14px;font-weight:600}
-.ci-circle{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid;flex-shrink:0}
-.ci-status{font-size:11px;font-weight:700;letter-spacing:0.3px;padding:3px 9px;border-radius:100px;margin-bottom:10px;display:inline-block}
-.mini-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.mini-bar-lbl{font-size:11px;color:#555;width:60px;flex-shrink:0}
-.mini-bar-track{flex:1;height:4px;background:#1f1f1f;border-radius:2px;overflow:hidden}
+.page-hdr{margin-bottom:28px}
+.page-hdr h1{font-size:24px;font-weight:700;margin-bottom:4px}
+.page-hdr p{color:#666;font-size:14px}
+.card{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:24px;margin-bottom:20px}
+.card-sm{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:16px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:16px;text-align:center}
+.stat-num{font-size:28px;font-weight:800;color:#c8ff00}
+.stat-lbl{font-size:12px;color:#666;margin-top:4px}
+.briefing-text h3{font-size:11px;font-weight:700;color:#c8ff00;text-transform:uppercase;letter-spacing:1px;margin:20px 0 8px}
+.briefing-text p{font-size:14px;color:#ccc;line-height:1.7;margin-bottom:12px}
+.briefing-text h3:first-child{margin-top:0}
+.email-btn{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:16px}
+.email-btn:disabled{opacity:0.5;cursor:not-allowed}
+.pt-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:20px}
+.pt-card{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:20px;cursor:pointer;transition:border-color 0.15s}
+.pt-card:hover{border-color:#333}
+.pt-card-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.sig-circle-sm{width:52px;height:52px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid;flex-shrink:0}
+.sig-num-sm{font-size:16px;font-weight:800;line-height:1}
+.sig-max-sm{font-size:9px;color:#666}
+.pt-name{font-size:15px;font-weight:700}
+.pt-device{font-size:12px;color:#666;margin-top:2px}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:0.3px}
+.pill-thriving{background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)}
+.pill-ontrack{background:rgba(110,231,183,0.15);color:#6ee7b7;border:1px solid rgba(110,231,183,0.3)}
+.pill-attention{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
+.pill-alert{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.mini-bars{display:flex;gap:8px;margin-top:10px}
+.mini-bar-wrap{flex:1}
+.mini-bar-lbl{font-size:10px;color:#666;margin-bottom:3px}
+.mini-bar-track{height:4px;background:#1f1f1f;border-radius:2px;overflow:hidden}
 .mini-bar-fill{height:100%;border-radius:2px}
-.mini-bar-val{font-size:11px;font-weight:600;width:24px;text-align:right;flex-shrink:0}
-.ci-device{font-size:11px;color:#555;border:1px solid #2a2a2a;border-radius:100px;padding:2px 8px;display:inline-block;margin-top:8px}
-.ci-note{font-size:12px;color:#555;font-style:italic;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ask-ai-btn{width:100%;background:#1a1a1a;border:none;color:#c8ff00;border-radius:8px;padding:10px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;margin-top:12px;transition:background 0.2s}
-.ask-ai-btn:hover{background:#222}
-/* PATIENTS TAB */
-.patients-table{width:100%;border-collapse:collapse}
-.patients-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:1px;background:#0d0d0d;border-bottom:1px solid #1f1f1f}
-.patients-table td{padding:13px 14px;border-bottom:1px solid #1a1a1a;font-size:14px;vertical-align:middle}
-.patients-table tr:last-child td{border-bottom:none}
-.patients-table tr.p-row{cursor:pointer;transition:background 0.15s}
-.patients-table tr.p-row:hover{background:#111}
-.sig-badge{font-weight:700;border-radius:6px;padding:4px 10px;font-size:13px}
-/* GENERAL CHAT */
-.gchat-wrap{display:flex;flex-direction:column;height:400px;background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;overflow:hidden}
-.gchat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
-.gchat-msg-user{align-self:flex-end;background:#c8ff00;color:#08080a;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:80%;font-size:14px;font-weight:500}
-.gchat-msg-ai{align-self:flex-start;background:#1a1a1a;color:#e0e0e0;border-radius:12px 12px 12px 2px;padding:10px 14px;max-width:85%;font-size:14px;line-height:1.6}
-.gchat-bottom{padding:12px;border-top:1px solid #1f1f1f;display:flex;gap:8px}
-.gchat-input{flex:1;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;font-size:14px;color:#fff;font-family:'Inter',sans-serif;outline:none;resize:none;height:42px}
-.gchat-input:focus{border-color:#c8ff00}
-.gchat-send{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
-.starter-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.starter-pill{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:100px;padding:7px 14px;font-size:12px;cursor:pointer;color:#888;transition:border-color 0.2s,color 0.2s;font-family:'Inter',sans-serif}
-.starter-pill:hover{border-color:#c8ff00;color:#fff}
-/* ADD PATIENT WIZARD */
-.wizard-progress{height:3px;background:#1f1f1f;border-radius:2px;margin-bottom:24px;overflow:hidden}
-.wizard-bar{height:100%;background:#c8ff00;border-radius:2px;transition:width 0.4s}
-.wizard-step-lbl{font-size:12px;font-weight:600;color:#555;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px}
-.wizard-title{font-size:22px;font-weight:700;margin-bottom:20px}
+.pt-note{font-size:12px;color:#666;margin-top:10px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt-footer{display:flex;gap:8px;margin-top:14px}
+.btn-sm{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;font-family:'Inter',sans-serif;transition:all 0.15s;flex:1;text-align:center}
+.btn-sm:hover{border-color:#c8ff00;color:#c8ff00}
+.btn-primary{background:#c8ff00;color:#08080a;border-color:#c8ff00}
+.btn-primary:hover{opacity:0.85;color:#08080a}
+.demo-banner{background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#c8ff00;display:flex;align-items:center;gap:10px}
+.section-title{font-size:11px;font-weight:700;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #1f1f1f}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.5px;padding:10px 14px;text-align:left;border-bottom:1px solid #1f1f1f}
+td{padding:12px 14px;border-bottom:1px solid #0f0f0f;font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700}
+.badge-red{background:rgba(239,68,68,0.15);color:#ef4444}
+.badge-amber{background:rgba(245,158,11,0.15);color:#f59e0b}
+.badge-green{background:rgba(34,197,94,0.15);color:#22c55e}
+.badge-gray{background:rgba(255,255,255,0.08);color:#888}
+.resolve-btn{padding:6px 12px;background:none;border:1px solid #2a2a2a;border-radius:6px;color:#888;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.resolve-btn:hover{border-color:#22c55e;color:#22c55e}
+.chat-wrap{background:#0a0a0a;border:1px solid #1f1f1f;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;height:320px}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-bubble{padding:10px 14px;border-radius:10px;font-size:14px;line-height:1.5;max-width:80%}
+.chat-bubble.user{background:#c8ff00;color:#08080a;align-self:flex-end;border-radius:10px 10px 2px 10px}
+.chat-bubble.ai{background:#1f1f1f;color:#e0e0e0;align-self:flex-start;border-radius:10px 10px 10px 2px}
+.chat-input-row{display:flex;gap:8px;padding:12px;border-top:1px solid #1f1f1f}
+.chat-input{flex:1;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#f0f0f0;font-size:14px;font-family:'Inter',sans-serif;outline:none}
+.chat-input:focus{border-color:#c8ff00}
+.chat-send{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:6px 12px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:100px;font-size:12px;color:#888;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.chip:hover{border-color:#c8ff00;color:#c8ff00}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-start;justify-content:flex-end}
+.modal-overlay.open{display:flex}
+.modal-panel{background:#111;border-left:1px solid #1f1f1f;width:520px;max-width:100%;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-hdr{padding:20px 24px;border-bottom:1px solid #1f1f1f;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hdr h2{font-size:18px;font-weight:700}
+.modal-close{background:none;border:none;color:#666;font-size:22px;cursor:pointer;padding:4px;line-height:1}
+.modal-close:hover{color:#f0f0f0}
+.modal-body{padding:24px;flex:1;overflow-y:auto}
+.metric-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.metric-pill{padding:6px 12px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;font-size:12px;color:#888}
+.metric-pill span{font-weight:700;color:#f0f0f0}
+.msg-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:none;align-items:center;justify-content:center;padding:24px}
+.msg-modal-overlay.open{display:flex}
+.msg-modal{background:#111;border:1px solid #1f1f1f;border-radius:16px;width:100%;max-width:500px;padding:28px}
+.msg-modal h3{font-size:18px;font-weight:700;margin-bottom:20px}
 .form-group{margin-bottom:16px}
-.form-group label{display:block;font-size:12px;font-weight:600;color:#666;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:7px}
-.form-group input,.form-group select,.form-group textarea{width:100%;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;font-size:14px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color 0.15s}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#c8ff00}
-.form-group input.error{border-color:#ef4444}
-.form-group .err-msg{font-size:11px;color:#ef4444;margin-top:4px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.check-item{display:flex;align-items:center;gap:8px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;padding:11px 13px;cursor:pointer;transition:border-color 0.2s;user-select:none}
-.check-item:hover{border-color:#555}
-.check-item.checked{border-color:#c8ff00;background:rgba(200,255,0,0.04)}
-.check-box{width:16px;height:16px;border-radius:3px;border:2px solid #444;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.2s}
-.check-item.checked .check-box{background:#c8ff00;border-color:#c8ff00;color:#08080a}
-.check-lbl{font-size:13px;color:#aaa}
-.slider-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:#1f1f1f;outline:none;cursor:pointer}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#c8ff00;cursor:pointer}
-.nav-btns{display:flex;gap:10px;margin-top:24px}
-.btn-back{background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:8px;padding:12px 20px;font-size:14px;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s}
-.btn-back:hover{border-color:#555;color:#fff}
-.btn-next{flex:1;background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s}
-.btn-next:hover{opacity:0.88}
-.btn-next:disabled{opacity:0.35;cursor:not-allowed}
-.summary-row{display:flex;margin-bottom:10px;border-bottom:1px solid #1f1f1f;padding-bottom:10px}
-.summary-lbl{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.5px;width:140px;flex-shrink:0;margin-top:2px}
-.summary-val{font-size:14px;color:#ccc;flex:1;line-height:1.5}
-.consent-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:20px}
-.consent-box{width:18px;height:18px;border-radius:4px;border:2px solid #444;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-.consent-row.checked .consent-box{background:#c8ff00;border-color:#c8ff00;color:#08080a;font-size:11px}
-.consent-text{font-size:13px;color:#666;line-height:1.6}
-.consent-row.checked .consent-text{color:#aaa}
-.success-wrap{text-align:center;padding:40px 0}
-.success-check{width:72px;height:72px;background:#c8ff00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;color:#08080a}
-.success-h{font-size:24px;font-weight:800;margin-bottom:10px}
-.success-sub{font-size:15px;color:#666;line-height:1.6;margin-bottom:24px}
-.link-box{background:#0d0d0d;border:2px solid #c8ff00;border-radius:10px;padding:16px;margin-bottom:20px;text-align:left}
-.link-lbl{font-size:11px;font-weight:700;color:#c8ff00;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px}
-.link-url{font-size:13px;color:#fff;word-break:break-all;line-height:1.5}
-.copy-link-box-btn{width:100%;background:#c8ff00;color:#08080a;border:none;border-radius:7px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;font-family:'Inter',sans-serif}
-.success-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.success-btn-sec{background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;border-radius:8px;padding:11px 20px;font-size:14px;font-family:'Inter',sans-serif;cursor:pointer}
-/* PATIENT MODAL */
-#patient-modal{position:fixed;inset:0;background:rgba(8,8,10,0.92);z-index:1000;display:none;justify-content:flex-end}
-.modal-panel{position:fixed;right:0;top:0;height:100vh;width:480px;max-width:100vw;background:#0d0d0d;border-left:1px solid #1f1f1f;overflow-y:auto;display:flex;flex-direction:column}
-.modal-hdr{padding:20px 24px;border-bottom:1px solid #1f1f1f;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#0d0d0d;z-index:2}
-.modal-title-text{font-size:16px;font-weight:700}
-.modal-sig{font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-left:8px}
-.modal-close-btn{background:transparent;border:none;color:#555;font-size:22px;cursor:pointer;line-height:1;font-family:'Inter',sans-serif}
-.modal-close-btn:hover{color:#fff}
-.modal-metrics{padding:14px 24px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid #1f1f1f}
-.metric-pill{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:100px;padding:4px 10px;font-size:12px;color:#888}
-.modal-suggestions{padding:12px 24px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid #1f1f1f}
-.sugg-pill{background:#1a1a1a;border:1px solid #c8ff00;color:#c8ff00;border-radius:100px;padding:5px 12px;font-size:12px;cursor:pointer;transition:background 0.2s;font-family:'Inter',sans-serif}
-.sugg-pill:hover{background:rgba(200,255,0,0.08)}
-.modal-chat{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;min-height:200px}
-.chat-msg-u{align-self:flex-end;background:#c8ff00;color:#08080a;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:85%;font-size:14px;font-weight:500}
-.chat-msg-a{align-self:flex-start;background:#1a1a1a;color:#e0e0e0;border-radius:12px 12px 12px 2px;padding:10px 14px;max-width:85%;font-size:14px;line-height:1.6}
-.chat-dots{display:inline-flex;gap:4px;padding:12px 14px;background:#1a1a1a;border-radius:12px 12px 12px 2px;align-self:flex-start}
-.chat-dots span{width:7px;height:7px;background:#c8ff00;border-radius:50%;animation:dot 1.2s infinite}
-.chat-dots span:nth-child(2){animation-delay:0.2s}
-.chat-dots span:nth-child(3){animation-delay:0.4s}
-@keyframes dot{0%,80%,100%{opacity:0.3}40%{opacity:1}}
-.modal-input-area{padding:14px 20px;border-top:1px solid #1f1f1f;position:sticky;bottom:0;background:#0d0d0d;display:flex;gap:8px}
-.modal-chat-input{flex:1;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;font-size:14px;color:#fff;font-family:'Inter',sans-serif;outline:none;resize:none;height:42px}
-.modal-chat-input:focus{border-color:#c8ff00}
-.modal-send{background:#c8ff00;color:#08080a;border:none;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
-/* MOBILE */
+.form-group select option{background:#0a0a0a}
+.form-group textarea{resize:vertical;min-height:100px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-btns{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.cancel-btn{padding:10px 20px;background:none;border:1px solid #2a2a2a;border-radius:8px;color:#888;font-size:14px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif}
+.cancel-btn:hover{border-color:#444;color:#f0f0f0}
+.save-btn{padding:10px 20px;background:#c8ff00;color:#08080a;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.save-btn:disabled{opacity:0.5;cursor:not-allowed}
+.step-indicator{display:flex;gap:6px;margin-bottom:28px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:#1f1f1f;transition:background 0.2s}
+.step-dot.done{background:#c8ff00}
+.step-dot.active{background:#c8ff00;box-shadow:0 0 0 3px rgba(200,255,0,0.2)}
+.step-label{font-size:12px;color:#666;margin-bottom:20px}
+.health-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hc-item{display:flex;align-items:center;gap:8px;padding:10px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;cursor:pointer;transition:border-color 0.15s}
+.hc-item input{width:16px;height:16px;flex-shrink:0}
+.hc-item:has(input:checked){border-color:#c8ff00}
+.slider-wrap{margin:8px 0}
+.slider-wrap input[type=range]{width:100%;height:6px;background:#1f1f1f;border-radius:3px;outline:none;cursor:pointer;-webkit-appearance:none}
+.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#c8ff00;cursor:pointer}
+.slider-val-disp{font-size:24px;font-weight:800;color:#c8ff00;text-align:center;margin:8px 0}
+.summary-table{width:100%;font-size:13px}
+.summary-table tr td:first-child{color:#666;width:40%;padding:6px 0}
+.summary-table tr td:last-child{color:#f0f0f0;font-weight:500;padding:6px 0}
+.success-screen{text-align:center;padding:20px 0}
+.success-icon{font-size:52px;margin-bottom:16px}
+.success-screen h3{font-size:22px;font-weight:700;margin-bottom:8px}
+.success-screen p{color:#666;font-size:14px;margin-bottom:6px}
+.copy-url-wrap{display:flex;gap:8px;margin:16px 0;align-items:center}
+.copy-url-wrap input{flex:1;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;color:#888;font-size:12px;font-family:'Inter',sans-serif;outline:none}
+.settings-section{margin-bottom:32px}
+.settings-section h3{font-size:14px;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #1f1f1f}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #0f0f0f;font-size:14px}
+.info-row:last-child{border-bottom:none}
+.info-row .lbl{color:#666}
+.info-row .val{color:#f0f0f0;font-weight:500}
+.quick-link-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #0f0f0f}
+.quick-link-row:last-child{border-bottom:none}
+.quick-link-row span{font-size:13px;color:#888}
+.copy-btn{padding:6px 12px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;color:#888;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.copy-btn:hover{border-color:#c8ff00;color:#c8ff00}
+.pref-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #0f0f0f}
+.pref-row:last-child{border-bottom:none}
+.pref-row label{font-size:14px;color:#ccc;cursor:pointer}
+.pref-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:#c8ff00}
+.threshold-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.threshold-item label{font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px}
+.threshold-item input{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:14px;outline:none}
+.threshold-item input:focus{border-color:#c8ff00}
+.collapsible-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:12px 0;border-bottom:1px solid #1f1f1f;margin-bottom:4px}
+.collapsible-hdr h3{font-size:14px;font-weight:700}
+.collapsible-hdr .arrow{color:#666;font-size:12px;transition:transform 0.2s}
+.collapsible-hdr.open .arrow{transform:rotate(180deg)}
+.collapsible-body{display:none;padding-top:16px}
+.collapsible-body.open{display:block}
+.trend-dots{display:flex;gap:3px;align-items:center}
+.trend-dot{width:8px;height:8px;border-radius:50%}
+.msg-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #0f0f0f;gap:12px}
+.msg-row:last-child{border-bottom:none}
+.msg-info{flex:1;min-width:0}
+.msg-name{font-size:14px;font-weight:600}
+.msg-preview{font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.msg-date{font-size:11px;color:#555;flex-shrink:0}
+.view-btn{padding:6px 12px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;color:#888;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0}
+.view-btn:hover{border-color:#c8ff00;color:#c8ff00}
+.tab-switcher{display:flex;gap:2px;margin-bottom:20px;background:#0a0a0a;border:1px solid #1f1f1f;border-radius:10px;padding:4px;width:fit-content}
+.tab-sw-item{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:#666;transition:all 0.15s}
+.tab-sw-item.active{background:#1f1f1f;color:#f0f0f0}
+.compose-btn{float:right;padding:10px 18px;background:#c8ff00;color:#08080a;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:16px}
+.pts-table-wrap{overflow-x:auto}
 @media(max-width:768px){
-  #sidebar{display:none}
-  #main{margin-left:0}
-  #bottom-nav{display:flex!important}
-  .tab-panel{padding:16px;padding-bottom:80px}
-  .modal-panel{width:100vw}
-  .form-row{grid-template-columns:1fr}
-  .check-grid{grid-template-columns:1fr}
-  #topbar{padding:0 16px}
+  .sidebar{display:none}
+  .main{margin-left:0;padding:16px;padding-bottom:80px}
+  #bottom-nav{display:flex}
+  .pt-cards{grid-template-columns:1fr}
+  .form-row-2{grid-template-columns:1fr}
+  .health-checks{grid-template-columns:1fr}
+  .modal-panel{width:100vw;height:100vh}
+  .threshold-grid{grid-template-columns:1fr}
+  .pts-table-wrap{font-size:12px}
 }
-#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;border-top:1px solid #1f1f1f;z-index:20}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px;cursor:pointer;font-size:10px;color:#555;transition:color 0.2s;border:none;background:transparent;font-family:'Inter',sans-serif}
-.bnav-item.active,.bnav-item:hover{color:#c8ff00}
-.bnav-icon{font-size:20px;margin-bottom:2px}
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:#0a0a0a;border-top:1px solid #1f1f1f;z-index:100;justify-content:space-around;align-items:center}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 12px;color:#555;font-size:10px;font-weight:500;transition:color 0.15s;flex:1;justify-content:center}
+.bn-item .bn-icon{font-size:18px;line-height:1}
+.bn-item.active{color:#c8ff00}
+.loading-row{padding:40px;text-align:center;color:#555;font-size:14px}
 </style>
 </head>
 <body>
 
-<div id="error-page">
-  <div style="font-size:48px;margin-bottom:12px">&#128683;</div>
-  <h2>Portal Not Found</h2>
-  <p>This link requires a valid DC slug.<br>Contact PURA Health: viveapr@gmail.com</p>
+<div id="err">
+  <div>
+    <h2>Access Denied</h2>
+    <p>Invalid portal link. Please use the link provided by PURA Health.</p>
+  </div>
 </div>
 
 <div id="app">
-  <aside id="sidebar">
-    <div class="sb-top">
-      <div class="sb-logo">PURA</div>
-      <div class="sb-dc-name" id="sb-dc-name"></div>
-      <div class="sb-clinic" id="sb-clinic"></div>
-      <div class="sb-city" id="sb-city"></div>
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="logo">PURA</div>
+      <div class="dc-name" id="sb-dc-name">Loading...</div>
+      <div class="clinic-name" id="sb-clinic-name"></div>
     </div>
-    <nav class="sb-nav">
-      <div class="nav-item active" data-tab="briefing" onclick="showTab('briefing',this)"><span class="nav-icon">&#9728;&#65039;</span> Morning Briefing</div>
-      <div class="nav-item" data-tab="patients" onclick="showTab('patients',this)"><span class="nav-icon">&#128101;</span> My Patients</div>
-      <div class="nav-item" data-tab="add-patient" onclick="showTab('add-patient',this)"><span class="nav-icon">&#43;</span> Add Patient</div>
-    </nav>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="showTab('briefing',window._DC)" data-tab="briefing"><span class="icon">&#9728;&#65039;</span>Morning Briefing</div>
+      <div class="sb-item" onclick="showTab('patients',window._DC)" data-tab="patients"><span class="icon">&#128101;</span>My Patients</div>
+      <div class="sb-item" onclick="showTab('messages',window._DC)" data-tab="messages"><span class="icon">&#9993;&#65039;</span>Messages</div>
+      <div class="sb-item" onclick="showTab('alerts',window._DC)" data-tab="alerts"><span class="icon">&#128276;</span>Alerts</div>
+      <div class="sb-item" onclick="showTab('add',window._DC)" data-tab="add"><span class="icon">&#10133;</span>Add Patient</div>
+      <div class="sb-item" onclick="showTab('settings',window._DC)" data-tab="settings"><span class="icon">&#9881;&#65039;</span>Settings</div>
+    </div>
     <div class="sb-bottom">
-      <button id="copy-link-btn" onclick="copyPatientLink()">&#128203; Copy Patient Link</button>
-      <div class="sb-hint">Share this link with your patients</div>
+      <button class="sb-link-btn" onclick="copyPatientLink()">&#128203; Copy Patient Link</button>
+      <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
     </div>
-  </aside>
+  </div>
 
-  <main id="main">
-    <header id="topbar">
-      <div class="topbar-left" id="topbar-greet"></div>
-      <div class="topbar-right" id="topbar-date"></div>
-    </header>
-
+  <div class="main">
     <!-- TAB 1: MORNING BRIEFING -->
-    <div id="tab-briefing" class="tab-panel active">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Morning Briefing</div>
-            <div class="card-sub" id="briefing-date"></div>
-          </div>
-          <button class="ghost-btn" id="email-briefing-btn" onclick="emailBriefing()">&#128231; Email to Myself</button>
-        </div>
-        <div id="briefing-loader" class="loader-row"><div class="spinner-inline"></div> Generating your morning briefing...</div>
-        <div class="briefing-body" id="briefing-text" style="display:none"></div>
+    <div class="tab-panel active" id="tab-briefing">
+      <div class="page-hdr">
+        <h1 id="briefing-greeting">Good morning</h1>
+        <p id="briefing-date"></p>
       </div>
-
-      <div style="font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px">
-        Today's Check-Ins
-        <span id="ci-count-badge" style="background:rgba(110,231,183,0.15);color:#6ee7b7;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;border:1px solid rgba(110,231,183,0.2)"></span>
+      <div class="card" id="briefing-card">
+        <div class="loading-row">Generating your morning briefing...</div>
       </div>
-      <div id="demo-banner-ci" class="demo-banner" style="display:none">&#9888; Demo data — no real check-ins today yet. Share your patient link to collect data.</div>
-      <div class="ci-grid" id="ci-grid"></div>
+      <div id="briefing-pts"></div>
     </div>
 
     <!-- TAB 2: MY PATIENTS -->
-    <div id="tab-patients" class="tab-panel">
-      <div class="card" style="padding:0;overflow:hidden">
-        <div class="card-header" style="padding:20px 24px 16px">
-          <div class="card-title">My Patients</div>
+    <div class="tab-panel" id="tab-patients">
+      <div class="page-hdr">
+        <h1>My Patients</h1>
+        <p>All patients linked to your clinic</p>
+      </div>
+      <div id="pts-demo-banner" style="display:none" class="demo-banner">&#127774; Demo mode — showing sample patients. Your real patients appear here after their first check-in.</div>
+      <div class="pt-cards" id="pt-cards-grid"></div>
+      <div class="card" style="margin-top:28px">
+        <div class="section-title">Practice AI Assistant</div>
+        <div class="chip-row" id="general-chips">
+          <div class="chip" onclick="sendGeneralChip(this)">Which patients need attention today?</div>
+          <div class="chip" onclick="sendGeneralChip(this)">Who has the highest pain this week?</div>
+          <div class="chip" onclick="sendGeneralChip(this)">What trends am I seeing across patients?</div>
+          <div class="chip" onclick="sendGeneralChip(this)">Give me a practice summary</div>
+          <div class="chip" onclick="sendGeneralChip(this)">Which patients haven't checked in recently?</div>
         </div>
-        <div id="patients-loading" class="loader-row" style="padding:20px 24px"><div class="spinner-inline"></div> Loading patients...</div>
-        <div id="patients-demo-banner" class="demo-banner" style="display:none;margin:0 20px 12px"></div>
-        <div style="overflow-x:auto">
-          <table class="patients-table" id="patients-table" style="display:none">
-            <thead><tr>
-              <th>Patient</th><th>Signal</th><th>Status</th><th>Pain</th><th>Sleep</th><th>Energy</th><th>Stress</th><th>Device</th><th>Action</th>
-            </tr></thead>
-            <tbody id="patients-tbody"></tbody>
+        <div class="chat-wrap">
+          <div class="chat-msgs" id="general-chat-msgs"></div>
+          <div class="chat-input-row">
+            <input class="chat-input" id="general-chat-input" placeholder="Ask about your patients..." onkeydown="if(event.key==='Enter')sendGeneralMsg()">
+            <button class="chat-send" onclick="sendGeneralMsg()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: MESSAGES -->
+    <div class="tab-panel" id="tab-messages">
+      <div class="page-hdr">
+        <h1>Messages</h1>
+        <p>Communications with your patients</p>
+      </div>
+      <button class="compose-btn" onclick="openCompose()">&#9997;&#65039; Compose</button>
+      <div style="clear:both;margin-bottom:16px">
+        <div class="tab-switcher">
+          <div class="tab-sw-item active" onclick="switchMsgView('sent',this)">Sent</div>
+          <div class="tab-sw-item" onclick="switchMsgView('all',this)">All</div>
+        </div>
+      </div>
+      <div class="card">
+        <div id="msg-list"><div class="loading-row">Loading messages...</div></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ALERTS -->
+    <div class="tab-panel" id="tab-alerts">
+      <div class="page-hdr">
+        <h1>Alerts</h1>
+        <p>Patient health flags from the alert engine</p>
+      </div>
+      <div class="card">
+        <div class="pts-table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Patient</th><th>Type</th><th>Signal</th><th>Message</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="alerts-tbody"><tr><td colspan="7" class="loading-row">Loading alerts...</td></tr></tbody>
           </table>
         </div>
       </div>
-
-      <div class="card" style="margin-top:8px">
-        <div class="card-title" style="margin-bottom:4px">Ask PURA AI</div>
-        <div class="card-sub" style="margin-bottom:14px">Your clinical intelligence assistant</div>
-        <div class="starter-pills" id="gchat-starters">
-          <button class="starter-pill" onclick="gchatSend(this.textContent)">Which patient needs attention today?</button>
-          <button class="starter-pill" onclick="gchatSend(this.textContent)">Draft a re-engagement message</button>
-          <button class="starter-pill" onclick="gchatSend(this.textContent)">How do I explain PURA Signal to a skeptical patient?</button>
-          <button class="starter-pill" onclick="gchatSend(this.textContent)">Generate a weekly clinic summary</button>
+      <div class="card">
+        <div class="collapsible-hdr" onclick="toggleCollapsible(this)">
+          <h3>Alert Settings</h3>
+          <span class="arrow">&#9660;</span>
         </div>
-        <div class="gchat-wrap">
-          <div class="gchat-msgs" id="gchat-msgs">
-            <div class="gchat-msg-ai">Hi! I'm PURA AI. Ask me anything about your patients, practice patterns, or clinical protocols. <span style="color:#555">(Add your API key in pura-config.js to activate.)</span></div>
+        <div class="collapsible-body" id="alert-settings-body">
+          <div class="threshold-grid" id="threshold-fields"></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+            <div class="pref-row" style="border:none;padding:0;flex:1">
+              <label for="notify-dc-email">Email me for each alert</label>
+              <input type="checkbox" id="notify-dc-email" checked>
+            </div>
+            <div class="pref-row" style="border:none;padding:0;flex:1">
+              <label for="notify-admin-email">Copy admin</label>
+              <input type="checkbox" id="notify-admin-email" checked>
+            </div>
           </div>
-          <div class="gchat-bottom">
-            <textarea class="gchat-input" id="gchat-input" placeholder="Ask about your patients or practice..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();gchatSend();}"></textarea>
-            <button class="gchat-send" onclick="gchatSend()">Send</button>
-          </div>
+          <button class="save-btn" style="margin-top:16px;width:auto;padding:10px 24px" onclick="saveAlertSettings()">Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: ADD PATIENT -->
+    <div class="tab-panel" id="tab-add">
+      <div class="page-hdr">
+        <h1>Add New Patient</h1>
+        <p>Onboard a patient to your PURA portal</p>
+      </div>
+      <div class="card" id="add-wizard">
+        <div class="step-indicator" id="step-dots"></div>
+        <div class="step-label" id="step-label"></div>
+        <div id="step-content"></div>
+        <div style="display:flex;gap:10px;margin-top:24px">
+          <button class="cancel-btn" id="step-back-btn" onclick="wizardBack()" style="display:none">Back</button>
+          <button class="save-btn" id="step-next-btn" onclick="wizardNext()" style="flex:1">Continue</button>
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: ADD PATIENT -->
-    <div id="tab-add-patient" class="tab-panel">
-      <div class="card" style="max-width:600px">
-        <div id="wizard-wrap">
-          <div class="wizard-progress"><div class="wizard-bar" id="wizard-bar" style="width:20%"></div></div>
-          <div id="w-step1">
-            <div class="wizard-step-lbl">STEP 1 OF 5</div>
-            <div class="wizard-title">Basic Info</div>
-            <div class="form-row">
-              <div class="form-group"><label>First Name *</label><input type="text" id="w-fn" placeholder="Jane"></div>
-              <div class="form-group"><label>Last Name *</label><input type="text" id="w-ln" placeholder="Smith"></div>
-            </div>
-            <div class="form-group"><label>Email *</label><input type="email" id="w-em" placeholder="jane@email.com"></div>
-            <div class="form-group"><label>Phone</label><input type="tel" id="w-ph" placeholder="(512) 555-0100"></div>
-            <div class="form-group"><label>City, State</label><input type="text" id="w-city" placeholder="Austin, TX"></div>
-            <div class="nav-btns"><button class="btn-next" onclick="wNext(1)">Continue &rarr;</button></div>
-          </div>
-          <div id="w-step2" style="display:none">
-            <div class="wizard-step-lbl">STEP 2 OF 5</div>
-            <div class="wizard-title">Health Background</div>
-            <div class="form-group"><label id="w-reason-lbl">Reason for care *</label><textarea id="w-reason" rows="3" placeholder="Describe their main reason for care..."></textarea></div>
-            <div class="form-group">
-              <label>Duration as patient</label>
-              <select id="w-dur"><option>Under 3 months</option><option>3–12 months</option><option>1–3 years</option><option>3+ years</option></select>
-            </div>
-            <div class="form-group">
-              <label>Health concerns (select all)</label>
-              <div class="check-grid" id="w-concerns">
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Back pain</span></div>
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Neck pain</span></div>
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Headaches</span></div>
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Sciatica</span></div>
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Stress</span></div>
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Sleep issues</span></div>
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">Fatigue</span></div>
-                <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><span class="check-lbl">General wellness</span></div>
-              </div>
-            </div>
-            <div class="nav-btns"><button class="btn-back" onclick="wGo(1)">Back</button><button class="btn-next" onclick="wNext(2)">Continue &rarr;</button></div>
-          </div>
-          <div id="w-step3" style="display:none">
-            <div class="wizard-step-lbl">STEP 3 OF 5</div>
-            <div class="wizard-title">Wearable Device</div>
-            <div class="form-group">
-              <label>Device they use</label>
-              <select id="w-device"><option>Apple Watch</option><option>Whoop</option><option>Oura Ring</option><option>Garmin</option><option>No wearable</option><option>Planning to get one</option></select>
-            </div>
-            <div class="form-group">
-              <label>Device set up and syncing?</label>
-              <select id="w-setup"><option>Yes</option><option>No</option><option>N/A</option></select>
-            </div>
-            <div class="nav-btns"><button class="btn-back" onclick="wGo(2)">Back</button><button class="btn-next" onclick="wNext(3)">Continue &rarr;</button></div>
-          </div>
-          <div id="w-step4" style="display:none">
-            <div class="wizard-step-lbl">STEP 4 OF 5</div>
-            <div class="wizard-title">Goals</div>
-            <div class="form-group"><label>90-day goal *</label><textarea id="w-goal" rows="3" placeholder="What does success look like for this patient in 90 days?"></textarea></div>
-            <div class="form-group">
-              <div class="slider-top">
-                <label style="margin-bottom:0">Commitment level (1–10)</label>
-                <span style="font-size:20px;font-weight:800;color:#c8ff00" id="w-commit-val">7</span>
-              </div>
-              <input type="range" id="w-commit" min="1" max="10" value="7" oninput="document.getElementById('w-commit-val').textContent=this.value">
-            </div>
-            <div class="nav-btns"><button class="btn-back" onclick="wGo(3)">Back</button><button class="btn-next" onclick="wNext(4)">Continue &rarr;</button></div>
-          </div>
-          <div id="w-step5" style="display:none">
-            <div class="wizard-step-lbl">STEP 5 OF 5</div>
-            <div class="wizard-title">Confirm</div>
-            <div id="w-summary"></div>
-            <div class="consent-row" id="w-consent" onclick="toggleConsent()">
-              <div class="consent-box" id="w-consent-box"></div>
-              <div class="consent-text">This patient has consented to share wellness data with me through PURA Health to support their chiropractic care.</div>
-            </div>
-            <div class="nav-btns">
-              <button class="btn-back" onclick="wGo(4)">Back</button>
-              <button class="btn-next" id="w-submit-btn" disabled onclick="submitPatient()">Add Patient &amp; Send Welcome Email &rarr;</button>
-            </div>
-          </div>
+    <!-- TAB 6: SETTINGS -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="page-hdr">
+        <h1>Settings</h1>
+        <p>Manage your account and preferences</p>
+      </div>
+      <div class="card">
+        <div class="settings-section">
+          <h3>Your Info</h3>
+          <div id="settings-info"></div>
+          <p style="font-size:12px;color:#555;margin-top:12px">To update your info, contact your PURA admin at viveapr@gmail.com</p>
         </div>
-        <div class="success-wrap" id="wizard-success" style="display:none">
-          <div class="success-check">&#10003;</div>
-          <div class="success-h" id="w-success-name"></div>
-          <div class="success-sub" id="w-success-sub"></div>
-          <div class="link-box">
-            <div class="link-lbl">Patient Check-in Link</div>
-            <div class="link-url" id="w-success-link"></div>
-            <button class="copy-link-box-btn" onclick="copySuccessLink()">Copy Link</button>
+        <div class="settings-section">
+          <h3>Change PIN</h3>
+          <div class="form-row-2">
+            <div class="form-group"><label>Current PIN</label><input type="password" id="s-cur-pin" inputmode="numeric" maxlength="6" placeholder="Current PIN"></div>
+            <div class="form-group"><label>New PIN</label><input type="password" id="s-new-pin" inputmode="numeric" maxlength="6" placeholder="New PIN (4-6 digits)"></div>
           </div>
-          <div class="success-btns">
-            <button class="success-btn-sec" onclick="resetWizard()">Add Another Patient</button>
-            <button class="btn-next" style="flex:none;padding:11px 20px" onclick="showTab('patients',document.querySelector('[data-tab=patients]'))">Go to My Patients</button>
-          </div>
+          <div class="form-group"><label>Confirm New PIN</label><input type="password" id="s-conf-pin" inputmode="numeric" maxlength="6" placeholder="Confirm New PIN"></div>
+          <button class="save-btn" onclick="changePin()">Update PIN</button>
+          <div style="color:#ef4444;font-size:12px;margin-top:8px;display:none" id="pin-err"></div>
+        </div>
+        <div class="settings-section">
+          <h3>Quick Links</h3>
+          <div id="settings-links"></div>
         </div>
       </div>
-    </div>
-  </main>
-</div>
-
-<!-- Bottom Nav (mobile) -->
-<nav id="bottom-nav">
-  <button class="bnav-item active" data-tab="briefing" onclick="showTab('briefing',this)"><span class="bnav-icon">&#9728;&#65039;</span>Briefing</button>
-  <button class="bnav-item" data-tab="patients" onclick="showTab('patients',this)"><span class="bnav-icon">&#128101;</span>Patients</button>
-  <button class="bnav-item" data-tab="add-patient" onclick="showTab('add-patient',this)"><span class="bnav-icon">&#43;</span>Add</button>
-</nav>
-
-<!-- Patient Modal -->
-<div id="patient-modal" onclick="closeModalOuter(event)">
-  <div class="modal-panel">
-    <div class="modal-hdr">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="modal-title-text" id="modal-name"></span>
-        <span class="modal-sig" id="modal-sig"></span>
-      </div>
-      <button class="modal-close-btn" onclick="closeModal()">&times;</button>
-    </div>
-    <div class="modal-metrics" id="modal-metrics"></div>
-    <div class="modal-suggestions">
-      <button class="sugg-pill" onclick="modalAsk(this.textContent)">What do these metrics suggest?</button>
-      <button class="sugg-pill" onclick="modalAsk(this.textContent)">Focus for today's visit?</button>
-      <button class="sugg-pill" onclick="modalAsk(this.textContent)">Draft a follow-up message</button>
-      <button class="sugg-pill" onclick="modalAsk(this.textContent)">Is this patient improving?</button>
-    </div>
-    <div class="modal-chat" id="modal-chat"></div>
-    <div class="modal-input-area">
-      <textarea class="modal-chat-input" id="modal-input" placeholder="Ask about this patient..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();modalAsk();}"></textarea>
-      <button class="modal-send" onclick="modalAsk()">Ask</button>
     </div>
   </div>
 </div>
 
+<!-- Patient Modal -->
+<div class="modal-overlay" id="pt-modal" onclick="closePtModal(event)">
+  <div class="modal-panel" id="pt-modal-panel">
+    <div class="modal-hdr">
+      <div>
+        <h2 id="modal-pt-name">Patient</h2>
+        <div id="modal-pt-pill" style="margin-top:4px"></div>
+      </div>
+      <button class="modal-close" onclick="closePtModalBtn()">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="metric-pills" id="modal-metrics"></div>
+      <div class="section-title">Quick Questions</div>
+      <div class="chip-row" id="modal-chips"></div>
+      <div class="section-title">Chat with PURA AI about this patient</div>
+      <div class="chat-wrap" style="height:280px">
+        <div class="chat-msgs" id="modal-chat-msgs"></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="modal-chat-input" placeholder="Ask about this patient..." onkeydown="if(event.key==='Enter')sendModalMsg()">
+          <button class="chat-send" onclick="sendModalMsg()">Send</button>
+        </div>
+      </div>
+      <button class="email-btn" style="width:100%;margin-top:16px" onclick="openMsgFromModal()">&#9993;&#65039; Send Email to Patient</button>
+    </div>
+  </div>
+</div>
+
+<!-- Message Modal -->
+<div class="msg-modal-overlay" id="msg-modal" onclick="closeMsgModal(event)">
+  <div class="msg-modal" onclick="event.stopPropagation()">
+    <h3 id="msg-modal-title">Compose Message</h3>
+    <div class="form-group">
+      <label>Patient</label>
+      <select id="msg-patient-sel"></select>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input type="text" id="msg-subject" placeholder="Subject">
+    </div>
+    <div class="form-group">
+      <label>Message</label>
+      <textarea id="msg-body" placeholder="Your message to the patient..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="cancel-btn" onclick="closeMsgModalBtn()">Cancel</button>
+      <button class="save-btn" id="msg-send-btn" onclick="sendPatientMsg()">Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav (Mobile) -->
+<div id="bottom-nav">
+  <div class="bn-item active" onclick="showTab('briefing',window._DC)" data-tab="briefing"><div class="bn-icon">&#9728;&#65039;</div><span>Briefing</span></div>
+  <div class="bn-item" onclick="showTab('patients',window._DC)" data-tab="patients"><div class="bn-icon">&#128101;</div><span>Patients</span></div>
+  <div class="bn-item" onclick="showTab('messages',window._DC)" data-tab="messages"><div class="bn-icon">&#9993;</div><span>Messages</span></div>
+  <div class="bn-item" onclick="showTab('alerts',window._DC)" data-tab="alerts"><div class="bn-icon">&#128276;</div><span>Alerts</span></div>
+  <div class="bn-item" onclick="showTab('add',window._DC)" data-tab="add"><div class="bn-icon">&#10133;</div><span>Add</span></div>
+  <div class="bn-item" onclick="showTab('settings',window._DC)" data-tab="settings"><div class="bn-icon">&#9881;</div><span>Settings</span></div>
+</div>
+
 <script>
-var dc = getDC();
-var briefingLoaded = false, patientsLoaded = false;
-var briefingText = '';
-var allPatients = [];
-var currentPatient = null;
-var chatSessions = {};
-var generalChatHistory = [];
-var wizardData = {};
-var consentChecked = false;
-var successCheckinURL = '';
+var _modalPt = null;
+var _modalMsgs = [];
+var _generalMsgs = [];
+var _wizardStep = 1;
+var _wizardData = {};
+var _allPts = [];
+var _msgView = 'sent';
+var _composePtId = null;
 
-function getDemoPatients() {
-  return [
-    {id:'demo-1',first_name:'Maria',last_name:'R.',pura_index:82,pain_level:3,sleep_quality:8,sleep_hours:7.5,energy_level:8,stress_level:4,functional_ability:8,mood:8,device_type:'Apple Watch',patient_note:'Feeling great after last adjustment',isDemo:true},
-    {id:'demo-2',first_name:'James',last_name:'T.',pura_index:61,pain_level:6,sleep_quality:5,sleep_hours:5.5,energy_level:5,stress_level:7,functional_ability:6,mood:5,device_type:'Whoop',patient_note:'Stressful week at work',isDemo:true},
-    {id:'demo-3',first_name:'Sofia',last_name:'M.',pura_index:91,pain_level:1,sleep_quality:9,sleep_hours:8.5,energy_level:9,stress_level:2,functional_ability:9,mood:9,device_type:'Oura Ring',patient_note:'',isDemo:true},
-    {id:'demo-4',first_name:'Robert',last_name:'K.',pura_index:45,pain_level:8,sleep_quality:4,sleep_hours:4.5,energy_level:3,stress_level:8,functional_ability:4,mood:4,device_type:'Garmin',patient_note:'Flare-up after yard work',isDemo:true},
-    {id:'demo-5',first_name:'Ana',last_name:'L.',pura_index:78,pain_level:4,sleep_quality:7,sleep_hours:7,energy_level:7,stress_level:5,functional_ability:7,mood:7,device_type:'Apple Watch',patient_note:'',isDemo:true},
-    {id:'demo-6',first_name:'David',last_name:'P.',pura_index:67,pain_level:5,sleep_quality:6,sleep_hours:6.5,energy_level:6,stress_level:6,functional_ability:7,mood:7,device_type:'Whoop',patient_note:'Slight improvement',isDemo:true}
-  ];
+window.addEventListener('DOMContentLoaded', async function() {
+  var slug = getDCSlug();
+  var dc = getDC();
+  if (!dc) { document.getElementById('err').style.display = 'flex'; return; }
+  var sess = getSession();
+  var sessSlug = getSessSlug();
+  if (!sess || sessSlug !== slug) { window.location.href = 'login.html?dc=' + slug; return; }
+  var auth = await dbGet('dc_auth', 'slug=eq.' + slug + '&select=session_token,session_expires');
+  if (!auth || !auth[0] || auth[0].session_token !== sess || new Date(auth[0].session_expires) < new Date()) {
+    clearSession(); window.location.href = 'login.html?dc=' + slug; return;
+  }
+  dc = await refreshDC(dc);
+  window._DC = dc;
+  personalize(dc);
+  document.getElementById('app').style.display = 'flex';
+  var tab = sessionStorage.getItem('pura_tab') || 'briefing';
+  showTab(tab, dc);
+});
+
+function personalize(dc) {
+  document.title = 'PURA Portal — ' + dc.clinic;
+  document.getElementById('sb-dc-name').textContent = dc.name;
+  document.getElementById('sb-clinic-name').textContent = dc.clinic;
+  document.getElementById('briefing-greeting').textContent = greeting() + ', ' + dc.first;
+  document.getElementById('briefing-date').textContent = fmtDate();
 }
 
-if(!dc){
-  document.getElementById('error-page').style.display='flex';
-} else {
-  document.getElementById('app').style.display='flex';
-  document.getElementById('sb-dc-name').textContent=dc.name;
-  document.getElementById('sb-clinic').textContent=dc.clinic;
-  document.getElementById('sb-city').textContent=dc.city;
-  document.getElementById('topbar-greet').textContent=greeting()+', Dr. '+dc.last+' \u2600\uFE0F';
-  document.getElementById('topbar-date').textContent=today();
-  document.getElementById('briefing-date').textContent=today();
-  document.getElementById('w-reason-lbl').textContent='Primary reason they see you *';
-  if(dc.lang==='es') document.documentElement.lang='es';
-  loadBriefing();
+function showTab(name, dc) {
+  if (!dc) dc = window._DC;
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.sb-item').forEach(function(i) { i.classList.remove('active'); });
+  document.querySelectorAll('.bn-item').forEach(function(i) { i.classList.remove('active'); });
+  var panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  document.querySelectorAll('[data-tab="' + name + '"]').forEach(function(el) { el.classList.add('active'); });
+  sessionStorage.setItem('pura_tab', name);
+  if (name === 'briefing') loadBriefing(dc);
+  else if (name === 'patients') loadPatients(dc);
+  else if (name === 'messages') loadMessages(dc);
+  else if (name === 'alerts') loadAlerts(dc);
+  else if (name === 'add') initWizard(dc);
+  else if (name === 'settings') loadSettings(dc);
 }
 
-function showTab(name, el) {
-  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');p.style.display='none';});
-  document.querySelectorAll('.nav-item,.bnav-item').forEach(function(n){n.classList.remove('active');});
-  var panel = document.getElementById('tab-'+name);
-  if(panel){panel.style.display='block';panel.classList.add('active');}
-  if(el) el.classList.add('active');
-  if(name==='patients'&&!patientsLoaded) loadPatients();
+async function loadBriefing(dc) {
+  var card = document.getElementById('briefing-card');
+  var today = todayISO();
+  var existing = await dbGet('morning_briefings', 'dc_slug=eq.' + dc.slug + '&briefing_date=eq.' + today);
+  if (existing && existing[0] && existing[0].briefing_text) {
+    renderBriefing(existing[0].briefing_text, card, existing[0], dc);
+  } else {
+    card.innerHTML = '<div class="loading-row">Generating your morning briefing...</div>';
+    var checkins = await dbGet('daily_checkins', 'dc_slug=eq.' + dc.slug + '&checkin_date=eq.' + today + '&order=created_at.desc');
+    var cnt = checkins ? checkins.length : 0;
+    var pending = await dbGet('alerts', 'clinic_id=eq.' + dc.cid + '&status=eq.pending');
+    var alertCnt = pending ? pending.length : 0;
+    var summaryLines = [];
+    if (checkins && checkins.length > 0) {
+      checkins.forEach(function(c) {
+        summaryLines.push(c.patient_first_name + ' ' + c.patient_last_name + ': Signal ' + c.pura_index + '/100, Pain ' + c.pain_level + '/10, Sleep ' + c.sleep_quality + '/10, Energy ' + c.energy_level + '/10, Notes: "' + (c.patient_note || 'none') + '"');
+      });
+    }
+    var sys = 'You are PURA Health AI generating a morning briefing for ' + dc.name + ' at ' + dc.clinic + ' in ' + dc.city + '. Be specific, data-driven, and clinically useful. Use **bold headers** exactly as shown.';
+    var prompt = 'Generate morning briefing for ' + dc.name + '.\n\nDate: ' + today + '\nCheck-ins today: ' + cnt + '\nPending alerts: ' + alertCnt + '\n\n' + (summaryLines.length > 0 ? 'PATIENT DATA:\n' + summaryLines.join('\n') : 'No check-ins yet today.') + '\n\nWrite exactly 4 sections with these headers:\n**Today\'s Overview**\n**Priority Flags**\n**Clinical Opportunity**\n**Practice Momentum**\n\nBe specific. Reference real patient names and numbers if available.';
+    var text = await askAI(sys, prompt, 600);
+    if (!text) text = '**Today\'s Overview**\nNo check-ins yet today, ' + dc.first + '. Your patients will appear here as they check in.\n\n**Priority Flags**\nNo alerts at this time.\n\n**Clinical Opportunity**\nSend your patient check-in link to drive engagement: ' + PURA.BASE + '/checkin.html?dc=' + dc.slug + '\n\n**Practice Momentum**\nConsistency builds the data that powers PURA insights.';
+    var rec = { dc_slug: dc.slug, clinic_id: dc.cid, briefing_date: today, briefing_text: text, checkin_count: cnt, alert_count: alertCnt, emailed_to_dc: false };
+    var saved = await dbPost('morning_briefings', rec);
+    renderBriefing(text, card, saved && saved[0] ? saved[0] : rec, dc);
+  }
+  loadBriefingPts(dc);
 }
 
-async function loadBriefing() {
-  briefingLoaded=true;
-  var todayKey=todayISO();
-  var checkins=await dbSelect('daily_checkins','clinic_id=eq.'+dc.clinic_id+'&checkin_date=eq.'+todayKey+'&select=*');
-  var realCheckins=Array.isArray(checkins)?checkins:[];
-  var useDemo=realCheckins.length===0;
-  var displayCheckins=useDemo?getDemoPatients().map(function(p){return{pura_index:p.pura_index,pain_level:p.pain_level,sleep_quality:p.sleep_quality,sleep_hours:p.sleep_hours,energy_level:p.energy_level,stress_level:p.stress_level,functional_ability:p.functional_ability,mood:p.mood,device_type:p.device_type,patient_note:p.patient_note,first_name:p.first_name,last_name:p.last_name,id:p.id,isDemo:true};}):realCheckins;
-
-  document.getElementById('ci-count-badge').textContent=displayCheckins.length+' patient'+(displayCheckins.length!==1?'s':'');
-  if(useDemo) document.getElementById('demo-banner-ci').style.display='block';
-
-  var aiText=await generateAIBriefing(displayCheckins);
-  briefingText=aiText||getStaticBriefing(displayCheckins);
-  renderBriefing(briefingText,displayCheckins);
-}
-
-async function generateAIBriefing(checkins) {
-  var ciText=checkins.length>0?checkins.map(function(c){return '- Signal '+c.pura_index+'/100 | Pain '+c.pain_level+'/10 | Sleep '+c.sleep_quality+'/10 | Energy '+c.energy_level+'/10 | Stress '+c.stress_level+'/10'+(c.patient_note?' | Notes: "'+c.patient_note+'"':'');}).join('\n'):'No check-ins yet today.';
-  return await askAI(
-    'You are PURA Health\'s morning briefing AI for '+dc.name+' at '+dc.clinic+'. Give direct, specific, actionable clinical briefings.',
-    'Morning briefing for '+dc.name+', '+dc.clinic+'. Today ('+checkins.length+' check-ins):\n'+ciText+'\n\nWrite 4 sections with **bold headers**:\n**Today\'s Overview** — what the data shows\n**Priority Flags** — Signal below 65 or pain above 7. If none: "No flags today."\n**Clinical Opportunity** — one specific actionable insight\n**Momentum** — one note on how this data builds clinical value\n3-4 sentences each. No platitudes.'+(dc.lang==='es'?' Respond in Spanish.':''),700
-  );
-}
-
-function getStaticBriefing(checkins) {
-  var count=checkins.length;
-  var flagged=checkins.filter(function(c){return c.pura_index<65||c.pain_level>7;}).length;
-  return '**Today\'s Overview**\n'+(count>0?count+' patient check-in'+(count!==1?'s':'')+' received. Review each patient\'s metrics below before your first appointment.':'No check-ins yet today. Share your patient check-in link to start collecting data.')+'\n\n**Priority Flags**\n'+(flagged>0?flagged+' patient'+(flagged!==1?'s':'')+' flagged for attention — review the cards below.':'No flags today.')+'\n\n**Clinical Opportunity**\nReview patient notes alongside PURA scores at the start of today\'s first appointment for the most informed adjustment decisions.\n\n**Momentum**\nEvery check-in builds a personal nervous system baseline. After 7 days, PURA begins detecting meaningful deviations automatically.';
-}
-
-function renderBriefing(text, checkins) {
-  var html=text.replace(/\*\*(.+?)\*\*/g,'<h3>$1</h3>').replace(/\n/g,'<br>');
-  document.getElementById('briefing-loader').style.display='none';
-  var body=document.getElementById('briefing-text');
-  body.style.display='block'; body.innerHTML=html;
-  renderCICards(checkins);
-  sendAdminCopy('Morning briefing generated — '+dc.clinic,'DC: '+dc.name+'\n\n'+text.replace(/\*\*/g,''));
-}
-
-function renderCICards(checkins) {
-  var grid=document.getElementById('ci-grid');
-  grid.innerHTML=checkins.map(function(c){
-    var col=signalColor(c.pura_index);
-    var metrics=[['Pain',c.pain_level,true],['Sleep',c.sleep_quality,false],['Energy',c.energy_level,false]];
-    var bars=metrics.map(function(m){var s=m[2]?(11-m[1])*10:m[1]*10;var c2=signalColor(Math.round(s));return '<div class="mini-bar-row"><div class="mini-bar-lbl">'+m[0]+'</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:'+s+'%;background:'+c2+'"></div></div><div class="mini-bar-val" style="color:'+c2+'">'+m[1]+'</div></div>';}).join('');
-    var noteHtml=c.patient_note?'<div class="ci-note">"'+c.patient_note+'"</div>':'';
-    return '<div class="ci-card"><div class="ci-top"><div class="ci-name">'+c.first_name+' '+c.last_name+'</div><div class="ci-circle" style="border-color:'+col+';color:'+col+'">'+c.pura_index+'</div></div><span class="ci-status" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'44">'+signalLabel(c.pura_index)+'</span>'+bars+'<div class="ci-device">'+c.device_type+'</div>'+noteHtml+'<button class="ask-ai-btn" onclick=\'openModal('+JSON.stringify(JSON.stringify(c))+')\'>Ask AI about this patient</button></div>';
-  }).join('');
+function renderBriefing(text, card, rec, dc) {
+  var html = '<div class="briefing-text">';
+  var parts = text.split(/\*\*([^*]+)\*\*/g);
+  for (var i = 0; i < parts.length; i++) {
+    if (i % 2 === 1) { html += '<h3>' + parts[i] + '</h3>'; }
+    else {
+      var lines = parts[i].split('\n').filter(function(l) { return l.trim(); });
+      lines.forEach(function(l) { html += '<p>' + l.trim() + '</p>'; });
+    }
+  }
+  html += '</div>';
+  var emailed = rec && rec.emailed_to_dc;
+  html += '<button class="email-btn" id="briefing-email-btn" onclick="emailBriefing()" ' + (emailed ? 'disabled' : '') + '>' + (emailed ? 'Briefing Sent' : 'Email This Briefing') + '</button>';
+  card.innerHTML = html;
+  window._briefingRec = rec;
+  window._briefingText = text;
+  window._briefingDC = dc;
 }
 
 async function emailBriefing() {
-  if(!briefingText)return;
-  var btn=document.getElementById('email-briefing-btn');
-  btn.textContent='Sending...';btn.disabled=true;
-  await sendEmail({to:dc.email,subject:'PURA Morning Briefing — '+dc.clinic+' — '+today(),body:'Good morning, Dr. '+dc.last+'.\n\n'+briefingText.replace(/\*\*/g,'')+'\n\n—\nPURA Health · '+dc.clinic,fromName:'PURA Health'});
-  await sendAdminCopy('Briefing emailed — '+dc.clinic,dc.name+' emailed their briefing on '+today()+'.');
-  btn.textContent='✓ Sent!';btn.style.color='#22c55e';
-  setTimeout(function(){btn.textContent='📧 Email to Myself';btn.style.color='';btn.disabled=false;},3000);
+  var btn = document.getElementById('briefing-email-btn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  var dc = window._briefingDC;
+  await sendMail(dc.email, 'Your PURA Morning Briefing — ' + todayISO(), window._briefingText, 'PURA Health');
+  await mailAdmin('Morning Briefing sent to ' + dc.name, window._briefingText);
+  if (window._briefingRec && window._briefingRec.id) {
+    await dbPatch('morning_briefings', 'id=eq.' + window._briefingRec.id, { emailed_to_dc: true });
+  }
+  btn.textContent = 'Briefing Sent';
+  toast('Briefing emailed to ' + dc.email);
 }
 
-async function loadPatients() {
-  patientsLoaded=true;
-  var result=await dbSelect('patients','clinic_id=eq.'+dc.clinic_id+'&order=created_at.desc');
-  var real=Array.isArray(result)&&result.length>0;
-  allPatients=real?result:getDemoPatients();
-  if(!real){document.getElementById('patients-demo-banner').style.display='block';document.getElementById('patients-demo-banner').textContent='⚠ Demo data — add patients via the Add Patient tab to see real data here.';}
-  document.getElementById('patients-loading').style.display='none';
-  var table=document.getElementById('patients-table');table.style.display='table';
-  document.getElementById('patients-tbody').innerHTML=allPatients.map(function(p){
-    var col=signalColor(p.pura_index);
-    var sigHtml='<span class="sig-badge" style="background:'+col+'22;color:'+col+'">'+p.pura_index+'</span>';
-    return '<tr class="p-row" onclick=\'openModal('+JSON.stringify(JSON.stringify(p))+')\'>'+
-      '<td><strong>'+p.first_name+' '+p.last_name+'</strong></td>'+
-      '<td>'+sigHtml+'</td>'+
-      '<td><span style="font-size:12px;font-weight:700;color:'+col+'">'+signalLabel(p.pura_index)+'</span></td>'+
-      '<td style="color:'+signalColor((11-(p.pain_level||5))*10)+'">'+p.pain_level+'/10</td>'+
-      '<td style="color:'+signalColor((p.sleep_quality||5)*10)+'">'+p.sleep_quality+'/10</td>'+
-      '<td style="color:'+signalColor((p.energy_level||5)*10)+'">'+p.energy_level+'/10</td>'+
-      '<td style="color:'+signalColor((11-(p.stress_level||5))*10)+'">'+p.stress_level+'/10</td>'+
-      '<td style="font-size:12px;color:#555">'+(p.device_type||'—')+'</td>'+
-      '<td><button style="background:#1a1a1a;border:1px solid #2a2a2a;color:#c8ff00;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif" onclick="event.stopPropagation();openModal(\''+JSON.stringify(p).replace(/'/g,"\\'")+'\')">Chat</button></td>'+
-    '</tr>';
+async function loadBriefingPts(dc) {
+  var wrap = document.getElementById('briefing-pts');
+  var today = todayISO();
+  var checkins = await dbGet('daily_checkins', 'dc_slug=eq.' + dc.slug + '&checkin_date=eq.' + today + '&order=pura_index.asc&limit=20');
+  var pts = (checkins && checkins.length > 0) ? checkins : null;
+  var isDemo = false;
+  if (!pts) { pts = demoPts(); isDemo = true; }
+  var html = '';
+  if (isDemo) html += '<div class="demo-banner">&#127774; Demo patients shown. Real patients appear after their first check-in.</div>';
+  html += '<div class="pt-cards">';
+  pts.forEach(function(p) {
+    var sig = p.pura_index || p.pura_index || 70;
+    var col = sigColor(sig);
+    var lbl = sigLabel(sig);
+    var pillCls = sig >= 80 ? 'pill-thriving' : sig >= 65 ? 'pill-ontrack' : sig >= 40 ? 'pill-attention' : 'pill-alert';
+    var painPct = Math.round((11 - (p.pain_level || 5)) / 10 * 100);
+    var sleepPct = Math.round((p.sleep_quality || 7) / 10 * 100);
+    var energyPct = Math.round((p.energy_level || 6) / 10 * 100);
+    html += '<div class="pt-card" onclick="openPtModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
+    html += '<div class="pt-card-top">';
+    html += '<div class="sig-circle-sm" style="border-color:' + col + '"><div class="sig-num-sm" style="color:' + col + '">' + sig + '</div><div class="sig-max-sm">/100</div></div>';
+    html += '<div><div class="pt-name">' + (p.patient_first_name || p.first_name) + ' ' + (p.patient_last_name || p.last_name) + '</div><div class="pt-device">' + (p.device_type || 'No wearable') + '</div><div class="status-pill ' + pillCls + '" style="margin-top:4px">' + lbl + '</div></div>';
+    html += '</div>';
+    html += '<div class="mini-bars">';
+    html += '<div class="mini-bar-wrap"><div class="mini-bar-lbl">Pain</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + painPct + '%;background:' + col + '"></div></div></div>';
+    html += '<div class="mini-bar-wrap"><div class="mini-bar-lbl">Sleep</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + sleepPct + '%;background:' + col + '"></div></div></div>';
+    html += '<div class="mini-bar-wrap"><div class="mini-bar-lbl">Energy</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + energyPct + '%;background:' + col + '"></div></div></div>';
+    html += '</div>';
+    if (p.patient_note) html += '<div class="pt-note">"' + p.patient_note + '"</div>';
+    html += '<div class="pt-footer"><button class="btn-sm" onclick="event.stopPropagation();openPtModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">&#128172; Chat</button><button class="btn-sm" onclick="event.stopPropagation();openMsgForPt(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">&#9993;&#65039; Message</button></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+async function loadPatients(dc) {
+  var grid = document.getElementById('pt-cards-grid');
+  grid.innerHTML = '<div class="loading-row">Loading patients...</div>';
+  var pts = await dbGet('patients', 'clinic_id=eq.' + dc.cid + '&order=last_checkin_date.desc.nullslast&limit=100');
+  var isDemo = false;
+  if (!pts || pts.length === 0) { pts = demoPts(); isDemo = true; }
+  _allPts = pts;
+  document.getElementById('pts-demo-banner').style.display = isDemo ? 'flex' : 'none';
+  var html = '';
+  pts.forEach(function(p) {
+    var sig = p.pura_index || p.avg_pura_signal || 70;
+    var col = sigColor(sig);
+    var lbl = sigLabel(sig);
+    var pillCls = sig >= 80 ? 'pill-thriving' : sig >= 65 ? 'pill-ontrack' : sig >= 40 ? 'pill-attention' : 'pill-alert';
+    var painPct = Math.round((11 - (p.pain_level || 5)) / 10 * 100);
+    var sleepPct = Math.round((p.sleep_quality || 7) / 10 * 100);
+    var energyPct = Math.round((p.energy_level || 6) / 10 * 100);
+    html += '<div class="pt-card">';
+    html += '<div class="pt-card-top" onclick="openPtModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')" style="cursor:pointer">';
+    html += '<div class="sig-circle-sm" style="border-color:' + col + '"><div class="sig-num-sm" style="color:' + col + '">' + sig + '</div><div class="sig-max-sm">/100</div></div>';
+    html += '<div><div class="pt-name">' + (p.first_name || p.patient_first_name) + ' ' + (p.last_name || p.patient_last_name) + '</div><div class="pt-device">' + (p.device_type || 'No wearable') + '</div><div class="status-pill ' + pillCls + '" style="margin-top:4px">' + lbl + '</div></div>';
+    html += '</div>';
+    html += '<div class="mini-bars">';
+    html += '<div class="mini-bar-wrap"><div class="mini-bar-lbl">Pain</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + painPct + '%;background:' + col + '"></div></div></div>';
+    html += '<div class="mini-bar-wrap"><div class="mini-bar-lbl">Sleep</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + sleepPct + '%;background:' + col + '"></div></div></div>';
+    html += '<div class="mini-bar-wrap"><div class="mini-bar-lbl">Energy</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + energyPct + '%;background:' + col + '"></div></div></div>';
+    html += '</div>';
+    if (p.last_checkin_date) html += '<div style="font-size:11px;color:#555;margin-top:8px">Last check-in: ' + relTime(p.last_checkin_date) + '</div>';
+    html += '<div class="pt-footer"><button class="btn-sm" onclick="openPtModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">&#128172; Chat</button><button class="btn-sm" onclick="openMsgForPt(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">&#9993;&#65039; Message</button></div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+async function loadMessages(dc) {
+  var list = document.getElementById('msg-list');
+  list.innerHTML = '<div class="loading-row">Loading messages...</div>';
+  var filter = 'dc_slug=eq.' + dc.slug + '&order=created_at.desc&limit=50';
+  if (_msgView === 'sent') filter += '&direction=eq.dc_to_patient';
+  var msgs = await dbGet('dc_messages', filter);
+  if (!msgs || msgs.length === 0) {
+    list.innerHTML = '<div class="loading-row" style="color:#555">No messages yet.</div>';
+    return;
+  }
+  var pts = await dbGet('patients', 'clinic_id=eq.' + dc.cid + '&select=id,first_name,last_name,email');
+  var ptMap = {};
+  if (pts) pts.forEach(function(p) { ptMap[p.id] = p.first_name + ' ' + p.last_name; ptMap[p.email] = p.first_name + ' ' + p.last_name; });
+  var html = '';
+  msgs.forEach(function(m) {
+    var pname = ptMap[m.patient_id] || ptMap[m.patient_email] || m.patient_email || 'Patient';
+    var dt = m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+    html += '<div class="msg-row">';
+    html += '<div class="msg-info"><div class="msg-name">' + pname + '</div><div class="msg-preview">' + (m.subject || '(no subject)') + ' — ' + (m.body || '').substring(0, 60) + '</div></div>';
+    html += '<div class="msg-date">' + dt + '</div>';
+    html += '<button class="view-btn" onclick="viewMsg(' + JSON.stringify(m).replace(/"/g, '&quot;') + ',\'' + pname + '\')">View</button>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function switchMsgView(v, el) {
+  _msgView = v;
+  document.querySelectorAll('.tab-sw-item').forEach(function(i) { i.classList.remove('active'); });
+  el.classList.add('active');
+  loadMessages(window._DC);
+}
+
+function viewMsg(m, pname) {
+  alert('From: ' + (m.direction === 'dc_to_patient' ? 'You' : pname) + '\nTo: ' + (m.direction === 'dc_to_patient' ? pname : 'You') + '\n\nSubject: ' + (m.subject || '') + '\n\n' + (m.body || ''));
+}
+
+async function loadAlerts(dc) {
+  var tbody = document.getElementById('alerts-tbody');
+  var alerts = await dbGet('alerts', 'clinic_id=eq.' + dc.cid + '&order=created_at.desc&limit=50');
+  if (!alerts || alerts.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#555;padding:24px">No alerts yet.</td></tr>';
+  } else {
+    var html = '';
+    alerts.forEach(function(a) {
+      var dt = a.created_at ? new Date(a.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+      var typeBadge = (a.alert_type === 'alert_drop' || a.alert_type === 'alert_pain') ? '<span class="badge badge-red">' + a.alert_type + '</span>' : (a.alert_type === 'alert_stress') ? '<span class="badge badge-amber">' + a.alert_type + '</span>' : '<span class="badge badge-green">' + a.alert_type + '</span>';
+      var statusBadge = a.status === 'resolved' ? '<span class="badge badge-gray">Resolved</span>' : '<span class="badge badge-red">Pending</span>';
+      var actionHtml = a.status !== 'resolved' ? '<button class="resolve-btn" onclick="resolveAlert(\'' + a.id + '\',this)">Resolve</button>' : '';
+      html += '<tr><td>' + dt + '</td><td>' + (a.patient_id || 'N/A') + '</td><td>' + typeBadge + '</td><td>' + (a.pura_index_current || '--') + '</td><td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (a.alert_message || '') + '</td><td>' + statusBadge + '</td><td>' + actionHtml + '</td></tr>';
+    });
+    tbody.innerHTML = html;
+  }
+  loadAlertSettings(dc);
+}
+
+async function resolveAlert(id, btn) {
+  btn.disabled = true; btn.textContent = 'Resolving...';
+  await dbPatch('alerts', 'id=eq.' + id, { status:'resolved', resolved_at: new Date().toISOString(), resolved_by: window._DC.name });
+  toast('Alert resolved');
+  loadAlerts(window._DC);
+}
+
+async function loadAlertSettings(dc) {
+  var rows = await dbGet('alert_thresholds', 'dc_slug=eq.' + dc.slug);
+  var t = (rows && rows[0]) ? rows[0] : { signal_low_threshold:50, signal_high_threshold:85, pain_high_threshold:7, stress_high_threshold:8, no_checkin_days:3, notify_dc_email:true, notify_admin_email:true };
+  window._alertThreshold = t;
+  var fields = document.getElementById('threshold-fields');
+  fields.innerHTML = '<div class="threshold-item"><label>Signal Low Threshold</label><input type="number" id="thr-sig-low" value="' + t.signal_low_threshold + '" min="1" max="100"></div>' +
+    '<div class="threshold-item"><label>Signal High Threshold</label><input type="number" id="thr-sig-high" value="' + t.signal_high_threshold + '" min="1" max="100"></div>' +
+    '<div class="threshold-item"><label>Pain High Threshold</label><input type="number" id="thr-pain" value="' + t.pain_high_threshold + '" min="1" max="10"></div>' +
+    '<div class="threshold-item"><label>Stress High Threshold</label><input type="number" id="thr-stress" value="' + t.stress_high_threshold + '" min="1" max="10"></div>' +
+    '<div class="threshold-item"><label>No Check-in Days</label><input type="number" id="thr-days" value="' + t.no_checkin_days + '" min="1" max="30"></div>';
+  document.getElementById('notify-dc-email').checked = t.notify_dc_email !== false;
+  document.getElementById('notify-admin-email').checked = t.notify_admin_email !== false;
+}
+
+async function saveAlertSettings() {
+  var dc = window._DC;
+  var body = {
+    signal_low_threshold: parseInt(document.getElementById('thr-sig-low').value),
+    signal_high_threshold: parseInt(document.getElementById('thr-sig-high').value),
+    pain_high_threshold: parseInt(document.getElementById('thr-pain').value),
+    stress_high_threshold: parseInt(document.getElementById('thr-stress').value),
+    no_checkin_days: parseInt(document.getElementById('thr-days').value),
+    notify_dc_email: document.getElementById('notify-dc-email').checked,
+    notify_admin_email: document.getElementById('notify-admin-email').checked
+  };
+  await dbPatch('alert_thresholds', 'dc_slug=eq.' + dc.slug, body);
+  toast('Alert settings saved');
+}
+
+function toggleCollapsible(hdr) {
+  hdr.classList.toggle('open');
+  var body = hdr.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+var _wizardSteps = [
+  { label:'Step 1 of 5 — Basic Information', fields:['w-first','w-last','w-email','w-phone','w-city'] },
+  { label:'Step 2 of 5 — Health Background', fields:['w-complaint','w-duration'] },
+  { label:'Step 3 of 5 — Wearable Device', fields:['w-device'] },
+  { label:'Step 4 of 5 — Goals', fields:['w-goal'] },
+  { label:'Step 5 of 5 — Consent & Submit', fields:[] }
+];
+
+function initWizard(dc) {
+  _wizardStep = 1;
+  _wizardData = {};
+  renderWizardStep(dc);
+}
+
+function renderWizardStep(dc) {
+  var dots = document.getElementById('step-dots');
+  var label = document.getElementById('step-label');
+  var content = document.getElementById('step-content');
+  var backBtn = document.getElementById('step-back-btn');
+  var nextBtn = document.getElementById('step-next-btn');
+  dots.innerHTML = '';
+  for (var i = 1; i <= 5; i++) {
+    var cls = i < _wizardStep ? 'done' : (i === _wizardStep ? 'active' : '');
+    dots.innerHTML += '<div class="step-dot ' + cls + '"></div>';
+  }
+  label.textContent = _wizardSteps[_wizardStep - 1].label;
+  backBtn.style.display = _wizardStep > 1 ? 'block' : 'none';
+  nextBtn.textContent = _wizardStep === 5 ? 'Add Patient' : 'Continue';
+
+  if (_wizardStep === 1) {
+    content.innerHTML = '<div class="form-row-2"><div class="form-group"><label>First Name *</label><input type="text" id="w-first" value="' + (_wizardData.firstName || '') + '" placeholder="Jane"></div><div class="form-group"><label>Last Name *</label><input type="text" id="w-last" value="' + (_wizardData.lastName || '') + '" placeholder="Smith"></div></div><div class="form-group"><label>Email *</label><input type="email" id="w-email" value="' + (_wizardData.email || '') + '" placeholder="jane@email.com"></div><div class="form-row-2"><div class="form-group"><label>Phone</label><input type="text" id="w-phone" value="' + (_wizardData.phone || '') + '" placeholder="(512) 555-0100"></div><div class="form-group"><label>City, State</label><input type="text" id="w-city" value="' + (_wizardData.cityState || '') + '" placeholder="Austin, TX"></div></div>';
+  } else if (_wizardStep === 2) {
+    var concerns = ['Back Pain','Neck Pain','Headaches','Sciatica','Sports Injury','Posture','Stress','Sleep Issues','Fatigue','Joint Pain','Wellness','Other'];
+    var checksHtml = '<div class="health-checks">' + concerns.map(function(c) {
+      var checked = (_wizardData.healthConcerns || []).indexOf(c) > -1 ? 'checked' : '';
+      return '<label class="hc-item"><input type="checkbox" value="' + c + '" ' + checked + '> ' + c + '</label>';
+    }).join('') + '</div>';
+    var durations = ['Less than 1 month','1-3 months','3-6 months','6-12 months','1-2 years','2+ years'];
+    content.innerHTML = '<div class="form-group"><label>Chief Complaint *</label><input type="text" id="w-complaint" value="' + (_wizardData.chiefComplaint || '') + '" placeholder="Primary reason for care"></div><div class="form-group"><label>Patient Duration</label><select id="w-duration"><option value="">Select...</option>' + durations.map(function(d) { return '<option value="' + d + '" ' + (_wizardData.patientDuration === d ? 'selected' : '') + '>' + d + '</option>'; }).join('') + '</select></div><div class="form-group"><label>Health Concerns (select all that apply)</label>' + checksHtml + '</div>';
+  } else if (_wizardStep === 3) {
+    var devices = ['No Wearable','Apple Watch','Whoop','Oura Ring','Garmin','Fitbit','Other'];
+    content.innerHTML = '<div class="form-group"><label>Wearable Device</label><select id="w-device">' + devices.map(function(d) { return '<option value="' + d + '" ' + (_wizardData.device === d ? 'selected' : '') + '>' + d + '</option>'; }).join('') + '</select></div><div class="form-group" style="margin-top:16px"><label>Device Setup</label><div style="display:flex;flex-direction:column;gap:10px;margin-top:8px"><label style="display:flex;align-items:center;gap:10px;cursor:pointer;color:#ccc;text-transform:none;font-size:14px"><input type="radio" name="w-setup" value="yes" ' + (_wizardData.deviceSetup === 'yes' ? 'checked' : '') + '> Device is set up and syncing</label><label style="display:flex;align-items:center;gap:10px;cursor:pointer;color:#ccc;text-transform:none;font-size:14px"><input type="radio" name="w-setup" value="needs-help" ' + (_wizardData.deviceSetup === 'needs-help' ? 'checked' : '') + '> Patient needs help setting up</label><label style="display:flex;align-items:center;gap:10px;cursor:pointer;color:#ccc;text-transform:none;font-size:14px"><input type="radio" name="w-setup" value="no-device" ' + (_wizardData.deviceSetup === 'no-device' ? 'checked' : '') + '> No wearable device</label></div></div>';
+  } else if (_wizardStep === 4) {
+    content.innerHTML = '<div class="form-group"><label>90-Day Goal *</label><textarea id="w-goal" placeholder="What does this patient want to achieve in 90 days?">' + (_wizardData.ninetyDayGoal || '') + '</textarea></div><div class="form-group"><label>Commitment Score (1-10)</label><div class="slider-val-disp" id="commit-disp">' + (_wizardData.commitmentScore || 8) + '</div><div class="slider-wrap"><input type="range" id="w-commit" min="1" max="10" value="' + (_wizardData.commitmentScore || 8) + '" oninput="document.getElementById(\'commit-disp\').textContent=this.value"></div></div>';
+  } else if (_wizardStep === 5) {
+    var d = _wizardData;
+    content.innerHTML = '<table class="summary-table"><tr><td>Name</td><td>' + d.firstName + ' ' + d.lastName + '</td></tr><tr><td>Email</td><td>' + d.email + '</td></tr><tr><td>Phone</td><td>' + (d.phone || '--') + '</td></tr><tr><td>Location</td><td>' + (d.cityState || '--') + '</td></tr><tr><td>Chief Complaint</td><td>' + (d.chiefComplaint || '--') + '</td></tr><tr><td>Duration</td><td>' + (d.patientDuration || '--') + '</td></tr><tr><td>Device</td><td>' + (d.device || 'No Wearable') + '</td></tr><tr><td>90-Day Goal</td><td>' + (d.ninetyDayGoal || '--') + '</td></tr><tr><td>Commitment</td><td>' + (d.commitmentScore || 8) + '/10</td></tr><tr><td>Health Concerns</td><td>' + ((d.healthConcerns || []).join(', ') || '--') + '</td></tr></table><div style="margin-top:20px;padding:14px;background:#1a1a1a;border-radius:8px;display:flex;align-items:flex-start;gap:10px"><input type="checkbox" id="w-consent" style="margin-top:2px;width:18px;height:18px;flex-shrink:0;accent-color:#c8ff00"><label for="w-consent" style="font-size:13px;color:#ccc;cursor:pointer">Patient has given consent for PURA Health to collect and process their health data for chiropractic care monitoring purposes.</label></div>';
+  }
+}
+
+async function wizardNext() {
+  var dc = window._DC;
+  if (_wizardStep === 1) {
+    var fn = document.getElementById('w-first').value.trim();
+    var ln = document.getElementById('w-last').value.trim();
+    var em = document.getElementById('w-email').value.trim();
+    if (!fn || !ln || !em || !em.includes('@')) { toast('Please fill all required fields', 'error'); return; }
+    _wizardData.firstName = fn;
+    _wizardData.lastName = ln;
+    _wizardData.email = em;
+    _wizardData.phone = document.getElementById('w-phone').value.trim();
+    _wizardData.cityState = document.getElementById('w-city').value.trim();
+  } else if (_wizardStep === 2) {
+    var comp = document.getElementById('w-complaint').value.trim();
+    if (!comp) { toast('Please enter chief complaint', 'error'); return; }
+    _wizardData.chiefComplaint = comp;
+    _wizardData.patientDuration = document.getElementById('w-duration').value;
+    var checked = document.querySelectorAll('#step-content .hc-item input:checked');
+    _wizardData.healthConcerns = Array.from(checked).map(function(c) { return c.value; });
+  } else if (_wizardStep === 3) {
+    _wizardData.device = document.getElementById('w-device').value;
+    var setupRadio = document.querySelector('input[name="w-setup"]:checked');
+    _wizardData.deviceSetup = setupRadio ? setupRadio.value : 'no-device';
+  } else if (_wizardStep === 4) {
+    var goal = document.getElementById('w-goal').value.trim();
+    if (!goal) { toast('Please enter 90-day goal', 'error'); return; }
+    _wizardData.ninetyDayGoal = goal;
+    _wizardData.commitmentScore = parseInt(document.getElementById('w-commit').value);
+  } else if (_wizardStep === 5) {
+    var consent = document.getElementById('w-consent').checked;
+    if (!consent) { toast('Patient consent is required', 'error'); return; }
+    await submitPatient(dc);
+    return;
+  }
+  _wizardStep++;
+  renderWizardStep(dc);
+}
+
+function wizardBack() {
+  if (_wizardStep > 1) { _wizardStep--; renderWizardStep(window._DC); }
+}
+
+async function submitPatient(dc) {
+  var btn = document.getElementById('step-next-btn');
+  btn.disabled = true; btn.textContent = 'Adding...';
+  var d = _wizardData;
+  var existing = await dbGet('patients', 'clinic_id=eq.' + dc.cid + '&email=eq.' + encodeURIComponent(d.email));
+  if (existing && existing.length > 0) { toast('Patient with this email already exists', 'error'); btn.disabled = false; btn.textContent = 'Add Patient'; return; }
+  var ptRec = { clinic_id: dc.cid, first_name: d.firstName, last_name: d.lastName, email: d.email, phone: d.phone, device_type: d.device, chief_complaint: d.chiefComplaint, city_state: d.cityState, ninety_day_goal: d.ninetyDayGoal, commitment_score: d.commitmentScore, health_concerns: d.healthConcerns, patient_duration: d.patientDuration, status: 'active' };
+  var checkinUrl = PURA.BASE + '/checkin.html?dc=' + dc.slug;
+  var welcomeBody = 'Welcome to PURA Health, ' + d.firstName + '!\n\n' + dc.name + ' at ' + dc.clinic + ' has enrolled you in PURA, the health monitoring platform that tracks your progress between visits.\n\nYour daily check-in link: ' + checkinUrl + '\n\nIt takes 2 minutes and helps ' + dc.name + ' see exactly how you\'re doing between appointments.\n\nBookmark this link and check in every morning.\n\n— ' + dc.clinic + ' & PURA Health';
+  var dcBody = 'New patient added: ' + d.firstName + ' ' + d.lastName + '\nEmail: ' + d.email + '\nChief complaint: ' + d.chiefComplaint + '\n90-day goal: ' + d.ninetyDayGoal + '\nDevice: ' + d.device + '\n\nCheck-in link: ' + checkinUrl;
+  await Promise.all([
+    dbPost('patients', ptRec),
+    dbPost('patient_onboardings', { clinic_id: dc.cid, dc_slug: dc.slug, first_name: d.firstName, last_name: d.lastName, email: d.email, phone: d.phone, city_state: d.cityState, reason_for_care: d.chiefComplaint, patient_duration: d.patientDuration, health_concerns: d.healthConcerns, device_type: d.device, ninety_day_goal: d.ninetyDayGoal, commitment_score: d.commitmentScore, consent_given: true, welcome_email_sent: true }),
+    sendMail(d.email, 'Welcome to PURA Health — Your Daily Check-In', welcomeBody, dc.clinic),
+    sendMail(dc.email, 'New patient: ' + d.firstName + ' ' + d.lastName, dcBody, 'PURA Health'),
+    mailAdmin('New patient -- ' + dc.clinic, dcBody)
+  ]);
+  var wizard = document.getElementById('add-wizard');
+  wizard.innerHTML = '<div class="success-screen"><div class="success-icon">&#10003;</div><h3>' + d.firstName + ' ' + d.lastName + ' added</h3><p>Welcome email sent to ' + d.email + '</p><p style="margin-top:4px;color:#555">Patient check-in link:</p><div class="copy-url-wrap"><input type="text" readonly value="' + checkinUrl + '" id="new-pt-url"><button class="btn-sm" onclick="navigator.clipboard.writeText(document.getElementById(\'new-pt-url\').value);toast(\'Copied\')">Copy</button></div><div style="display:flex;gap:12px;margin-top:20px;justify-content:center"><button class="btn-sm btn-primary" onclick="initWizard(window._DC)">Add Another</button><button class="btn-sm" onclick="showTab(\'patients\',window._DC)">View Patients</button></div></div>';
+}
+
+function loadSettings(dc) {
+  document.getElementById('settings-info').innerHTML = '<div class="info-row"><span class="lbl">Name</span><span class="val">' + dc.name + '</span></div><div class="info-row"><span class="lbl">Clinic</span><span class="val">' + dc.clinic + '</span></div><div class="info-row"><span class="lbl">Email</span><span class="val">' + dc.email + '</span></div><div class="info-row"><span class="lbl">Location</span><span class="val">' + dc.city + '</span></div>';
+  document.getElementById('settings-links').innerHTML = '<div class="quick-link-row"><span>Portal URL</span><button class="copy-btn" onclick="navigator.clipboard.writeText(\'' + PURA.BASE + '/portal.html?dc=' + dc.slug + '\');toast(\'Copied\')">Copy</button></div><div class="quick-link-row"><span>Patient Check-in URL</span><button class="copy-btn" onclick="navigator.clipboard.writeText(\'' + PURA.BASE + '/checkin.html?dc=' + dc.slug + '\');toast(\'Copied\')">Copy</button></div><div class="quick-link-row"><span>Login URL</span><button class="copy-btn" onclick="navigator.clipboard.writeText(\'' + PURA.BASE + '/login.html?dc=' + dc.slug + '\');toast(\'Copied\')">Copy</button></div>';
+}
+
+async function changePin() {
+  var dc = window._DC;
+  var cur = document.getElementById('s-cur-pin').value.trim();
+  var np = document.getElementById('s-new-pin').value.trim();
+  var cp = document.getElementById('s-conf-pin').value.trim();
+  var errEl = document.getElementById('pin-err');
+  errEl.style.display = 'none';
+  if (!cur || !np || !cp) { errEl.textContent = 'All fields required'; errEl.style.display = 'block'; return; }
+  if (np.length < 4) { errEl.textContent = 'PIN must be at least 4 digits'; errEl.style.display = 'block'; return; }
+  if (np !== cp) { errEl.textContent = 'New PINs do not match'; errEl.style.display = 'block'; return; }
+  var rows = await dbGet('dc_auth', 'slug=eq.' + dc.slug + '&select=id,pin');
+  if (!rows || !rows[0]) return;
+  if (rows[0].pin !== cur) { errEl.textContent = 'Current PIN is incorrect'; errEl.style.display = 'block'; return; }
+  await dbPatch('dc_auth', 'id=eq.' + rows[0].id, { pin: np });
+  toast('PIN updated successfully');
+  document.getElementById('s-cur-pin').value = '';
+  document.getElementById('s-new-pin').value = '';
+  document.getElementById('s-conf-pin').value = '';
+}
+
+function openPtModal(pt) {
+  _modalPt = pt;
+  _modalMsgs = [];
+  var sig = pt.pura_index || pt.avg_pura_signal || 70;
+  var col = sigColor(sig);
+  var lbl = sigLabel(sig);
+  var pillCls = sig >= 80 ? 'pill-thriving' : sig >= 65 ? 'pill-ontrack' : sig >= 40 ? 'pill-attention' : 'pill-alert';
+  var name = (pt.first_name || pt.patient_first_name || '') + ' ' + (pt.last_name || pt.patient_last_name || '');
+  document.getElementById('modal-pt-name').textContent = name;
+  document.getElementById('modal-pt-pill').innerHTML = '<span class="status-pill ' + pillCls + '">' + lbl + ' — ' + sig + '/100</span>';
+  var metrics = [
+    ['Pain', pt.pain_level || '--', '/10'],
+    ['Sleep Q', pt.sleep_quality || '--', '/10'],
+    ['Sleep H', pt.sleep_hours || '--', 'h'],
+    ['Energy', pt.energy_level || '--', '/10'],
+    ['Stress', pt.stress_level || '--', '/10'],
+    ['Function', pt.functional_ability || '--', '/10'],
+    ['Mood', pt.mood || '--', '/10']
+  ];
+  document.getElementById('modal-metrics').innerHTML = metrics.map(function(m) {
+    return '<div class="metric-pill">' + m[0] + ': <span>' + m[1] + m[2] + '</span></div>';
+  }).join('');
+  var qs = ['How is ' + (pt.first_name || 'this patient') + ' trending?', 'What should I focus on next visit?', 'What do these metrics suggest?', 'How does this compare to last week?'];
+  document.getElementById('modal-chips').innerHTML = qs.map(function(q) {
+    return '<div class="chip" onclick="sendModalChip(\'' + q.replace(/'/g, '') + '\')">' + q + '</div>';
+  }).join('');
+  document.getElementById('modal-chat-msgs').innerHTML = '';
+  document.getElementById('modal-chat-input').value = '';
+  document.getElementById('pt-modal').classList.add('open');
+}
+
+function closePtModal(e) { if (e.target === document.getElementById('pt-modal')) closePtModalBtn(); }
+function closePtModalBtn() { document.getElementById('pt-modal').classList.remove('open'); _modalPt = null; _modalMsgs = []; }
+
+function sendModalChip(q) { document.getElementById('modal-chat-input').value = q; sendModalMsg(); }
+
+async function sendModalMsg() {
+  var input = document.getElementById('modal-chat-input');
+  var msg = input.value.trim();
+  if (!msg || !_modalPt) return;
+  input.value = '';
+  var dc = window._DC;
+  var pt = _modalPt;
+  var name = (pt.first_name || pt.patient_first_name || '') + ' ' + (pt.last_name || pt.patient_last_name || '');
+  appendChatMsg('modal-chat-msgs', msg, 'user');
+  _modalMsgs.push({ role:'user', content: msg });
+  var sys = 'You are PURA Health AI assisting ' + dc.name + ' at ' + dc.clinic + '. Patient: ' + name + '. Latest PURA Signal: ' + (pt.pura_index || '?') + '/100. Pain: ' + (pt.pain_level || '?') + '/10, Sleep Q: ' + (pt.sleep_quality || '?') + '/10, Sleep H: ' + (pt.sleep_hours || '?') + ', Energy: ' + (pt.energy_level || '?') + '/10, Stress: ' + (pt.stress_level || '?') + '/10, Function: ' + (pt.functional_ability || '?') + '/10, Mood: ' + (pt.mood || '?') + '/10. Device: ' + (pt.device_type || 'none') + '. Chief complaint: ' + (pt.chief_complaint || 'N/A') + '. 90-day goal: ' + (pt.ninety_day_goal || 'N/A') + '. Be specific and clinically useful. Respond concisely.';
+  var reply = await chatAI(sys, _modalMsgs, 400);
+  if (!reply) reply = 'Unable to generate response. Please check your AI key.';
+  _modalMsgs.push({ role:'assistant', content: reply });
+  appendChatMsg('modal-chat-msgs', reply, 'ai');
+}
+
+function appendChatMsg(containerId, msg, role) {
+  var msgs = document.getElementById(containerId);
+  var div = document.createElement('div');
+  div.className = 'chat-bubble ' + role;
+  div.textContent = msg;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendGeneralMsg() {
+  var input = document.getElementById('general-chat-input');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  var dc = window._DC;
+  appendChatMsg('general-chat-msgs', msg, 'user');
+  _generalMsgs.push({ role:'user', content: msg });
+  var ptSummary = _allPts.length > 0 ? _allPts.map(function(p) { return (p.first_name || '') + ' ' + (p.last_name || '') + ': Signal ' + (p.pura_index || p.avg_pura_signal || '?') + ', Pain ' + (p.pain_level || '?') + ', Last checkin: ' + (p.last_checkin_date || 'never'); }).join('\n') : 'No patients loaded.';
+  var sys = 'You are PURA Health AI assisting ' + dc.name + ' at ' + dc.clinic + '. Practice overview:\n' + ptSummary + '\n\nAnswer clinically and concisely.';
+  var reply = await chatAI(sys, _generalMsgs, 400);
+  if (!reply) reply = 'Unable to generate response. Please check your AI key.';
+  _generalMsgs.push({ role:'assistant', content: reply });
+  appendChatMsg('general-chat-msgs', reply, 'ai');
+}
+
+function sendGeneralChip(el) {
+  document.getElementById('general-chat-input').value = el.textContent;
+  sendGeneralMsg();
+}
+
+function openCompose() {
+  _composePtId = null;
+  loadPatientsForMsgModal();
+  document.getElementById('msg-modal-title').textContent = 'Compose Message';
+  document.getElementById('msg-subject').value = '';
+  document.getElementById('msg-body').value = '';
+  document.getElementById('msg-modal').classList.add('open');
+}
+
+function openMsgForPt(pt) {
+  _composePtId = pt.id || null;
+  loadPatientsForMsgModal(pt);
+  document.getElementById('msg-modal-title').textContent = 'Message Patient';
+  document.getElementById('msg-subject').value = '';
+  document.getElementById('msg-body').value = '';
+  document.getElementById('msg-modal').classList.add('open');
+}
+
+function openMsgFromModal() {
+  if (_modalPt) openMsgForPt(_modalPt);
+  else openCompose();
+}
+
+async function loadPatientsForMsgModal(selectedPt) {
+  var sel = document.getElementById('msg-patient-sel');
+  var pts = _allPts.length > 0 ? _allPts : await dbGet('patients', 'clinic_id=eq.' + window._DC.cid + '&select=id,first_name,last_name,email&order=first_name.asc');
+  if (!pts) pts = [];
+  sel.innerHTML = pts.map(function(p) {
+    var selected = (selectedPt && (p.id === selectedPt.id || p.id === (selectedPt.patient_id))) ? 'selected' : '';
+    return '<option value="' + p.id + '" data-email="' + (p.email || p.patient_email || '') + '" ' + selected + '>' + (p.first_name || '') + ' ' + (p.last_name || '') + '</option>';
   }).join('');
 }
 
-async function gchatSend(q) {
-  var input=document.getElementById('gchat-input');
-  var msg=q||input.value.trim();if(!msg)return;
-  input.value='';
-  var msgs=document.getElementById('gchat-msgs');
-  var um=document.createElement('div');um.className='gchat-msg-user';um.textContent=msg;msgs.appendChild(um);
-  var am=document.createElement('div');am.className='gchat-msg-ai';am.innerHTML='<span class="spinner-inline"></span>Thinking...';msgs.appendChild(am);
-  msgs.scrollTop=msgs.scrollHeight;
-  generalChatHistory.push({role:'user',content:msg});
-  var pSummary=allPatients.map(function(p){return p.first_name+' '+p.last_name+': Signal '+p.pura_index+'/100, Pain '+(p.pain_level||'?')+', Stress '+(p.stress_level||'?');}).join('\n');
-  var reply=await chatWithAI('You are PURA Health\'s AI for '+dc.name+' at '+dc.clinic+'. You help interpret patient data and give clinical guidance. Be direct, specific, clinically useful. Patient summary:\n'+pSummary,generalChatHistory,500);
-  am.textContent=reply||'Add your Anthropic API key in pura-config.js to activate AI responses.';
-  generalChatHistory.push({role:'assistant',content:am.textContent});
-  await dbInsert('ai_chat_sessions',{dc_slug:dc.slug,clinic_id:dc.clinic_id,session_type:'general',messages:generalChatHistory});
-  msgs.scrollTop=msgs.scrollHeight;
+function closeMsgModal(e) { if (e.target === document.getElementById('msg-modal')) closeMsgModalBtn(); }
+function closeMsgModalBtn() { document.getElementById('msg-modal').classList.remove('open'); }
+
+async function sendPatientMsg() {
+  var dc = window._DC;
+  var sel = document.getElementById('msg-patient-sel');
+  var opt = sel.options[sel.selectedIndex];
+  if (!opt) { toast('Select a patient', 'error'); return; }
+  var ptId = opt.value;
+  var ptEmail = opt.getAttribute('data-email') || '';
+  var subject = document.getElementById('msg-subject').value.trim();
+  var body = document.getElementById('msg-body').value.trim();
+  if (!body) { toast('Message cannot be empty', 'error'); return; }
+  var btn = document.getElementById('msg-send-btn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  await Promise.all([
+    ptEmail ? sendMail(ptEmail, subject || 'Message from ' + dc.name, body, dc.clinic) : Promise.resolve(),
+    dbPost('dc_messages', { clinic_id: dc.cid, dc_slug: dc.slug, patient_id: ptId, direction: 'dc_to_patient', subject: subject, body: body, patient_email: ptEmail, sent: true }),
+    dbPost('notifications', { clinic_id: dc.cid, dc_slug: dc.slug, patient_id: ptId, type: 'dc_message', subject: subject, body: body, sent_to: [ptEmail], read: false }),
+    mailAdmin('DC Message -- ' + dc.clinic, dc.name + ' sent message to patient ' + opt.text + '\n\nSubject: ' + subject + '\nBody: ' + body)
+  ]);
+  btn.disabled = false; btn.textContent = 'Send Message';
+  closeMsgModalBtn();
+  toast('Message sent');
+  loadMessages(dc);
 }
 
-function openModal(pJson) {
-  var p=typeof pJson==='string'?JSON.parse(pJson):pJson;
-  currentPatient=p;
-  var col=signalColor(p.pura_index);
-  document.getElementById('modal-name').textContent=p.first_name+' '+p.last_name;
-  var sig=document.getElementById('modal-sig');sig.textContent=p.pura_index+'/100';sig.style.background=col+'22';sig.style.color=col;
-  var metrics=[['Pain',p.pain_level,'/10'],['Sleep Q',p.sleep_quality,'/10'],['Sleep H',p.sleep_hours,'h'],['Energy',p.energy_level,'/10'],['Stress',p.stress_level,'/10'],['Function',p.functional_ability||p.functional,'/10'],['Mood',p.mood,'/10'],['Device',p.device_type,'']];
-  document.getElementById('modal-metrics').innerHTML=metrics.map(function(m){return '<span class="metric-pill">'+m[0]+': '+m[1]+m[2]+'</span>';}).join('');
-  var chat=document.getElementById('modal-chat');chat.innerHTML='';
-  if(chatSessions[p.id]){chatSessions[p.id].forEach(function(m){var d=document.createElement('div');d.className=m.role==='user'?'chat-msg-u':'chat-msg-a';d.textContent=m.content;chat.appendChild(d);});}
-  document.getElementById('modal-input').value='';
-  document.getElementById('patient-modal').style.display='flex';
-}
-function closeModal(){currentPatient=null;document.getElementById('patient-modal').style.display='none';}
-function closeModalOuter(e){if(e.target===document.getElementById('patient-modal'))closeModal();}
-
-async function modalAsk(q) {
-  if(!currentPatient)return;
-  var input=document.getElementById('modal-input');
-  var msg=q||input.value.trim();if(!msg)return;
-  input.value='';
-  var chat=document.getElementById('modal-chat');
-  var um=document.createElement('div');um.className='chat-msg-u';um.textContent=msg;chat.appendChild(um);
-  var dots=document.createElement('div');dots.className='chat-dots';dots.innerHTML='<span></span><span></span><span></span>';chat.appendChild(dots);
-  chat.scrollTop=chat.scrollHeight;
-  var p=currentPatient;
-  var history=chatSessions[p.id]||[];
-  history.push({role:'user',content:msg});
-  var sys='You are PURA Health\'s clinical AI for '+dc.name+' at '+dc.clinic+'. Help interpret patient data. Do not diagnose. Patient: '+p.first_name+' '+p.last_name+'. Signal '+p.pura_index+'/100. Pain '+(p.pain_level||'?')+'/10, Sleep '+(p.sleep_quality||'?')+'/10, Energy '+(p.energy_level||'?')+'/10, Stress '+(p.stress_level||'?')+'/10, Function '+(p.functional_ability||p.functional||'?')+'/10, Mood '+(p.mood||'?')+'/10. Device: '+(p.device_type||'Unknown')+'. Notes: "'+(p.patient_note||p.notes||'None')+'"'+(dc.lang==='es'?' Respond in Spanish.':'');
-  var reply=await chatWithAI(sys,history,400);
-  dots.remove();
-  var am=document.createElement('div');am.className='chat-msg-a';am.textContent=reply||'Add your Anthropic API key in pura-config.js to activate AI.';chat.appendChild(am);
-  history.push({role:'assistant',content:am.textContent});
-  chatSessions[p.id]=history;
-  await dbInsert('ai_chat_sessions',{dc_slug:dc.slug,clinic_id:dc.clinic_id,session_type:'patient_specific',patient_id:p.id||null,messages:history});
-  chat.scrollTop=chat.scrollHeight;
+function copyPatientLink() {
+  var dc = window._DC;
+  if (!dc) return;
+  var url = PURA.BASE + '/checkin.html?dc=' + dc.slug;
+  navigator.clipboard.writeText(url).then(function() { toast('Patient link copied'); }).catch(function() { prompt('Copy this link:', url); });
 }
 
-// WIZARD
-function wGo(n){[1,2,3,4,5].forEach(function(i){document.getElementById('w-step'+i).style.display=i===n?'block':'none';});document.getElementById('wizard-bar').style.width=(n/5*100)+'%';}
-function wNext(n){
-  if(n===1){if(!g('w-fn').value.trim()||!g('w-ln').value.trim()||!g('w-em').value.includes('@')){alert('Please fill Name and Email.');return;}}
-  if(n===2){if(!g('w-reason').value.trim()){alert('Please describe reason for care.');return;}}
-  if(n===4){if(!g('w-goal').value.trim()){alert('Please describe their 90-day goal.');return;} buildSummary();}
-  wGo(n+1);
-}
-function g(id){return document.getElementById(id);}
-function toggle(el){el.classList.toggle('checked');if(el.classList.contains('checked'))el.querySelector('.check-box').textContent='✓';else el.querySelector('.check-box').textContent='';}
-function getChecked(gridId){var r=[];document.querySelectorAll('#'+gridId+' .check-item.checked').forEach(function(el){r.push(el.querySelector('.check-lbl').textContent);});return r.join(', ')||'None';}
-function toggleConsent(){consentChecked=!consentChecked;var row=g('w-consent');row.classList.toggle('checked',consentChecked);g('w-consent-box').textContent=consentChecked?'✓':'';g('w-submit-btn').disabled=!consentChecked;}
-function buildSummary(){
-  wizardData={firstName:g('w-fn').value.trim(),lastName:g('w-ln').value.trim(),email:g('w-em').value.trim(),phone:g('w-ph').value.trim(),city:g('w-city').value.trim(),reason:g('w-reason').value.trim(),duration:g('w-dur').value,concerns:getChecked('w-concerns'),device:g('w-device').value,setup:g('w-setup').value,goal:g('w-goal').value.trim(),commit:g('w-commit').value};
-  var rows=[['Name',wizardData.firstName+' '+wizardData.lastName],['Email',wizardData.email],['Reason for care',wizardData.reason],['Duration',wizardData.duration],['Concerns',wizardData.concerns],['Device',wizardData.device],['90-day goal',wizardData.goal],['Commitment',wizardData.commit+'/10']];
-  g('w-summary').innerHTML=rows.map(function(r){return '<div class="summary-row"><div class="summary-lbl">'+r[0]+'</div><div class="summary-val">'+r[1]+'</div></div>';}).join('');
-  consentChecked=false;g('w-consent').classList.remove('checked');g('w-consent-box').textContent='';g('w-submit-btn').disabled=true;
-}
-async function submitPatient(){
-  var f=wizardData;var checkinURL=PURA_CONFIG.BASE_URL+'/checkin.html?dc='+dc.slug;
-  g('w-submit-btn').disabled=true;g('w-submit-btn').textContent='Adding patient...';
-  var result=await dbInsert('patients',{clinic_id:dc.clinic_id,first_name:f.firstName,last_name:f.lastName,email:f.email,phone:f.phone||null,device_type:f.device,chief_complaint:f.reason,status:'active'});
-  var pid=result&&result[0]?result[0].id:null;
-  await dbInsert('patient_onboardings',{clinic_id:dc.clinic_id,dc_slug:dc.slug,first_name:f.firstName,last_name:f.lastName,email:f.email,phone:f.phone||null,reason_for_care:f.reason,device_type:f.device,ninety_day_goal:f.goal,commitment_score:parseInt(f.commit),consent_given:true,welcome_email_sent:true});
-  await sendEmail({to:f.email,subject:'Welcome to PURA — Your daily check-in link from '+dc.name,fromName:'PURA Health · '+dc.clinic,body:'Hi '+f.firstName+',\n\n'+dc.name+' has enrolled you in PURA Health — a daily wellness tracking system.\n\nYOUR CHECK-IN LINK (bookmark this):\n'+checkinURL+'\n\nYour check-in takes 2 minutes and covers 7 wellness indicators. After each check-in, PURA AI gives you a personalized analysis. '+dc.name+' reviews all check-ins each morning.\n\n— PURA Health · '+dc.clinic});
-  await sendEmail({to:dc.email,subject:'New patient added — '+f.firstName+' '+f.lastName,fromName:'PURA Health',body:'You added '+f.firstName+' '+f.lastName+' to PURA.\n\nEmail sent to: '+f.email+'\nDevice: '+f.device+'\nCommitment: '+f.commit+'/10\n\nCheck-in: '+checkinURL});
-  await sendAdminCopy('New patient — '+dc.clinic,'DC: '+dc.name+'\nPatient: '+f.firstName+' '+f.lastName+' ('+f.email+')\nDevice: '+f.device+'\nReason: '+f.reason);
-  g('wizard-wrap').style.display='none';
-  var ws=g('wizard-success');ws.style.display='block';
-  g('w-success-name').textContent=f.firstName+' has been added to PURA.';
-  g('w-success-sub').textContent='Welcome email sent to '+f.email+' with their check-in link.';
-  g('w-success-link').textContent=checkinURL;
-  successCheckinURL=checkinURL;
-}
-function copySuccessLink(){navigator.clipboard.writeText(successCheckinURL).then(function(){alert('Copied!');});}
-function resetWizard(){g('wizard-wrap').style.display='block';g('wizard-success').style.display='none';[1,2,3,4,5].forEach(function(i){var s=g('w-step'+i);if(s)s.style.display='none';});wGo(1);}
-
-function copyPatientLink(){
-  var url=PURA_CONFIG.BASE_URL+'/checkin.html?dc='+dc.slug;
-  navigator.clipboard.writeText(url).then(function(){var btn=g('copy-link-btn');btn.textContent='✓ Copied!';btn.style.color='#22c55e';setTimeout(function(){btn.textContent='📋 Copy Patient Link';btn.style.color='#c8ff00';},2500);});
+async function doSignOut() {
+  var dc = window._DC;
+  if (dc) { await dbPatch('dc_auth', 'slug=eq.' + dc.slug, { session_token: null }); }
+  clearSession();
+  window.location.href = 'login.html?dc=' + (dc ? dc.slug : '');
 }
 </script>
 </body>
