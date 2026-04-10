@@ -1,9 +1,9 @@
 var PURA = {
   SB_URL: 'https://oljhhgodblludybhndgj.supabase.co',
-  SB_KEY: 'paste-your-supabase-anon-key-here',
-  AI_KEY: 'paste-your-anthropic-key-here',
+  SB_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9samhoZ29kYmxsdWR5YmhuZGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1OTk4MTcsImV4cCI6MjA4OTE3NTgxN30.wEb6sJHozG86zkL66a2z_hgfwv0ibeD5RuSJjRg34oY',
+  AI_KEY: 'REDACTED_ANTHROPIC_KEY',
   AI_MODEL: 'claude-haiku-4-5-20251001',
-  MAIL_KEY: 'paste-your-web3forms-key-here',
+  MAIL_KEY: 'c86e97a1-9a78-45ce-94f2-eb96113d260f',
   ADMIN_EMAIL: 'viveapr@gmail.com',
   ADMIN_PASS: 'pura2026santos',
   BASE: 'https://pura-delta.vercel.app'
