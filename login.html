@@ -80,13 +80,40 @@ async function doLogin() {
   if (!pin) return;
   var btn = document.getElementById('login-btn');
   btn.disabled = true; btn.textContent = 'Checking...';
-  var rows = await dbGet('dc_auth', 'slug=eq.' + dcSlug + '&select=id,pin,clinic_id,login_count');
-  if (!rows || !rows[0]) { showErr('Account not found. Contact viveapr@gmail.com'); btn.disabled=false; btn.textContent='Sign In'; return; }
-  var rec = rows[0];
-  authId = rec.id;
-  if (rec.pin !== pin) { showErr('Incorrect PIN. Try again.'); btn.disabled=false; btn.textContent='Sign In'; return; }
-  if (pin === '1234') { document.getElementById('login-card').style.display='none'; document.getElementById('change-pin-card').style.display='block'; return; }
-  await createSession(rec);
+  try {
+    var rows = await dbGet('dc_auth', 'slug=eq.' + dcSlug + '&select=id,pin,clinic_id,login_count,pin_bcrypt');
+    if (!rows || !rows[0]) {
+      showErr('Account not found. Contact viveapr@gmail.com');
+      btn.disabled = false; btn.textContent = 'Sign In';
+      return;
+    }
+    var rec = rows[0];
+    var verifyResp = await fetch(PURA.SB_URL + '/rest/v1/rpc/verify_dc_pin', {
+      method: 'POST',
+      headers: {
+        'apikey': PURA.SB_KEY,
+        'Authorization': 'Bearer ' + PURA.SB_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_slug: dcSlug, p_pin: pin })
+    });
+    var isValid = await verifyResp.json();
+    if (!isValid) {
+      showErr('Incorrect PIN. Try again.');
+      btn.disabled = false; btn.textContent = 'Sign In';
+      return;
+    }
+    if (pin === '1234') {
+      document.getElementById('login-card').style.display = 'none';
+      document.getElementById('change-pin-card').style.display = 'block';
+      return;
+    }
+    await createSession(rec);
+  } catch(e) {
+    console.error('Login error:', e);
+    showErr('Login error. Please try again.');
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
 }
 
 async function createSession(rec) {
