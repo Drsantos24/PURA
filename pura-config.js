@@ -1,9 +1,9 @@
 var PURA = {
   SB_URL: 'https://oljhhgodblludybhndgj.supabase.co',
-  SB_KEY: '',
-  AI_KEY: '',
+  SB_KEY: 'paste-your-supabase-anon-key-here',
+  AI_KEY: 'paste-your-anthropic-key-here',
   AI_MODEL: 'claude-haiku-4-5-20251001',
-  MAIL_KEY: '',
+  MAIL_KEY: 'paste-your-web3forms-key-here',
   ADMIN_EMAIL: 'viveapr@gmail.com',
   ADMIN_PASS: 'pura2026santos',
   BASE: 'https://pura-delta.vercel.app'
