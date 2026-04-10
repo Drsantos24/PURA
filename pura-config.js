@@ -1,7 +1,7 @@
 var PURA = {
   SB_URL: 'https://oljhhgodblludybhndgj.supabase.co',
   SB_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9samhoZ29kYmxsdWR5YmhuZGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1OTk4MTcsImV4cCI6MjA4OTE3NTgxN30.wEb6sJHozG86zkL66a2z_hgfwv0ibeD5RuSJjRg34oY',
-  AI_KEY: 'REDACTED_ANTHROPIC_KEY',
+  AI_KEY: '',
   AI_MODEL: 'claude-haiku-4-5-20251001',
   MAIL_KEY: 'c86e97a1-9a78-45ce-94f2-eb96113d260f',
   ADMIN_EMAIL: 'viveapr@gmail.com',
@@ -68,12 +68,10 @@ async function sendMail(to, subject, body, fromName) {
 function mailAdmin(subject, body) { return sendMail(PURA.ADMIN_EMAIL, '[PURA Admin] ' + subject, body, 'PURA System'); }
 
 async function askAI(system, user, maxT) {
-  var key = sessionStorage.getItem('dc_ai_key') || PURA.AI_KEY;
-  if (!key || key === '') return null;
   try {
-    var r = await fetch('https://api.anthropic.com/v1/messages', {
+    var r = await fetch('/api/ai', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: PURA.AI_MODEL, max_tokens: maxT || 500, system: system, messages: [{ role: 'user', content: user }] })
     });
     var d = await r.json();
@@ -81,12 +79,10 @@ async function askAI(system, user, maxT) {
   } catch(e) { return null; }
 }
 async function chatAI(system, messages, maxT) {
-  var key = sessionStorage.getItem('dc_ai_key') || PURA.AI_KEY;
-  if (!key || key === '') return null;
   try {
-    var r = await fetch('https://api.anthropic.com/v1/messages', {
+    var r = await fetch('/api/ai', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: PURA.AI_MODEL, max_tokens: maxT || 400, system: system, messages: messages })
     });
     var d = await r.json();
