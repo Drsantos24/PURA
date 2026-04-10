@@ -1,9 +1,9 @@
 var PURA = {
   SB_URL: 'https://oljhhgodblludybhndgj.supabase.co',
-  SB_KEY: 'YOUR_SUPABASE_ANON_KEY',
-  AI_KEY: 'YOUR_ANTHROPIC_API_KEY',
+  SB_KEY: '',
+  AI_KEY: '',
   AI_MODEL: 'claude-haiku-4-5-20251001',
-  MAIL_KEY: 'YOUR_WEB3FORMS_KEY',
+  MAIL_KEY: '',
   ADMIN_EMAIL: 'viveapr@gmail.com',
   ADMIN_PASS: 'pura2026santos',
   BASE: 'https://pura-delta.vercel.app'
@@ -55,7 +55,7 @@ async function dbPatch(table, filter, body) {
 }
 
 async function sendMail(to, subject, body, fromName) {
-  if (!PURA.MAIL_KEY || PURA.MAIL_KEY === 'YOUR_WEB3FORMS_KEY') return false;
+  if (!PURA.MAIL_KEY || PURA.MAIL_KEY === '') return false;
   try {
     await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
@@ -69,7 +69,7 @@ function mailAdmin(subject, body) { return sendMail(PURA.ADMIN_EMAIL, '[PURA Adm
 
 async function askAI(system, user, maxT) {
   var key = sessionStorage.getItem('dc_ai_key') || PURA.AI_KEY;
-  if (!key || key === 'YOUR_ANTHROPIC_API_KEY') return null;
+  if (!key || key === '') return null;
   try {
     var r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -82,7 +82,7 @@ async function askAI(system, user, maxT) {
 }
 async function chatAI(system, messages, maxT) {
   var key = sessionStorage.getItem('dc_ai_key') || PURA.AI_KEY;
-  if (!key || key === 'YOUR_ANTHROPIC_API_KEY') return null;
+  if (!key || key === '') return null;
   try {
     var r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
