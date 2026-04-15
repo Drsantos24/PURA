@@ -59,10 +59,10 @@ input:focus{border-color:#c8ff00}
 
 <script>
 var dcSlug = getDCSlug();
-var dc = getDC();
 var authId = null;
 
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', async function() {
+  var dc = await loadDC();
   if (!dc) { document.querySelector('.clinic-name').textContent = 'Invalid link'; return; }
   document.getElementById('clinic-display').textContent = dc.clinic;
   document.title = 'PURA -- ' + dc.clinic;

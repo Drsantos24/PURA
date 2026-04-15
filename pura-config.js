@@ -55,15 +55,15 @@ async function dbPatch(table, filter, body) {
 }
 
 async function sendMail(to, subject, body, fromName) {
-  if (!PURA.MAIL_KEY || PURA.MAIL_KEY === '') return false;
   try {
-    await fetch('https://api.web3forms.com/submit', {
+    var r = await fetch('/api/email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ access_key: PURA.MAIL_KEY, subject: subject, from_name: fromName || 'PURA Health', to: to, message: body })
+      body: JSON.stringify({ to: to, subject: subject, text: body, fromName: fromName || 'PURA Health' })
     });
-    return true;
-  } catch(e) { return false; }
+    var d = await r.json();
+    return d.success === true;
+  } catch(e) { console.error('[sendMail]', e.message); return false; }
 }
 function mailAdmin(subject, body) { return sendMail(PURA.ADMIN_EMAIL, '[PURA Admin] ' + subject, body, 'PURA System'); }
 
@@ -143,6 +143,23 @@ function toast(msg, type) {
   t.setAttribute('style', 'position:fixed;top:20px;right:20px;z-index:9999;background:' + bg + ';color:#08080a;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;font-family:Inter,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.5);');
   t.textContent = msg; document.body.appendChild(t); setTimeout(function() { t.remove(); }, 3000);
 }
+async function loadDC() {
+  var slug = getDCSlug();
+  if (!slug) return null;
+  var dc = DC[slug] || null;
+  if (dc) return await refreshDC(dc);
+  try {
+    var rows = await dbGet('clinics', 'slug=eq.' + slug + '&select=id,name,owner_name,email,city,state,lang,phone&limit=1');
+    if (rows && rows[0]) {
+      var r = rows[0];
+      var parts = (r.owner_name || '').split(' ');
+      dc = { slug: slug, cid: r.id, name: r.owner_name || slug, first: parts[0] || '', last: parts[parts.length - 1] || '', clinic: r.name || '', city: (r.city || '') + (r.state ? ', ' + r.state : ''), email: r.email || '', lang: r.lang || 'en', phone: r.phone || '' };
+      return await refreshDC(dc);
+    }
+  } catch(e) { console.error('loadDC error', e); }
+  return null;
+}
+
 function demoPts() {
   return [
     { id:'d1', first_name:'Maria',  last_name:'R.', pura_index:82, pain_level:3, sleep_quality:8, sleep_hours:7.5, energy_level:8, stress_level:4, functional_ability:8, mood:8, device_type:'Apple Watch', patient_note:'Feeling great after last adjustment', last_checkin_date:todayISO(), isDemo:true },

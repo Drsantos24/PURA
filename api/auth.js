@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  var SB_URL = process.env.SUPABASE_URL || 'https://oljhhgodblludybhndgj.supabase.co';
+  var SB_URL = 'https://oljhhgodblludybhndgj.supabase.co';
   var SB_KEY = process.env.SUPABASE_ANON_KEY;
   var ADMIN_EMAIL = 'viveapr@gmail.com';
   var MAX_ATTEMPTS = 5;

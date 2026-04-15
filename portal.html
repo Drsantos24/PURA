@@ -447,8 +447,6 @@ var _composePtId = null;
 
 window.addEventListener('DOMContentLoaded', async function() {
   var slug = getDCSlug();
-  var dc = getDC();
-  if (!dc) { document.getElementById('err').style.display = 'flex'; return; }
   var sess = getSession();
   var sessSlug = getSessSlug();
   if (!sess || sessSlug !== slug) { window.location.href = 'login.html?dc=' + slug; return; }
@@ -456,7 +454,8 @@ window.addEventListener('DOMContentLoaded', async function() {
   if (!auth || !auth[0] || auth[0].session_token !== sess || new Date(auth[0].session_expires) < new Date()) {
     clearSession(); window.location.href = 'login.html?dc=' + slug; return;
   }
-  dc = await refreshDC(dc);
+  var dc = await loadDC();
+  if (!dc) { document.getElementById('err').style.display = 'flex'; return; }
   window._DC = dc;
   personalize(dc);
   document.getElementById('app').style.display = 'flex';

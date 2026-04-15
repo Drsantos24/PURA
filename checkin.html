@@ -247,15 +247,12 @@ textarea{resize:vertical;min-height:90px;font-size:16px}
 
 <script>
 var _dcSlug = (new URLSearchParams(location.search)).get('dc') || '';
-var _dc = DC[_dcSlug] || null;
+var _dc = null;
 var _touchedSliders = {};
 var _existingCheckin = null;
 var _allowUpdate = false;
 
-if (!_dc) {
-  document.getElementById('mainContent').style.display = 'none';
-  document.getElementById('errorPage').style.display = 'block';
-} else {
+function _initCheckinUI() {
   document.getElementById('bannerDC').textContent = _dc.name;
   document.getElementById('bannerClinic').textContent = _dc.clinic;
   document.getElementById('bannerCity').textContent = _dc.city;
@@ -268,6 +265,16 @@ if (!_dc) {
   document.getElementById('againLink').href = location.origin + '/checkin.html?dc=' + _dcSlug;
   if (_dc.lang === 'es') document.documentElement.lang = 'es';
 }
+
+(async function() {
+  _dc = DC[_dcSlug] || await loadDC();
+  if (!_dc) {
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('errorPage').style.display = 'block';
+  } else {
+    _initCheckinUI();
+  }
+})();
 
 function sv(id, vid) { document.getElementById(vid).textContent = document.getElementById(id).value; _touchedSliders[id] = true; }
 function gn(id) { return id === 'sleepH' ? (parseFloat(document.getElementById(id).value) || 7) : (+document.getElementById(id).value); }
