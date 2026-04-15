@@ -62,8 +62,19 @@ async function sendMail(to, subject, body, fromName) {
       body: JSON.stringify({ to: to, subject: subject, text: body, fromName: fromName || 'PURA Health' })
     });
     var d = await r.json();
-    return d.success === true;
-  } catch(e) { console.error('[sendMail]', e.message); return false; }
+    if (d.success) return true;
+    throw new Error(d.error || 'api/email failed');
+  } catch(e) {
+    console.warn('[sendMail] /api/email failed, using direct fallback:', e.message);
+    try {
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_key: PURA.MAIL_KEY, subject: subject, from_name: fromName || 'PURA Health', to: to, message: body })
+      });
+      return true;
+    } catch(e2) { console.error('[sendMail] fallback also failed:', e2.message); return false; }
+  }
 }
 function mailAdmin(subject, body) { return sendMail(PURA.ADMIN_EMAIL, '[PURA Admin] ' + subject, body, 'PURA System'); }
 
