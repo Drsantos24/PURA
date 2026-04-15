@@ -135,6 +135,21 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         <div class="card"><div class="section-title">Recent Alerts</div><div id="recent-alerts"></div></div>
         <div class="card"><div class="section-title">Recent Beta Leads</div><div id="recent-leads"></div></div>
       </div>
+      <div style="margin-top:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="section-title" style="color:#c8ff00;margin:0">Security Events</div>
+          <button onclick="loadSecurityEvents()" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#888;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit">Refresh</button>
+        </div>
+        <div id="security-events-table" class="card" style="padding:0;overflow:hidden">
+          <div style="padding:20px;text-align:center;color:#555;font-size:13px">Loading security events...</div>
+        </div>
+        <div style="margin-top:16px">
+          <div class="section-title" style="color:#ef4444;margin-bottom:10px">Active Lockouts</div>
+          <div id="lockouts-table" class="card" style="padding:0;overflow:hidden">
+            <div style="padding:16px;text-align:center;color:#555;font-size:13px">Checking lockouts...</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="tab-panel" id="tab-dcs">
@@ -218,7 +233,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <h3>Portal Setup</h3>
           <div class="form-row-2">
             <div class="form-group"><label>URL Slug * <span style="color:#444;font-size:10px">(auto-generated)</span></label><input type="text" id="ndc-slug" placeholder="jane-smith"></div>
-            <div class="form-group"><label>Initial PIN</label><input type="text" id="ndc-pin" value="1234" maxlength="6"></div>
+            <div class="form-group"><label>Initial PIN (4-6 digits, required)</label><input type="text" id="ndc-pin" placeholder="Enter PIN" maxlength="6"></div>
           </div>
           <div class="form-row-2">
             <div class="form-group"><label>Specialty</label><input type="text" id="ndc-specialty" placeholder="Family Chiropractic"></div>
@@ -308,6 +323,7 @@ async function loadOverview() {
   loadTrendChart();
   loadRecentAlerts();
   loadRecentLeads();
+  loadSecurityEvents();
 }
 
 async function loadTrendChart() {
@@ -380,7 +396,8 @@ async function loadDCs() {
     html += '<div class="dc-card-top"><div><div class="dc-slug-pill">' + slug + '</div><div class="dc-name" style="margin-top:6px">' + (c.owner_name || 'Unknown') + '</div><div class="dc-clinic">' + (c.name || '') + '</div><div style="font-size:12px;color:#555;margin-top:2px">' + (c.city || '') + (c.state ? ', ' + c.state : '') + '</div></div><span class="badge ' + statusCls + '">' + (c.status || 'beta') + '</span></div>';
     html += '<div style="font-size:12px;color:#666;margin-top:8px">' + (c.email || '') + '</div>';
     html += '<div class="dc-stats"><div class="dc-stat"><div class="n">' + ptCnt + '</div><div class="l">Patients</div></div><div class="dc-stat"><div class="n">' + ciCnt + '</div><div class="l">Check-ins</div></div><div class="dc-stat"><div class="n" style="color:' + (avgSig >= 65 ? '#22c55e' : '#f59e0b') + '">' + avgSig + '</div><div class="l">Avg Signal</div></div><div class="dc-stat"><div class="n" style="font-size:11px;color:#666">' + lastDt + '</div><div class="l">Last Activity</div></div></div>';
-    html += '<div class="dc-actions"><a class="dc-btn" href="portal.html?dc=' + slug + '" target="_blank" style="text-decoration:none">Portal &rarr;</a><button class="dc-btn" onclick="toggleEdit(\'' + id + '\')">&#9998; Edit</button><button class="dc-btn" onclick="resetPin(\'' + slug + '\')">Reset PIN</button></div>';
+    html += '<div style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="password" id="pin-reset-' + slug + '" placeholder="New PIN" maxlength="6" style="flex:1;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:8px 12px;color:#f0f0f0;font-family:inherit;font-size:14px;outline:none"><button class="dc-btn" onclick="resetPin(\'' + slug + '\')">Set PIN</button></div>';
+    html += '<div class="dc-actions"><a class="dc-btn" href="portal.html?dc=' + slug + '" target="_blank" style="text-decoration:none">Portal &rarr;</a><button class="dc-btn" onclick="toggleEdit(\'' + id + '\')">&#9998; Edit</button></div>';
     html += '<div class="edit-form" id="edit-form-' + id + '">';
     html += '<div class="form-row-2"><div class="form-group"><label>DC Name</label><input type="text" id="ef-name-' + id + '" value="' + (c.owner_name || '') + '"></div><div class="form-group"><label>Clinic Name</label><input type="text" id="ef-clinic-' + id + '" value="' + (c.name || '') + '"></div></div>';
     html += '<div class="form-row-2"><div class="form-group"><label>Email</label><input type="email" id="ef-email-' + id + '" value="' + (c.email || '') + '"></div><div class="form-group"><label>Phone</label><input type="text" id="ef-phone-' + id + '" value="' + (c.phone || '') + '"></div></div>';
@@ -418,8 +435,61 @@ async function saveEdit(id) {
 }
 
 async function resetPin(slug) {
-  await dbPatch('dc_auth', 'slug=eq.' + slug, { pin: '1234' });
-  toast('PIN reset to 1234 for ' + slug);
+  var input = document.getElementById('pin-reset-' + slug);
+  var newPin = input ? input.value.trim() : '';
+  if (!newPin || newPin.length < 4) { toast('Enter a PIN (4-6 digits)', 'error'); return; }
+  var r = await fetch(PURA.SB_URL + '/rest/v1/rpc/set_dc_pin', {
+    method: 'POST',
+    headers: { 'apikey': PURA.SB_KEY, 'Authorization': 'Bearer ' + PURA.SB_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_slug: slug, p_new_pin: newPin })
+  });
+  var ok = await r.json();
+  if (ok) {
+    toast('PIN updated for ' + slug);
+    await dbPost('security_events', { event_type: 'admin_pin_reset', slug: slug, severity: 'info', details: { reset_by: 'admin' } });
+    mailAdmin('PIN reset by admin — ' + slug, 'PIN was manually reset for ' + slug + ' from admin dashboard.');
+    if (input) input.value = '';
+  } else {
+    toast('PIN update failed', 'error');
+  }
+}
+
+async function loadSecurityEvents() {
+  try {
+    var events = await dbGet('security_events', 'order=created_at.desc&limit=20');
+    var lockouts = await dbGet('login_lockouts', 'order=updated_at.desc');
+    var evtHtml = '<table style="width:100%;border-collapse:collapse">';
+    evtHtml += '<tr style="background:#0d0d0d"><th style="padding:10px 14px;text-align:left;font-size:11px;color:#555;font-weight:500">Time</th><th style="padding:10px;text-align:left;font-size:11px;color:#555">Event</th><th style="padding:10px;text-align:left;font-size:11px;color:#555">Slug</th><th style="padding:10px;text-align:left;font-size:11px;color:#555">IP</th><th style="padding:10px;text-align:left;font-size:11px;color:#555">Severity</th></tr>';
+    if (Array.isArray(events) && events.length > 0) {
+      events.forEach(function(e) {
+        var sevColor = e.severity === 'critical' ? '#ef4444' : e.severity === 'warn' ? '#f59e0b' : '#22c55e';
+        evtHtml += '<tr style="border-top:1px solid #161616"><td style="padding:10px 14px;font-size:11px;color:#555">' + new Date(e.created_at).toLocaleString() + '</td><td style="padding:10px;font-size:12px;color:#f0f0f0;font-family:monospace">' + e.event_type + '</td><td style="padding:10px;font-size:12px;color:#888">' + (e.slug || '-') + '</td><td style="padding:10px;font-size:11px;color:#555">' + (e.ip_address || '-') + '</td><td style="padding:10px"><span style="background:' + sevColor + '22;color:' + sevColor + ';font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">' + (e.severity || 'info').toUpperCase() + '</span></td></tr>';
+      });
+    } else {
+      evtHtml += '<tr><td colspan="5" style="padding:20px;text-align:center;color:#555;font-size:13px">No security events yet</td></tr>';
+    }
+    evtHtml += '</table>';
+    document.getElementById('security-events-table').innerHTML = evtHtml;
+    var active = Array.isArray(lockouts) ? lockouts.filter(function(l) { return l.locked_until && new Date(l.locked_until) > new Date(); }) : [];
+    var lockHtml = '';
+    if (active.length > 0) {
+      lockHtml = '<table style="width:100%;border-collapse:collapse"><tr style="background:#0d0d0d"><th style="padding:10px 14px;text-align:left;font-size:11px;color:#555">Slug</th><th style="padding:10px;text-align:left;font-size:11px;color:#555">Failures</th><th style="padding:10px;text-align:left;font-size:11px;color:#555">Locked Until</th><th style="padding:10px;text-align:left;font-size:11px;color:#555">Action</th></tr>';
+      active.forEach(function(l) {
+        lockHtml += '<tr style="border-top:1px solid #1a1a1a"><td style="padding:10px 14px;font-size:13px;color:#f0f0f0">' + l.slug + '</td><td style="padding:10px;font-size:13px;color:#ef4444">' + l.failed_attempts + '</td><td style="padding:10px;font-size:12px;color:#888">' + new Date(l.locked_until).toLocaleString() + '</td><td style="padding:10px"><button onclick="unlockAccount(\'' + l.slug + '\')" style="background:#c8ff0015;border:1px solid #c8ff0040;color:#c8ff00;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit">Unlock</button></td></tr>';
+      });
+      lockHtml += '</table>';
+    } else {
+      lockHtml = '<div style="padding:16px;text-align:center;color:#555;font-size:13px">No active lockouts</div>';
+    }
+    document.getElementById('lockouts-table').innerHTML = lockHtml;
+  } catch(e) { console.error('Security events error:', e); }
+}
+
+async function unlockAccount(slug) {
+  await dbPatch('login_lockouts', 'slug=eq.' + slug, { locked_until: null, failed_attempts: 0, updated_at: new Date().toISOString() });
+  await dbPost('security_events', { event_type: 'manual_unlock', slug: slug, severity: 'info', details: { unlocked_by: 'admin' } });
+  toast(slug + ' unlocked');
+  loadSecurityEvents();
 }
 
 async function loadAllPts() {
@@ -594,9 +664,14 @@ async function addNewDC() {
   var cid = clinicRec && clinicRec[0] ? clinicRec[0].id : null;
   if (!cid) { toast('Error creating clinic', 'error'); return; }
   await Promise.all([
-    dbPost('dc_auth', { clinic_id: cid, slug: slug, pin: pin }),
+    dbPost('dc_auth', { clinic_id: cid, slug: slug, pin: '__pending__' }),
     dbPost('alert_thresholds', { clinic_id: cid, dc_slug: slug, signal_low_threshold: 50, signal_high_threshold: 85, pain_high_threshold: 7, stress_high_threshold: 8, no_checkin_days: 3, notify_dc_email: true, notify_admin_email: true })
   ]);
+  await fetch(PURA.SB_URL + '/rest/v1/rpc/set_dc_pin', {
+    method: 'POST',
+    headers: { 'apikey': PURA.SB_KEY, 'Authorization': 'Bearer ' + PURA.SB_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_slug: slug, p_new_pin: pin })
+  });
   var base = PURA.BASE;
   var body = 'Welcome to PURA Health Beta, ' + name + '!\n\nYour clinic "' + clinic + '" is now live.\n\nYour 3 links:\n1. Login: ' + base + '/login.html?dc=' + slug + '\n2. Portal: ' + base + '/portal.html?dc=' + slug + '\n3. Patient Check-in: ' + base + '/checkin.html?dc=' + slug + '\n\nInitial PIN: ' + pin + ' (you will be prompted to change on first login)\n\nQuestions? Reply to this email or contact viveapr@gmail.com\n\n-- PURA Health Team';
   var adminBody = 'New DC: ' + name + ' | ' + clinic + '\nEmail: ' + email + '\nSlug: ' + slug + '\nCity: ' + city + ', ' + state;
@@ -606,7 +681,7 @@ async function addNewDC() {
   ]);
   toast('DC added. Welcome email sent.');
   ['ndc-name','ndc-clinic','ndc-email','ndc-phone','ndc-city','ndc-state','ndc-slug','ndc-specialty','ndc-ig','ndc-web'].forEach(function(id) { document.getElementById(id).value = ''; });
-  document.getElementById('ndc-pin').value = '1234';
+  document.getElementById('ndc-pin').value = '';
   showTab('dcs');
 }
 </script>
