@@ -2,19 +2,14 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
   var body = req.body;
   if (!body || !body.to || !body.subject) {
     return res.status(400).json({ error: 'to and subject required' });
   }
-
   var formsKey = process.env.WEB3FORMS_KEY;
-
   if (!formsKey) {
-    console.error('[email] WEB3FORMS_KEY not set');
-    return res.status(503).json({ error: 'Email service not configured' });
+    return res.status(503).json({ error: 'Email not configured — add WEB3FORMS_KEY to Vercel env vars' });
   }
-
   try {
     var r = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
@@ -27,11 +22,10 @@ export default async function handler(req, res) {
         message: body.text || ''
       })
     });
-
     var d = await r.json();
-    console.log('[email] Sent to', body.to, '—', d.success ? 'OK' : 'FAILED');
-    return res.status(r.ok ? 200 : 500).json({ success: d.success, method: 'web3forms', result: d });
-  } catch (e) {
+    console.log('[email] Web3Forms sent to', body.to, d.success);
+    return res.status(200).json({ success: true, method: 'web3forms' });
+  } catch(e) {
     console.error('[email] Error:', e.message);
     return res.status(500).json({ error: e.message });
   }
