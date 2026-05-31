@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/morning-send",
+      "schedule": "0 10 * * *"
+    }
+  ]
+}
