@@ -5,6 +5,10 @@
     {
       "path": "/api/cron/morning-send",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/purge-logs",
+      "schedule": "0 3 1 * *"
     }
   ]
 }
