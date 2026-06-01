@@ -25,6 +25,39 @@ export type BriefingResult = {
   callouts:  BriefingCallout[]
 }
 
+// Operational clinic context — NOT PHI. Safe to send to AI in full.
+export type ClinicContext = {
+  practice_type:                       string | null
+  typical_care_plan_structure:         string | null
+  what_successful_recovery_looks_like: string | null
+  communication_style:                 string | null
+  communication_style_notes:           string | null
+  red_flags:                           string | null
+  practice_philosophy:                 string | null
+  patient_demographics:                string | null
+  typical_visit_frequency:             string | null
+  what_makes_a_good_outcome:           string | null
+}
+
+function formatClinicContext(ctx: ClinicContext | null): string {
+  if (!ctx) return 'CLINIC CONTEXT: No clinic profile has been set up yet. Provide general chiropractic guidance.'
+
+  const lines = [
+    `CLINIC CONTEXT (operational details about this practice — not patient data):`,
+    ctx.practice_type                       ? `- Practice type: ${ctx.practice_type}` : null,
+    ctx.patient_demographics                ? `- Typical patients: ${ctx.patient_demographics}` : null,
+    ctx.typical_visit_frequency             ? `- Visit frequency: ${ctx.typical_visit_frequency}` : null,
+    ctx.typical_care_plan_structure         ? `- Care plan structure: ${ctx.typical_care_plan_structure}` : null,
+    ctx.what_successful_recovery_looks_like ? `- Successful recovery looks like: ${ctx.what_successful_recovery_looks_like}` : null,
+    ctx.what_makes_a_good_outcome           ? `- Good outcome defined as: ${ctx.what_makes_a_good_outcome}` : null,
+    ctx.red_flags                           ? `- Red flags to watch for: ${ctx.red_flags}` : null,
+    ctx.practice_philosophy                 ? `- Practice philosophy: ${ctx.practice_philosophy}` : null,
+    ctx.communication_style                 ? `- Communication style: ${ctx.communication_style}${ctx.communication_style_notes ? ` — ${ctx.communication_style_notes}` : ''}` : null,
+  ].filter(Boolean)
+
+  return lines.join('\n')
+}
+
 function configured(): boolean {
   const k = process.env.GROQ_API_KEY
   return !!k && !k.startsWith('placeholder') && !k.startsWith('your_')
@@ -37,7 +70,10 @@ async function client() {
 
 const MODEL = 'llama-3.3-70b-versatile'
 
-export async function generateBriefing(patients: DeidentifiedPatient[]): Promise<BriefingResult> {
+export async function generateBriefing(
+  patients: DeidentifiedPatient[],
+  clinicCtx: ClinicContext | null = null,
+): Promise<BriefingResult> {
   if (!configured()) {
     const callouts = patients
       .filter(p => {
@@ -59,9 +95,13 @@ export async function generateBriefing(patients: DeidentifiedPatient[]): Promise
     }
   }
 
+  const contextBlock = formatClinicContext(clinicCtx)
+
   const prompt = `You are a morning briefing assistant for a busy chiropractor. You get de-identified patient data and produce a fast, scannable summary the DC reads in under 10 seconds.
 
-Patient data (de-identified refs only — do not invent names or details):
+${contextBlock}
+
+Patient data (de-identified refs only — no real names in this data):
 ${JSON.stringify(patients, null, 2)}
 
 Respond with valid JSON only — no markdown fences, no explanation, exactly this shape:
@@ -77,11 +117,12 @@ Respond with valid JSON only — no markdown fences, no explanation, exactly thi
 }
 
 Priorities:
+- Use the clinic context to make your guidance specific to this practice (e.g. reference their care plan milestones, their red-flag definitions, their communication style)
 - Rank callouts by urgency: steepest decline first, then low signal, then gone silent
 - Only include patients who genuinely need attention today — skip anyone stable and engaged
 - Reason must reference the trend pattern (e.g. "dropped 21 points over the week, checked in today"), not just restate the label
 - Suggested action should be specific and immediate (e.g. "Call today — patient is present and declining fast")
-- Tone: direct, clinical-warm — like a good MA briefing a DC before morning rounds
+- Tone should match the practice's communication style from the clinic context
 - No medical recommendations, treatment decisions, or diagnosis language`
 
   const groq = await client()
@@ -95,7 +136,10 @@ Priorities:
   return JSON.parse(text) as BriefingResult
 }
 
-export async function generateMessageDraft(patient: DeidentifiedPatient): Promise<string> {
+export async function generateMessageDraft(
+  patient: DeidentifiedPatient,
+  clinicCtx: ClinicContext | null = null,
+): Promise<string> {
   if (!configured()) {
     const notIn = patient.days_without_checkin && patient.days_without_checkin > 1
       ? `We haven't heard from you in a few days. `
@@ -112,11 +156,18 @@ export async function generateMessageDraft(patient: DeidentifiedPatient): Promis
     ? `The patient has gone quiet for ${patient.days_without_checkin} days. The DC wants to warmly re-engage them — ask how they're doing and get a reply or call back, not just an open invite.`
     : `The patient could use a warm check-in to keep them engaged with their care.`
 
-  const prompt = `Write a single SMS from a chiropractor to a patient. Situation: ${situation}
+  const contextBlock = formatClinicContext(clinicCtx)
+
+  const prompt = `Write a single SMS from a chiropractor to a patient.
+
+${contextBlock}
+
+Situation: ${situation}
 
 Requirements:
 - Under 280 characters
 - Sound like a real person texting — warm, direct, human
+- Match the communication style from the clinic context exactly (e.g. if warm: use first name, acknowledge effort; if formal: more professional tone)
 - No metrics, scores, app data, or clinical jargon
 - Do NOT say "soon" or "when you're free" — the CTA should feel specific: "this week", "give us a call", "reply and let us know"
 - Use [Name] for patient first name, [Clinic] for clinic name

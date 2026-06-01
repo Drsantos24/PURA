@@ -5,7 +5,18 @@ import {
   generateBriefing,
   generateMessageDraft,
   type DeidentifiedPatient,
+  type ClinicContext,
 } from './gemini'
+
+async function getClinicProfileContext(clinicId: string): Promise<ClinicContext | null> {
+  const service = createServiceClient()
+  const { data } = await service
+    .from('clinic_profiles')
+    .select('practice_type,typical_care_plan_structure,what_successful_recovery_looks_like,communication_style,communication_style_notes,red_flags,practice_philosophy,patient_demographics,typical_visit_frequency,what_makes_a_good_outcome')
+    .eq('clinic_id', clinicId)
+    .maybeSingle()
+  return data ?? null
+}
 
 type PatientRow = {
   id: string
@@ -113,8 +124,11 @@ export async function generateBriefingForClinic(clinicId: string): Promise<{
   // Log de-identified payload — confirms PHI is scrubbed
   console.log('[PURA AI payload — no PHI]', JSON.stringify({ clinic_id: clinicId, patients: deidentified }, null, 2))
 
-  // Call Gemini (or no-op stub)
-  const briefingResult = await generateBriefing(deidentified)
+  // Fetch clinic profile for AI context injection (operational data, not PHI)
+  const clinicProfile = await getClinicProfileContext(clinicId)
+
+  // Call Groq (or no-op stub)
+  const briefingResult = await generateBriefing(deidentified, clinicProfile)
 
   // Re-map patient_refs → real patient_ids in callouts
   type StoredCallout = { patient_id: string; reason: string; suggested_action: string }
@@ -174,7 +188,7 @@ export async function generateBriefingForClinic(clinicId: string): Promise<{
       .eq('id', clinicId)
       .single()
 
-    const rawDraft = await generateMessageDraft(p)
+    const rawDraft = await generateMessageDraft(p, clinicProfile)
 
     // Re-insert real name server-side — [Name] and [Clinic] placeholders only
     const finalBody = rawDraft

@@ -1,4 +1,4 @@
-import { finishOnboarding } from '../actions'
+import { saveStep3 } from '../actions'
 
 const TONES = [
   { value: 'encouraging', label: 'Encouraging' },
@@ -31,7 +31,7 @@ export function Step3Form({
   const threshold      = settings?.alert_threshold ?? 15
 
   return (
-    <form action={finishOnboarding} className="space-y-6">
+    <form action={saveStep3} className="space-y-6">
       {(imported !== undefined) && (
         <p className="rounded-md bg-signal-green/10 px-4 py-3 text-sm font-sans text-signal-green">
           ✓ {imported} patient{imported !== 1 ? 's' : ''} imported
@@ -111,7 +111,7 @@ export function Step3Form({
       <div className="flex items-center justify-between pt-2">
         <a href="/onboarding?step=2" className={secondaryBtn}>← Back</a>
         <button type="submit" className={primaryBtn}>
-          Finish setup →
+          Next →
         </button>
       </div>
     </form>

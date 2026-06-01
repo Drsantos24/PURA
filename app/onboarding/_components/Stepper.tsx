@@ -1,4 +1,4 @@
-const STEPS = ['Clinic Profile', 'Patient List', 'Preferences'] as const
+const STEPS = ['Clinic Profile', 'Patient List', 'Preferences', 'About Your Practice'] as const
 
 export function Stepper({ current }: { current: number }) {
   return (

@@ -172,7 +172,7 @@ export async function importPatients(formData: FormData) {
 
 // ── step 3 ─────────────────────────────────────────────────────
 
-export async function finishOnboarding(formData: FormData) {
+export async function saveStep3(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -195,6 +195,45 @@ export async function finishOnboarding(formData: FormData) {
       alert_threshold:    isNaN(threshold) ? 15 : Math.min(30, Math.max(5, threshold)),
     })
     .eq('clinic_id', clinic.id)
+
+  redirect('/onboarding?step=4')
+}
+
+// ── step 4 ─────────────────────────────────────────────────────
+
+export async function saveClinicProfile(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: clinic } = await supabase
+    .from('clinics')
+    .select('id')
+    .eq('owner_email', user.email!)
+    .single()
+  if (!clinic) redirect('/login')
+
+  const skip = formData.get('_skip') === '1'
+
+  if (!skip) {
+    const str = (key: string) => (formData.get(key) as string | null)?.trim() || null
+
+    await supabase
+      .from('clinic_profiles')
+      .upsert({
+        clinic_id:                           clinic.id,
+        practice_type:                       str('practice_type'),
+        patient_demographics:                str('patient_demographics'),
+        typical_visit_frequency:             str('typical_visit_frequency'),
+        typical_care_plan_structure:         str('typical_care_plan_structure'),
+        what_successful_recovery_looks_like: str('what_successful_recovery_looks_like'),
+        what_makes_a_good_outcome:           str('what_makes_a_good_outcome'),
+        red_flags:                           str('red_flags'),
+        practice_philosophy:                 str('practice_philosophy'),
+        communication_style:                 str('communication_style'),
+        communication_style_notes:           str('communication_style_notes'),
+      }, { onConflict: 'clinic_id' })
+  }
 
   await supabase
     .from('clinics')

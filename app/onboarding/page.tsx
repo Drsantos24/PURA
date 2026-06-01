@@ -4,6 +4,7 @@ import { Stepper }   from './_components/Stepper'
 import { Step1Form } from './_components/Step1Form'
 import { Step2Form } from './_components/Step2Form'
 import { Step3Form } from './_components/Step3Form'
+import { Step4Form } from './_components/Step4Form'
 
 export default async function OnboardingPage({
   searchParams,
@@ -16,7 +17,7 @@ export default async function OnboardingPage({
   }>
 }) {
   const params = await searchParams
-  const step = Math.min(3, Math.max(1, parseInt(params.step ?? '1', 10)))
+  const step = Math.min(4, Math.max(1, parseInt(params.step ?? '1', 10)))
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -74,6 +75,8 @@ export default async function OnboardingPage({
               skipped={params.skipped  ? parseInt(params.skipped,   10) : undefined}
             />
           )}
+
+          {step === 4 && <Step4Form />}
         </div>
       </div>
     </main>
