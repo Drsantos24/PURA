@@ -8,6 +8,8 @@ type Props = {
   checkinsToday: number
   totalActive: number
   needsAttentionCount: number
+  userEmail: string
+  userRole: 'owner' | 'clinician' | 'assistant'
 }
 
 function signalTextColor(s: number) {
@@ -20,6 +22,7 @@ export default function TopStrip({
   clinicName, dateLabel,
   practiceSignal, practiceSignalDelta,
   checkinsToday, totalActive, needsAttentionCount,
+  userEmail, userRole,
 }: Props) {
   const deltaSign  = (practiceSignalDelta ?? 0) >= 0 ? '+' : ''
   const deltaArrow = (practiceSignalDelta ?? 0) >= 0 ? '↑' : '↓'
@@ -27,13 +30,16 @@ export default function TopStrip({
 
   return (
     <div className="flex items-center justify-between gap-6 border-b border-border pb-6">
-      {/* Left: clinic name + date */}
+      {/* Left: clinic name + user identity */}
       <div className="min-w-0">
         <h1 className="font-serif text-4xl text-text-primary truncate">{clinicName}</h1>
         <p className="mt-1 font-sans text-sm text-text-muted">{dateLabel}</p>
+        <p className="mt-0.5 font-sans text-xs text-text-muted/60">
+          {userEmail} · <span className="capitalize">{userRole}</span>
+        </p>
       </div>
 
-      {/* Right: stat tiles + sign-out */}
+      {/* Right: stat tiles + nav + sign-out */}
       <div className="flex items-center gap-3 shrink-0">
         {/* Practice Signal */}
         <div className="rounded-lg border border-border bg-surface px-5 py-3 text-center min-w-[130px]">
@@ -77,8 +83,18 @@ export default function TopStrip({
           )}
         </div>
 
+        {/* Team link — owner only */}
+        {userRole === 'owner' && (
+          <a
+            href="/team"
+            className="rounded-md border border-border px-3 py-2 text-xs font-sans text-text-muted hover:border-text-muted hover:text-text-primary transition-colors"
+          >
+            Team
+          </a>
+        )}
+
         {/* Sign out */}
-        <form action={signOut} className="ml-2">
+        <form action={signOut}>
           <button
             type="submit"
             className="rounded-md border border-border px-3 py-2 text-xs font-sans text-text-muted hover:border-text-muted hover:text-text-primary transition-colors"

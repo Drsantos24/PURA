@@ -12,10 +12,21 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Resolve clinic via clinic_members (works for all roles, not just owner)
+  const { data: member } = await supabase
+    .from('clinic_members')
+    .select('clinic_id, role')
+    .eq('user_email', user.email!)
+    .eq('status', 'active')
+    .limit(1)
+    .maybeSingle()
+
+  if (!member) redirect('/login')
+
   const { data: clinic } = await supabase
     .from('clinics')
     .select('id, clinic_name, onboarding_complete')
-    .eq('owner_email', user.email!)
+    .eq('id', member.clinic_id)
     .single()
 
   if (!clinic) redirect('/login')
@@ -126,6 +137,8 @@ export default async function DashboardPage({
           checkinsToday={checkinsToday ?? 0}
           totalActive={patientList.length}
           needsAttentionCount={needsAttentionCount}
+          userEmail={user.email!}
+          userRole={member.role as 'owner' | 'clinician' | 'assistant'}
         />
 
         {/* Zone 2: Patient Roster */}
