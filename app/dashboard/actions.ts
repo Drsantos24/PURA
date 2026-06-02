@@ -227,3 +227,37 @@ export async function updateDraftBody(draftId: string, body: string): Promise<vo
     .update({ body_text: body.trim() })
     .eq('id', draftId)
 }
+
+// ─── Learning loop: capture implicit DC feedback on AI output ─────────────────
+
+export async function logDraftFeedback(
+  draftId:              string,
+  action:               'approved' | 'edited' | 'dismissed',
+  editDistance:         number = 0,
+  responseTimeSeconds:  number = 0,
+  originalText:         string = '',
+  finalText:            string = '',
+): Promise<void> {
+  try {
+    const service = createServiceClient()
+    const { data: draft } = await service
+      .from('message_drafts')
+      .select('clinic_id')
+      .eq('id', draftId)
+      .single()
+    if (!draft) return
+
+    await service.from('ai_output_feedback').insert({
+      clinic_id:             draft.clinic_id,
+      output_type:           'message_draft',
+      output_id:             draftId,
+      dc_action:             action,
+      original_text:         originalText || null,
+      final_text:            finalText    || null,
+      edit_distance:         editDistance > 0 ? editDistance : null,
+      response_time_seconds: responseTimeSeconds > 0 ? responseTimeSeconds : null,
+    })
+  } catch {
+    // Feedback logging is non-critical — never throw
+  }
+}

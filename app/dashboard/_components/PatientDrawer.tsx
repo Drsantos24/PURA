@@ -7,6 +7,7 @@ import {
   sendDraftAsSMS,
   dismissDraft,
   updateDraftBody,
+  logDraftFeedback,
   type PatientDetailData,
 } from '../actions'
 
@@ -89,10 +90,18 @@ function DraftCard({
   const [editMode,   setEditMode]   = useState(false)
   const [editText,   setEditText]   = useState(draft.body_text)
   const [busy,       setBusy]       = useState(false)
+  const openedAt = useState(() => Date.now())[0]
+
+  function elapsedSeconds() {
+    return Math.round((Date.now() - openedAt) / 1000)
+  }
 
   async function handleSend() {
     setBusy(true)
+    const elapsed = elapsedSeconds()
     const result = await sendDraftAsSMS(draft.id, patientId)
+    // Fire-and-forget: log approved action
+    logDraftFeedback(draft.id, 'approved', 0, elapsed, draft.body_text, draft.body_text)
     if (result.sent) {
       onHandled('Sent ✓')
     } else {
@@ -103,14 +112,21 @@ function DraftCard({
 
   async function handleDismiss() {
     setBusy(true)
+    const elapsed = elapsedSeconds()
     await dismissDraft(draft.id)
+    // Fire-and-forget: log dismissed action
+    logDraftFeedback(draft.id, 'dismissed', 0, elapsed, draft.body_text, '')
     onHandled('Draft dismissed')
   }
 
   async function handleSaveAndSend() {
     setBusy(true)
+    const elapsed = elapsedSeconds()
+    const editDistance = Math.abs(editText.length - draft.body_text.length)
     await updateDraftBody(draft.id, editText)
     const result = await sendDraftAsSMS(draft.id, patientId)
+    // Fire-and-forget: log edited action with distance
+    logDraftFeedback(draft.id, 'edited', editDistance, elapsed, draft.body_text, editText)
     if (result.sent) {
       onHandled('Sent ✓')
     } else {

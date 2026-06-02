@@ -10,12 +10,20 @@ import {
 
 async function getClinicProfileContext(clinicId: string): Promise<ClinicContext | null> {
   const service = createServiceClient()
-  const { data } = await service
-    .from('clinic_profiles')
-    .select('practice_type,typical_care_plan_structure,what_successful_recovery_looks_like,communication_style,communication_style_notes,red_flags,practice_philosophy,patient_demographics,typical_visit_frequency,what_makes_a_good_outcome')
-    .eq('clinic_id', clinicId)
-    .maybeSingle()
-  return data ?? null
+  const [{ data: profile }, { data: clinic }] = await Promise.all([
+    service
+      .from('clinic_profiles')
+      .select('practice_type,typical_care_plan_structure,what_successful_recovery_looks_like,communication_style,communication_style_notes,red_flags,practice_philosophy,patient_demographics,typical_visit_frequency,what_makes_a_good_outcome')
+      .eq('clinic_id', clinicId)
+      .maybeSingle(),
+    service
+      .from('clinics')
+      .select('clinic_name')
+      .eq('id', clinicId)
+      .single(),
+  ])
+  if (!profile) return null
+  return { clinic_name: clinic?.clinic_name ?? null, ...profile }
 }
 
 type PatientRow = {

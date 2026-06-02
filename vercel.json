@@ -9,6 +9,10 @@
     {
       "path": "/api/cron/purge-logs",
       "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/cron/weekly-insights",
+      "schedule": "0 0 * * 1"
     }
   ]
 }
