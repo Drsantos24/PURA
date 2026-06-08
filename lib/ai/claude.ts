@@ -166,7 +166,7 @@ SELF-CHECK before returning: Read your output. Does each suggested_action sound 
   const anthropic = await client()
   const message = await anthropic.messages.create({
     model:       MODEL,
-    max_tokens:  700,
+    max_tokens:  1024,
     messages:    [{ role: 'user', content: prompt }],
   })
 
