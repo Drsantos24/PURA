@@ -2,11 +2,11 @@ import 'server-only'
 
 import { createServiceClient } from '@/lib/supabase/server'
 import {
-  generateBriefing,
   generateMessageDraft,
   type DeidentifiedPatient,
   type ClinicContext,
 } from './gemini'
+import { generateBriefingClaude } from './claude'
 
 async function getClinicProfileContext(clinicId: string): Promise<ClinicContext | null> {
   const service = createServiceClient()
@@ -135,8 +135,9 @@ export async function generateBriefingForClinic(clinicId: string): Promise<{
   // Fetch clinic profile for AI context injection (operational data, not PHI)
   const clinicProfile = await getClinicProfileContext(clinicId)
 
-  // Call Groq (or no-op stub)
-  const briefingResult = await generateBriefing(deidentified, clinicProfile)
+  // Call Claude Haiku for briefing (stronger multi-constraint voice adherence than Llama)
+  // Message drafts remain on Groq — cheaper, sufficient for short SMS output
+  const briefingResult = await generateBriefingClaude(deidentified, clinicProfile)
 
   // Re-map patient_refs → real patient_ids in callouts
   type StoredCallout = { patient_id: string; reason: string; suggested_action: string }

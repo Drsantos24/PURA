@@ -21,7 +21,7 @@ export default async function DashboardPage({
     .limit(1)
     .maybeSingle()
 
-  if (!member) redirect('/login')
+  if (!member) redirect('/onboarding')
 
   const { data: clinic } = await supabase
     .from('clinics')
@@ -29,7 +29,7 @@ export default async function DashboardPage({
     .eq('id', member.clinic_id)
     .single()
 
-  if (!clinic) redirect('/login')
+  if (!clinic) redirect('/onboarding')
   if (!clinic.onboarding_complete) redirect('/onboarding')
 
   const today     = new Date().toISOString().slice(0, 10)

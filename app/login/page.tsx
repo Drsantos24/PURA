@@ -9,12 +9,37 @@ export default async function LoginPage({
 }) {
   const { error, message } = await searchParams
 
-  // Already signed in → skip to dashboard
+  // Already signed in — route based on membership state to break redirect loops
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (user) redirect('/dashboard')
+
+  if (user) {
+    const { data: member } = await supabase
+      .from('clinic_members')
+      .select('clinic_id')
+      .eq('user_email', user.email!)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle()
+
+    if (!member) {
+      redirect('/onboarding')
+    }
+
+    const { data: clinic } = await supabase
+      .from('clinics')
+      .select('onboarding_complete')
+      .eq('id', member.clinic_id)
+      .single()
+
+    if (!clinic?.onboarding_complete) {
+      redirect('/onboarding')
+    }
+
+    redirect('/dashboard')
+  }
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
