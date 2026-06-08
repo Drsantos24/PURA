@@ -199,7 +199,19 @@ export async function saveStep3(formData: FormData) {
   redirect('/onboarding?step=4')
 }
 
-// ── step 4 ─────────────────────────────────────────────────────
+// ── complete onboarding (called from Step4 finish button) ───────
+
+export async function completeOnboarding() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: clinic } = await supabase.from('clinics').select('id').eq('owner_email', user.email!).single()
+  if (!clinic) redirect('/login')
+  await supabase.from('clinics').update({ onboarding_complete: true }).eq('id', clinic.id)
+  redirect('/dashboard')
+}
+
+// ── step 4 (legacy — kept for backward compat) ─────────────────
 
 export async function saveClinicProfile(formData: FormData) {
   const supabase = await createClient()

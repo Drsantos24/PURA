@@ -137,7 +137,7 @@ export async function generateBriefingForClinic(clinicId: string): Promise<{
 
   // Call Claude Haiku for briefing (stronger multi-constraint voice adherence than Llama)
   // Message drafts remain on Groq — cheaper, sufficient for short SMS output
-  const briefingResult = await generateBriefingClaude(deidentified, clinicProfile)
+  const briefingResult = await generateBriefingClaude(deidentified, clinicProfile, clinicId)
 
   // Re-map patient_refs → real patient_ids in callouts
   type StoredCallout = { patient_id: string; reason: string; suggested_action: string }

@@ -10,6 +10,7 @@ import type {
   ClinicContext,
   BriefingResult,
 } from './gemini'
+import { retrieveClinicContext, formatRetrievedContext } from './rag'
 
 export type { DeidentifiedPatient, ClinicContext, BriefingResult }
 
@@ -108,6 +109,7 @@ function formatClinicContext(ctx: ClinicContext | null): string {
 export async function generateBriefingClaude(
   patients: DeidentifiedPatient[],
   clinicCtx: ClinicContext | null = null,
+  clinicId?: string,
 ): Promise<BriefingResult> {
   if (!configured()) {
     const callouts = patients
@@ -133,7 +135,14 @@ export async function generateBriefingClaude(
   const voiceBlock = formatClinicContext(clinicCtx)
   const clinicName = clinicCtx?.clinic_name ?? 'this clinic'
 
+  // RAG — pull top-5 relevant doc chunks for the morning briefing query
+  const ragChunks = clinicId
+    ? await retrieveClinicContext(clinicId, 'morning briefing patient care plan outreach action')
+    : []
+  const ragBlock = formatRetrievedContext(ragChunks)
+
   const prompt = `${voiceBlock}
+${ragBlock ? `\n${ragBlock}\n` : ''}
 
 ---
 
