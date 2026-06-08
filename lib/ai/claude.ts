@@ -170,6 +170,8 @@ SELF-CHECK before returning: Read your output. Does each suggested_action sound 
     messages:    [{ role: 'user', content: prompt }],
   })
 
-  const text = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+  const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+  // Strip markdown code fences if the model wraps its JSON output
+  const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
   return JSON.parse(text) as BriefingResult
 }
