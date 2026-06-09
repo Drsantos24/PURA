@@ -34,8 +34,11 @@ export async function GET(req: NextRequest) {
   })
 
   await run('A3', async () => {
+    // Use a real clinic_id (FK constraint on access_log) — grab any existing clinic
+    const { data: anyClinic } = await service.from('clinics').select('id').limit(1).maybeSingle()
+    if (!anyClinic) return { pass: false, detail: 'no clinics to test with' }
     const { error } = await service.from('access_log').insert({
-      clinic_id: '00000000-0000-0000-0000-000000000001',
+      clinic_id: anyClinic.id,
       action: 'preflight_test',
       actor_email: user.email ?? 'founder',
     })
