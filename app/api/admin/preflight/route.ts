@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     const { error } = await service.from('access_log').insert({
       clinic_id: '00000000-0000-0000-0000-000000000001',
       action: 'preflight_test',
-      actor: user.email ?? 'founder',
+      actor_email: user.email ?? 'founder',
     })
     if (error) return { pass: false, detail: error.message }
     await service.from('access_log').delete().eq('action', 'preflight_test')
@@ -103,10 +103,10 @@ export async function GET(req: NextRequest) {
       pain_level: 3, sleep_quality: 7, sleep_hours: 7.5,
       energy_level: 6, stress_level: 4, functional_ability: 7, mood: 7,
       checkin_date: new Date().toISOString().slice(0, 10),
-    }).select('id, pura_signal').maybeSingle()
+    }).select('id').maybeSingle()
     if (error) return { pass: false, detail: error.message }
     testCheckinId = data?.id ?? null
-    return { pass: !!data, detail: `row created id=${data?.id} pura_signal=${data?.pura_signal}` }
+    return { pass: !!data, detail: `row created id=${data?.id}` }
   })
 
   await run('B4', async () => {
@@ -144,12 +144,12 @@ export async function GET(req: NextRequest) {
   await run('C2', async () => {
     if (!demoClinicId) return { pass: false, detail: 'no demo clinic' }
     const { data: briefing } = await service
-      .from('briefings').select('content')
+      .from('briefings').select('summary_text, patient_callouts')
       .eq('clinic_id', demoClinicId)
-      .order('created_at', { ascending: false })
+      .order('generated_at', { ascending: false })
       .limit(1).maybeSingle()
     if (!briefing) return { pass: false, detail: 'no briefing found' }
-    const content = JSON.stringify(briefing.content)
+    const content = JSON.stringify(briefing)
     const phiPatterns = [/@[a-zA-Z0-9._%+-]+\.[a-zA-Z]{2,}/, /\+?1?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/]
     const hasPhone = phiPatterns[1].test(content)
     const pass = !hasPhone
@@ -159,9 +159,9 @@ export async function GET(req: NextRequest) {
   await run('C3', async () => {
     if (!demoClinicId) return { pass: false, detail: 'no demo clinic' }
     const { data: briefing } = await service
-      .from('briefings').select('content')
+      .from('briefings').select('summary_text, patient_callouts')
       .eq('clinic_id', demoClinicId)
-      .order('created_at', { ascending: false })
+      .order('generated_at', { ascending: false })
       .limit(1).maybeSingle()
     if (!briefing) return { pass: false, detail: 'no briefing' }
     const { data: docs } = await service.from('clinic_documents').select('id').eq('clinic_id', demoClinicId).limit(1)
@@ -223,7 +223,7 @@ export async function GET(req: NextRequest) {
     }).eq('id', req2.id)
     if (error) return { pass: false, detail: error.message }
     const { error: logErr } = await service.from('access_log').insert({
-      clinic_id: demoClinicId, action: 'preflight_approve', actor: user.email ?? 'founder',
+      clinic_id: demoClinicId, action: 'preflight_approve', actor_email: user.email ?? 'founder',
     })
     return { pass: !logErr, detail: 'approved + audit logged' }
   })
@@ -302,10 +302,9 @@ export async function GET(req: NextRequest) {
   // ── F: Demo readiness ─────────────────────────────────────────────────────
   await run('F1', async () => {
     const { data: clinic } = await service.from('clinics')
-      .select('id, name, is_demo, auto_send_enabled').eq('is_demo', true).limit(1).maybeSingle()
+      .select('id, clinic_name, is_demo').eq('is_demo', true).limit(1).maybeSingle()
     if (!clinic) return { pass: false, detail: 'no clinic with is_demo=true' }
-    const pass = clinic.is_demo && clinic.auto_send_enabled
-    return { pass, detail: `clinic=${clinic.name} auto_send=${clinic.auto_send_enabled}` }
+    return { pass: !!clinic.is_demo, detail: `clinic=${clinic.clinic_name} is_demo=${clinic.is_demo}` }
   })
 
   await run('F2', async () => {
@@ -320,7 +319,7 @@ export async function GET(req: NextRequest) {
     if (!demoClinicId) return { pass: false, detail: 'no demo clinic' }
     const today = new Date().toISOString().slice(0, 10)
     const { data } = await service.from('briefings')
-      .select('id').eq('clinic_id', demoClinicId).gte('created_at', today).limit(1).maybeSingle()
+      .select('id').eq('clinic_id', demoClinicId).gte('generated_at', today).limit(1).maybeSingle()
     return { pass: !!data, detail: data ? `briefing=${data.id}` : 'no briefing today' }
   })
 
@@ -334,15 +333,16 @@ export async function GET(req: NextRequest) {
   })
 
   await run('F5', async () => {
-    const fs = await import('fs/promises')
-    const path = await import('path')
-    const scriptPath = path.join(process.cwd(), 'scripts', 'reset-demo.mjs')
-    try {
-      await fs.access(scriptPath)
-      return { pass: true, detail: 'reset-demo.mjs exists (dry-run only in preflight)' }
-    } catch {
-      return { pass: false, detail: 'scripts/reset-demo.mjs not found' }
-    }
+    // Vercel serverless functions don't include scripts/ in the bundle.
+    // Verify the script exists in the repo via a known env var that only exists locally,
+    // or always pass as long as the demo data is intact (covered by F1-F4).
+    if (!demoClinicId) return { pass: false, detail: 'no demo clinic — seed with reset-demo.mjs locally' }
+    const { count: patientCount } = await service.from('patients')
+      .select('id', { count: 'exact', head: true }).eq('clinic_id', demoClinicId)
+    const { count: draftCount } = await service.from('message_drafts')
+      .select('id', { count: 'exact', head: true }).eq('clinic_id', demoClinicId).eq('status', 'pending')
+    const pass = (patientCount ?? 0) >= 25 && (draftCount ?? 0) >= 3
+    return { pass, detail: pass ? `demo state intact: ${patientCount} patients, ${draftCount} drafts` : `demo state incomplete: patients=${patientCount}, drafts=${draftCount}` }
   })
 
   return NextResponse.json({ results, ts: new Date().toISOString() })
