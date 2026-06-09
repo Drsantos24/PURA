@@ -128,10 +128,12 @@ export default function PatientRoster({
   patients,
   briefing,
   initialFilter = 'all',
+  userRole = 'owner',
 }: {
   patients:       PatientSummary[]
   briefing?:      BriefingData | null
   initialFilter?: string
+  userRole?:      'owner' | 'clinician' | 'assistant'
 }) {
   const [query,    setQuery]    = useState('')
   const [filter,   setFilter]   = useState<FilterMode>(
@@ -330,6 +332,7 @@ export default function PatientRoster({
         patientName={openPatient ? `${openPatient.first_name} ${openPatient.last_name}` : ''}
         chiefComplaint={openPatient?.chief_complaint ?? null}
         onClose={() => setOpenId(null)}
+        userRole={userRole}
       />
     </>
   )

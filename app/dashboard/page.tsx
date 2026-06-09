@@ -147,6 +147,7 @@ export default async function DashboardPage({
             patients={summaries}
             briefing={briefing}
             initialFilter={filter}
+            userRole={member.role as 'owner' | 'clinician' | 'assistant'}
           />
         </section>
 

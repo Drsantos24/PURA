@@ -16,6 +16,7 @@ type Props = {
   patientName:     string
   chiefComplaint:  string | null
   onClose:         () => void
+  userRole?:       'owner' | 'clinician' | 'assistant'
 }
 
 const SLEEP_LABEL: Record<number, string> = { 0: 'Poor', 3: 'Fair', 7: 'Good', 10: 'Excellent' }
@@ -82,10 +83,12 @@ function DraftCard({
   draft,
   patientId,
   onHandled,
+  userRole = 'owner',
 }: {
   draft:      { id: string; body_text: string }
   patientId:  string
   onHandled:  (toast: string) => void
+  userRole?:  'owner' | 'clinician' | 'assistant'
 }) {
   const [editMode,   setEditMode]   = useState(false)
   const [editText,   setEditText]   = useState(draft.body_text)
@@ -164,7 +167,7 @@ function DraftCard({
             disabled={busy}
             className="flex-1 rounded-md bg-magenta/20 border border-magenta/40 py-1.5 text-xs font-sans text-magenta hover:bg-magenta/30 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-magenta/40"
           >
-            {busy ? 'Sending...' : 'Send for Approval'}
+            {busy ? 'Sending...' : userRole === 'owner' ? 'Send as SMS' : 'Send for Approval'}
           </button>
           <button
             onClick={() => setEditMode(true)}
@@ -205,7 +208,7 @@ function DraftCard({
 
 // ─── Main drawer ──────────────────────────────────────────────────────────────
 
-export default function PatientDrawer({ patientId, patientName, chiefComplaint, onClose }: Props) {
+export default function PatientDrawer({ patientId, patientName, chiefComplaint, onClose, userRole = 'owner' }: Props) {
   const [detail,       setDetail]       = useState<PatientDetailData | null>(null)
   const [loading,      setLoading]      = useState(false)
   const [draftHandled, setDraftHandled] = useState(false)
@@ -303,6 +306,7 @@ export default function PatientDrawer({ patientId, patientName, chiefComplaint, 
                   draft={detail.pendingDraft}
                   patientId={patientId!}
                   onHandled={msg => { setDraftHandled(true); setToast(msg) }}
+                  userRole={userRole}
                 />
               )}
 

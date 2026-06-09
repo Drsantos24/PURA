@@ -33,18 +33,6 @@ export function ApprovalSettingsEditor({
   async function toggle(setting: Setting) {
     const updated = { ...setting, requires_approval: !setting.requires_approval }
     setSaving(setting.category)
-    await fetch('/api/clinic-intake', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        _approval_settings: true,
-        clinic_id: clinicId,
-        category:  setting.category,
-        requires_approval: updated.requires_approval,
-      }),
-    }).catch(() => {})
-
-    // Direct upsert via approval settings endpoint
     await fetch('/api/approvals/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
