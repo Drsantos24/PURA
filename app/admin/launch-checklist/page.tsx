@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { LaunchChecklistClient } from './_components/LaunchChecklistClient'
+import { BaaTracker } from './_components/BaaTracker'
 
 const CHECKLIST_ITEMS = [
   { id: 'anthropic_credits',    category: 'finance',     label: 'Anthropic credits ≥ $50',                         auto: false },
@@ -32,8 +33,12 @@ export default async function LaunchChecklistPage() {
   if (!user || !founderEmail || user.email !== founderEmail) notFound()
 
   const service = createServiceClient()
-  const { data } = await service.from('founder_config').select('value').eq('key', 'launch_checklist').maybeSingle()
-  const saved = (data?.value ?? {}) as Record<string, boolean>
+  const [{ data }, { data: baaData }] = await Promise.all([
+    service.from('founder_config').select('value').eq('key', 'launch_checklist').maybeSingle(),
+    service.from('founder_config').select('value').eq('key', 'baa_tracker').maybeSingle(),
+  ])
+  const saved    = (data?.value    ?? {}) as Record<string, boolean>
+  const baaState = (baaData?.value ?? {}) as Record<string, { requested: string; signed: string }>
 
   return (
     <main className="min-h-screen bg-background px-8 py-8">
@@ -49,6 +54,7 @@ export default async function LaunchChecklistPage() {
             ))}
           </nav>
         </div>
+        <BaaTracker initialData={baaState} />
         <LaunchChecklistClient items={CHECKLIST_ITEMS} initialState={saved} />
       </div>
     </main>
