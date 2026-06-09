@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { sendSMS } from '@/lib/sms/twilio'
+import { requiresApproval, createApprovalRequest } from '@/lib/approvals'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -179,7 +180,11 @@ export async function sendCheckinLinkNow(patientId: string): Promise<{
 export async function sendDraftAsSMS(draftId: string, patientId: string): Promise<{
   sent: boolean
   body: string
+  pendingApproval?: boolean
+  approvalRequestId?: string
 }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   const service = createServiceClient()
 
   const [{ data: draft }, { data: patient }] = await Promise.all([
@@ -188,6 +193,31 @@ export async function sendDraftAsSMS(draftId: string, patientId: string): Promis
   ])
 
   if (!draft || !patient) throw new Error('Draft or patient not found')
+
+  // Approval check — non-owners may need approval before sending
+  if (user?.email) {
+    const { data: member } = await supabase
+      .from('clinic_members').select('role')
+      .eq('user_email', user.email).eq('clinic_id', patient.clinic_id)
+      .eq('status', 'active').limit(1).maybeSingle()
+
+    const role = member?.role ?? 'clinician'
+    const needsApproval = await requiresApproval(patient.clinic_id, 'outbound_message', role)
+
+    if (needsApproval) {
+      const approvalId = await createApprovalRequest(
+        patient.clinic_id,
+        user.email,
+        'outbound_message',
+        { draft_id: draftId, patient_id: patientId, body: draft.body_text },
+      )
+      // Mark draft as awaiting approval
+      await service.from('message_drafts')
+        .update({ status: 'pending_approval' } as Record<string, string>)
+        .eq('id', draftId)
+      return { sent: false, body: draft.body_text, pendingApproval: true, approvalRequestId: approvalId }
+    }
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isLivePt = (patient as any)?.is_demo_live === true

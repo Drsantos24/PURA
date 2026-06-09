@@ -102,7 +102,9 @@ function DraftCard({
     const result = await sendDraftAsSMS(draft.id, patientId)
     // Fire-and-forget: log approved action
     logDraftFeedback(draft.id, 'approved', 0, elapsed, draft.body_text, draft.body_text)
-    if (result.sent) {
+    if (result.pendingApproval) {
+      onHandled('Sent for DC approval ✓')
+    } else if (result.sent) {
       onHandled('Sent ✓')
     } else {
       await navigator.clipboard.writeText(result.body)
@@ -162,7 +164,7 @@ function DraftCard({
             disabled={busy}
             className="flex-1 rounded-md bg-magenta/20 border border-magenta/40 py-1.5 text-xs font-sans text-magenta hover:bg-magenta/30 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-magenta/40"
           >
-            Send as SMS
+            {busy ? 'Sending...' : 'Send for Approval'}
           </button>
           <button
             onClick={() => setEditMode(true)}

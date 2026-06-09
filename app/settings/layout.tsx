@@ -40,6 +40,10 @@ export default async function SettingsLayout({ children }: { children: React.Rea
                 className="px-4 py-2 text-sm font-sans text-text-muted hover:text-text-primary border-b-2 border-transparent hover:border-magenta/50 transition-colors -mb-px">
                 Documents
               </Link>
+              <Link href="/settings/approvals"
+                className="px-4 py-2 text-sm font-sans text-text-muted hover:text-text-primary border-b-2 border-transparent hover:border-magenta/50 transition-colors -mb-px">
+                Approvals
+              </Link>
             </>
           )}
         </nav>
