@@ -93,47 +93,40 @@ export async function GET(req: NextRequest) {
     }
   })
 
+  let testCheckinId: string | null = null
+
   await run('B3', async () => {
-    if (!demoClinicId || !demoPatientId || !testToken) return { pass: false, detail: 'missing B1 setup' }
-    const payload = {
-      pain: 3, sleep: 7, energy: 6, stress: 4, function: 7,
-      short_code: testToken,
-    }
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `https://${req.headers.get('host')}`
-    try {
-      const res = await fetch(`${baseUrl}/api/intake`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const json = await res.json().catch(() => ({}))
-      const { data: checkin } = await service
-        .from('daily_checkins').select('id, pura_signal')
-        .eq('patient_id', demoPatientId)
-        .order('created_at', { ascending: false })
-        .limit(1).maybeSingle()
-      const pass = res.ok || !!checkin
-      return { pass, detail: pass ? `pura_signal=${checkin?.pura_signal}` : `status=${res.status} body=${JSON.stringify(json).slice(0, 100)}` }
-    } catch (e) {
-      return { pass: false, detail: String(e) }
-    }
+    if (!demoClinicId || !demoPatientId) return { pass: false, detail: 'missing B1 setup' }
+    // Check-in submission is a Server Action; test the DB layer directly
+    const { data, error } = await service.from('daily_checkins').insert({
+      patient_id: demoPatientId, clinic_id: demoClinicId,
+      pain_level: 3, sleep_quality: 7, sleep_hours: 7.5,
+      energy_level: 6, stress_level: 4, functional_ability: 7, mood: 7,
+      checkin_date: new Date().toISOString().slice(0, 10),
+    }).select('id, pura_signal').maybeSingle()
+    if (error) return { pass: false, detail: error.message }
+    testCheckinId = data?.id ?? null
+    return { pass: !!data, detail: `row created id=${data?.id} pura_signal=${data?.pura_signal}` }
   })
 
   await run('B4', async () => {
-    if (!demoPatientId) return { pass: false, detail: 'no demo patient from B1' }
-    const { data: checkin } = await service
-      .from('daily_checkins').select('pura_signal')
-      .eq('patient_id', demoPatientId)
-      .order('created_at', { ascending: false })
+    if (!testCheckinId) return { pass: false, detail: 'no checkin from B3' }
+    // Wait briefly for trigger to fire
+    await new Promise(r => setTimeout(r, 1500))
+    const { data } = await service
+      .from('pura_index_history').select('pura_signal')
+      .eq('patient_id', demoPatientId!)
+      .order('calculated_at', { ascending: false })
       .limit(1).maybeSingle()
-    const pass = checkin != null && checkin.pura_signal != null
-    return { pass, detail: pass ? `pura_signal=${checkin.pura_signal}` : 'no recent checkin with signal' }
+    const pass = data != null && data.pura_signal != null
+    return { pass, detail: pass ? `pura_signal=${data.pura_signal}` : 'no pura_index_history row yet (trigger may not have fired)' }
   })
 
-  // Cleanup test token
-  if (testToken) {
-    await service.from('patient_checkin_tokens').delete().eq('short_code', testToken)
-  }
+  // Cleanup test token and test checkin
+  await Promise.all([
+    testToken    ? service.from('patient_checkin_tokens').delete().eq('short_code', testToken) : Promise.resolve(),
+    testCheckinId ? service.from('daily_checkins').delete().eq('id', testCheckinId) : Promise.resolve(),
+  ])
 
   // ── C: AI generation ──────────────────────────────────────────────────────
   await run('C1', async () => {
@@ -144,8 +137,8 @@ export async function GET(req: NextRequest) {
       headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
     })
     const json = await res.json().catch(() => ({}))
-    const pass = res.ok && (json.callout_count > 0 || json.callouts?.length > 0 || json.ok)
-    return { pass, detail: `status=${res.status} callouts=${json.callout_count ?? json.callouts?.length ?? '?'}` }
+    const pass = res.ok && json.ok === true
+    return { pass, detail: `status=${res.status} calloutsGenerated=${json.calloutsGenerated ?? '?'}` }
   })
 
   await run('C2', async () => {
@@ -178,19 +171,13 @@ export async function GET(req: NextRequest) {
 
   await run('C4', async () => {
     if (!demoClinicId) return { pass: false, detail: 'no demo clinic' }
-    const { data: patient } = await service.from('patients').select('id').eq('clinic_id', demoClinicId).limit(1).maybeSingle()
-    if (!patient) return { pass: false, detail: 'no patient for draft test' }
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `https://${req.headers.get('host')}`
-    const res = await fetch(`${baseUrl}/api/approvals`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-preflight': 'true',
-      },
-      body: JSON.stringify({ patient_id: patient.id, clinic_id: demoClinicId, type: 'message_draft', dry_run: true }),
-    })
-    const pass = res.ok || res.status === 422
-    return { pass, detail: `status=${res.status}` }
+    // Drafts are generated during briefing generation — verify at least one pending draft exists
+    const { data, count } = await service.from('message_drafts')
+      .select('id, body_text, drafted_at', { count: 'exact' })
+      .eq('clinic_id', demoClinicId).eq('status', 'pending')
+      .order('drafted_at', { ascending: false }).limit(1)
+    const pass = (count ?? 0) >= 1 && !!data?.[0]?.body_text
+    return { pass, detail: pass ? `${count} pending drafts, latest: "${data![0].body_text.slice(0, 60)}…"` : 'no pending drafts found' }
   })
 
   // ── D: Approval workflow ───────────────────────────────────────────────────
