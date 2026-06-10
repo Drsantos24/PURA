@@ -348,5 +348,95 @@ export async function GET(req: NextRequest) {
     return { pass, detail: pass ? `demo state intact: ${patientCount} patients, ${draftCount} drafts` : `demo state incomplete: patients=${patientCount}, drafts=${draftCount}` }
   })
 
+  // ── G: Real HTTP — no service-role bypass ────────────────────────────────
+  // These tests use plain fetch with user-level credentials to catch exactly
+  // the class of bug where service-role tests pass but real users get 404s.
+  const BASE = process.env.NEXT_PUBLIC_APP_URL ?? `https://${req.headers.get('host')}`
+  const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const SUPA_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const SUPA_REF = new URL(SUPA_URL).hostname.split('.')[0]
+
+  let demoSessionCookie: string | null = null
+  let g8Token: string | null = null
+
+  await run('G1', async () => {
+    const res = await fetch(BASE, { redirect: 'manual' })
+    const loc = res.headers.get('location') ?? ''
+    const pass = (res.status === 307 || res.status === 302) && loc.includes('/login')
+    return { pass, detail: `status=${res.status} location=${loc}` }
+  })
+
+  await run('G2', async () => {
+    const res = await fetch(`${BASE}/login`)
+    const body = await res.text()
+    const pass = res.status === 200 && body.toUpperCase().includes('PURA')
+    return { pass, detail: `status=${res.status} contains-PURA=${body.toUpperCase().includes('PURA')}` }
+  })
+
+  await run('G3', async () => {
+    const authRes = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPA_ANON },
+      body: JSON.stringify({ email: 'demo@purahealth.app', password: 'demo-pura-2026' }),
+    })
+    const session = await authRes.json()
+    if (!session.access_token) return { pass: false, detail: `auth failed: ${JSON.stringify(session).slice(0, 120)}` }
+    demoSessionCookie = `sb-${SUPA_REF}-auth-token=${encodeURIComponent(JSON.stringify(session))}`
+    return { pass: true, detail: `session acquired for ${session.user?.email}` }
+  })
+
+  await run('G4', async () => {
+    if (!demoSessionCookie) return { pass: false, detail: 'no session from G3' }
+    const res = await fetch(`${BASE}/dashboard`, { redirect: 'manual', headers: { cookie: demoSessionCookie } })
+    if (res.status === 200) {
+      const body = await res.text()
+      const pass = body.includes('Vitality') || body.includes('Practice Signal') || body.includes('dashboard')
+      return { pass, detail: `status=200 clinic-content=${pass}` }
+    }
+    return { pass: false, detail: `status=${res.status} location=${res.headers.get('location') ?? 'none'} — redirected instead of rendering` }
+  })
+
+  await run('G5', async () => {
+    if (!demoSessionCookie) return { pass: false, detail: 'no session from G3' }
+    const res = await fetch(`${BASE}/settings`, { headers: { cookie: demoSessionCookie } })
+    return { pass: res.status === 200, detail: `status=${res.status}` }
+  })
+
+  await run('G6', async () => {
+    // /admin/preflight must be protected: unauthenticated request must NOT return 200
+    const res = await fetch(`${BASE}/admin/preflight`, { redirect: 'manual', headers: { cookie: '' } })
+    const pass = res.status !== 200
+    return { pass, detail: `status=${res.status} (expected !200 — page is founder-only)` }
+  })
+
+  await run('G7', async () => {
+    const [terms, privacy] = await Promise.all([
+      fetch(`${BASE}/legal/terms`),
+      fetch(`${BASE}/legal/privacy`),
+    ])
+    const pass = terms.status === 200 && privacy.status === 200
+    return { pass, detail: `terms=${terms.status} privacy=${privacy.status}` }
+  })
+
+  await run('G8', async () => {
+    if (!demoClinicId || !demoPatientId) return { pass: false, detail: 'no demo clinic/patient from B1' }
+    const CHARS = 'abcdefghijkmnopqrstuvwxyz23456789'
+    let code = 'g8'
+    for (let i = 0; i < 4; i++) code += CHARS[Math.floor(Math.random() * CHARS.length)]
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    const { error } = await service.from('patient_checkin_tokens').insert({
+      clinic_id: demoClinicId, patient_id: demoPatientId, short_code: code, expires_at: expires,
+    })
+    if (error) return { pass: false, detail: error.message }
+    g8Token = code
+    const res = await fetch(`${BASE}/c/${code}`)
+    const body = await res.text()
+    const hasForm = body.toLowerCase().includes('pain') || body.toLowerCase().includes('how') || body.includes('checkin') || body.includes('check-in')
+    return { pass: res.status === 200 && hasForm, detail: `status=${res.status} form-present=${hasForm}` }
+  })
+
+  // Cleanup G8 token
+  if (g8Token) await service.from('patient_checkin_tokens').delete().eq('short_code', g8Token)
+
   return NextResponse.json({ results, ts: new Date().toISOString() })
 }

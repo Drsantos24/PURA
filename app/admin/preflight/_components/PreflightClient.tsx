@@ -39,6 +39,15 @@ const TESTS: { id: string; label: string; category: string }[] = [
   { id: 'F3', label: "Today's briefing generated successfully",           category: 'F — Demo Readiness' },
   { id: 'F4', label: '≥3 pending message drafts in queue',                category: 'F — Demo Readiness' },
   { id: 'F5', label: 'scripts/reset-demo.mjs exists and runnable',        category: 'F — Demo Readiness' },
+  // G
+  { id: 'G1', label: 'Root redirect → /login (no auth)',                  category: 'G — Real HTTP' },
+  { id: 'G2', label: 'GET /login → 200 with PURA branding',               category: 'G — Real HTTP' },
+  { id: 'G3', label: 'Demo user auth — session cookie acquired',          category: 'G — Real HTTP' },
+  { id: 'G4', label: 'GET /dashboard with demo session → 200 + content',  category: 'G — Real HTTP' },
+  { id: 'G5', label: 'GET /settings with demo session → 200',             category: 'G — Real HTTP' },
+  { id: 'G6', label: '/admin/preflight protected (unauthenticated ≠ 200)', category: 'G — Real HTTP' },
+  { id: 'G7', label: 'GET /legal/terms + /legal/privacy → both 200',      category: 'G — Real HTTP' },
+  { id: 'G8', label: 'GET /c/[fresh-token] → 200 with check-in form',     category: 'G — Real HTTP' },
 ]
 
 const CATEGORIES = Array.from(new Set(TESTS.map(t => t.category)))
