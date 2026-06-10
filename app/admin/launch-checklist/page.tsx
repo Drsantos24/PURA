@@ -41,7 +41,7 @@ export default async function LaunchChecklistPage() {
   const baaState = (baaData?.value ?? {}) as Record<string, { requested: string; signed: string }>
 
   return (
-    <main className="min-h-screen bg-background px-8 py-8">
+    <main className="min-h-screen bg-background px-4 sm:px-8 py-8">
       <div className="mx-auto max-w-3xl space-y-8">
         <div className="flex items-center justify-between">
           <div>

@@ -440,5 +440,27 @@ export async function GET(req: NextRequest) {
   // Cleanup G8 token
   if (g8Token) await service.from('patient_checkin_tokens').delete().eq('short_code', g8Token)
 
+  await run('G9', async () => {
+    // Authenticate as founder via password, then hit /admin/dashboard → must be 200
+    const authRes = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPA_ANON },
+      body: JSON.stringify({ email: process.env.FOUNDER_EMAIL, password: 'pura-founder-2026' }),
+    })
+    const session = await authRes.json()
+    if (!session.access_token) return { pass: false, detail: `founder auth failed: ${JSON.stringify(session).slice(0, 100)}` }
+    const founderCookie = `sb-${SUPA_REF}-auth-token=${encodeURIComponent(JSON.stringify(session))}`
+    const res = await fetch(`${BASE}/admin/dashboard`, { headers: { cookie: founderCookie } })
+    return { pass: res.status === 200, detail: `status=${res.status} (founder must see 200)` }
+  })
+
+  await run('G10', async () => {
+    // Demo user (non-founder) hitting /admin/dashboard must get 404
+    if (!demoSessionCookie) return { pass: false, detail: 'no demo session from G3' }
+    const res = await fetch(`${BASE}/admin/dashboard`, { redirect: 'manual', headers: { cookie: demoSessionCookie } })
+    const pass = res.status === 404 || res.status === 307
+    return { pass, detail: `status=${res.status} (non-founder must not see 200)` }
+  })
+
   return NextResponse.json({ results, ts: new Date().toISOString() })
 }

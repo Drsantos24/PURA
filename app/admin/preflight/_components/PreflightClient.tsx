@@ -48,6 +48,8 @@ const TESTS: { id: string; label: string; category: string }[] = [
   { id: 'G6', label: '/admin/preflight protected (unauthenticated ≠ 200)', category: 'G — Real HTTP' },
   { id: 'G7', label: 'GET /legal/terms + /legal/privacy → both 200',      category: 'G — Real HTTP' },
   { id: 'G8', label: 'GET /c/[fresh-token] → 200 with check-in form',     category: 'G — Real HTTP' },
+  { id: 'G9', label: 'Founder login → /admin/dashboard returns 200',      category: 'G — Real HTTP' },
+  { id: 'G10', label: 'Non-founder → /admin/dashboard denied (not 200)',  category: 'G — Real HTTP' },
 ]
 
 const CATEGORIES = Array.from(new Set(TESTS.map(t => t.category)))

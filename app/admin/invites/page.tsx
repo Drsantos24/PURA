@@ -32,15 +32,15 @@ export default async function AdminInvitesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-12">
+    <main className="min-h-screen bg-background px-4 sm:px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-8">
         <div>
           <h1 className="font-serif text-4xl text-text-primary">Invites</h1>
           <p className="mt-1 font-sans text-sm text-text-muted">{invites?.length ?? 0} total</p>
         </div>
 
-        <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-sm font-sans">
+        <div className="rounded-lg border border-border overflow-x-auto">
+          <table className="w-full text-sm font-sans min-w-[480px]">
             <thead>
               <tr className="border-b border-border bg-surface">
                 <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-widest">Clinic</th>

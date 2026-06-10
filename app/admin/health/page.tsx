@@ -50,7 +50,7 @@ export default async function AdminHealthPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-8 py-8">
+    <main className="min-h-screen bg-background px-4 sm:px-8 py-8">
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="font-serif text-3xl text-text-primary">System Health</h1>
@@ -64,7 +64,7 @@ export default async function AdminHealthPage() {
         {/* Key presence */}
         <div className="space-y-3">
           <p className="text-xs font-sans text-text-muted uppercase tracking-widest font-medium">Environment Keys</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {Object.entries(keyStatus).map(([k, present]) => (
               <div key={k} className="flex items-center justify-between rounded-md border border-border bg-surface/30 px-4 py-2.5">
                 <span className="text-xs font-mono text-text-muted">{k}</span>
@@ -81,8 +81,8 @@ export default async function AdminHealthPage() {
         {/* Cron health */}
         <div className="space-y-3">
           <p className="text-xs font-sans text-text-muted uppercase tracking-widest font-medium">Morning Cron — Today</p>
-          <div className="rounded-lg border border-border overflow-hidden">
-            <table className="w-full text-xs font-sans">
+          <div className="rounded-lg border border-border overflow-x-auto">
+            <table className="w-full text-xs font-sans min-w-[320px]">
               <thead className="bg-surface border-b border-border">
                 <tr>
                   {['Clinic', 'Briefing Today'].map(h => (
@@ -111,7 +111,7 @@ export default async function AdminHealthPage() {
         </div>
 
         {/* Check-in volume */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             { label: 'Total check-ins (all time)', value: totalCheckins ?? 0 },
             { label: 'Check-ins last 24h',          value: checkins24h ?? 0 },

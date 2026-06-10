@@ -16,6 +16,11 @@ export default async function LoginPage({
   } = await supabase.auth.getUser()
 
   if (user) {
+    // Founder bypasses clinic_members entirely — route straight to admin
+    if (user.email && user.email === process.env.FOUNDER_EMAIL) {
+      redirect('/admin/dashboard')
+    }
+
     const { data: member } = await supabase
       .from('clinic_members')
       .select('clinic_id')

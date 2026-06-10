@@ -66,7 +66,7 @@ export default async function AdminDashboardPage() {
   const daysSince = (iso: string) => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
 
   return (
-    <main className="min-h-screen bg-background px-8 py-8">
+    <main className="min-h-screen bg-background px-4 sm:px-8 py-8">
       <div className="mx-auto max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -74,7 +74,7 @@ export default async function AdminDashboardPage() {
             <h1 className="font-serif text-3xl text-text-primary">PURA — Founder View</h1>
             <p className="font-sans text-xs text-text-muted mt-1">Clinic-level aggregates only. No PHI.</p>
           </div>
-          <nav className="flex gap-3 text-xs font-sans">
+          <nav className="hidden sm:flex gap-3 text-xs font-sans">
             {[['invites','/admin/invites'],['health','/admin/health'],['checklist','/admin/launch-checklist']].map(([l,h]) => (
               <a key={l} href={h} className="text-text-muted hover:text-text-primary transition-colors capitalize">{l}</a>
             ))}
@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Top stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: 'Total clinics',      value: clinicList.length,              sub: `${clinicList.filter(c => c.onboarding_complete).length} active` },
             { label: 'Total patients',     value: totalPatients ?? 0,             sub: 'enrolled active' },
@@ -119,7 +119,34 @@ export default async function AdminDashboardPage() {
         {/* Per-clinic table */}
         <div className="space-y-3">
           <p className="text-xs font-sans text-text-muted uppercase tracking-widest font-medium">Per-Clinic Summary</p>
-          <div className="rounded-lg border border-border overflow-hidden">
+          {/* Mobile cards */}
+          <div className="sm:hidden space-y-3">
+            {clinicList.map(c => {
+              const pCount  = patientCountMap[c.id] ?? 0
+              const ciLast7 = Object.entries(checkinCountMap[c.id] ?? {})
+                .filter(([d]) => d >= sevenAgo.slice(0, 10))
+                .reduce((s, [, n]) => s + n, 0)
+              const lastBrief = lastBriefingMap[c.id]
+              return (
+                <div key={c.id} className="rounded-lg border border-border bg-surface/30 p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-sans text-sm font-medium text-text-primary">{c.clinic_name}</p>
+                    <span className={`text-[10px] font-sans px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
+                      c.onboarding_complete ? 'text-signal-green bg-signal-green/10' : 'text-amber-400 bg-amber-400/10'
+                    }`}>{c.onboarding_complete ? 'Active' : 'Onboarding'}</span>
+                  </div>
+                  <p className="font-sans text-xs text-text-muted">{c.owner_email}</p>
+                  <div className="flex gap-4 text-xs font-sans text-text-muted">
+                    <span><span className="font-mono text-text-primary">{pCount}</span> patients</span>
+                    <span><span className="font-mono text-text-primary">{ciLast7}</span> check-ins (7d)</span>
+                    <span>{lastBrief ? new Date(lastBrief).toLocaleDateString() : '—'}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden sm:block rounded-lg border border-border overflow-hidden">
             <table className="w-full text-xs font-sans">
               <thead className="bg-surface border-b border-border">
                 <tr>
@@ -158,6 +185,7 @@ export default async function AdminDashboardPage() {
                 })}
               </tbody>
             </table>
+          </div>
           </div>
         </div>
       </div>

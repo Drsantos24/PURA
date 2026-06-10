@@ -12,6 +12,11 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Founder has no clinic_members row — redirect to admin view
+  if (user.email && user.email === process.env.FOUNDER_EMAIL) {
+    redirect('/admin/dashboard')
+  }
+
   // Resolve clinic via clinic_members (works for all roles, not just owner)
   const { data: member } = await supabase
     .from('clinic_members')
@@ -126,7 +131,7 @@ export default async function DashboardPage({
     : null
 
   return (
-    <main className="min-h-screen bg-background px-8 py-8">
+    <main className="min-h-screen bg-background px-4 sm:px-8 py-8">
       <div className="mx-auto max-w-6xl space-y-8">
 
         <TopStrip
