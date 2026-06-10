@@ -208,7 +208,7 @@ export async function completeOnboarding() {
   const { data: clinic } = await supabase.from('clinics').select('id').eq('owner_email', user.email!).single()
   if (!clinic) redirect('/login')
   await supabase.from('clinics').update({ onboarding_complete: true }).eq('id', clinic.id)
-  redirect('/dashboard')
+  redirect('/dashboard?welcome=1')
 }
 
 // ── step 4 (legacy — kept for backward compat) ─────────────────

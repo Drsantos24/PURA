@@ -123,6 +123,10 @@ export function Step2Form({
       <input type="hidden" name="clinic_id" value={clinicId} />
       <input type="hidden" name="mode" value={mode} />
 
+      <p className="text-sm font-sans text-text-muted leading-relaxed">
+        PURA will send each patient a 60-second daily check-in via SMS. Import your active roster here — first name, last name, and mobile number are all you need to get started.
+      </p>
+
       {error && (
         <p className="rounded-md bg-danger/10 px-4 py-3 text-sm font-sans text-danger">{error}</p>
       )}

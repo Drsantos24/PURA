@@ -32,6 +32,10 @@ export function Step3Form({
 
   return (
     <form action={saveStep3} className="space-y-6">
+      <p className="text-sm font-sans text-text-muted leading-relaxed">
+        Every morning, PURA sends a 60-second check-in SMS to each active patient. Choose when it goes out and how it sounds. You can adjust these any time from Settings.
+      </p>
+
       {(imported !== undefined) && (
         <p className="rounded-md bg-signal-green/10 px-4 py-3 text-sm font-sans text-signal-green">
           ✓ {imported} patient{imported !== 1 ? 's' : ''} imported

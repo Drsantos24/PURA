@@ -6,7 +6,7 @@ import PatientRoster, { type PatientSummary, type BriefingData } from './_compon
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>
+  searchParams: Promise<{ filter?: string; welcome?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -120,7 +120,7 @@ export default async function DashboardPage({
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   })
 
-  const { filter } = await searchParams
+  const { filter, welcome } = await searchParams
 
   const briefing: BriefingData | null = briefingRows?.[0]
     ? {
@@ -133,6 +133,17 @@ export default async function DashboardPage({
   return (
     <main className="min-h-screen bg-background px-4 sm:px-8 py-8">
       <div className="mx-auto max-w-6xl space-y-8">
+
+        {welcome === '1' && (
+          <div className="rounded-lg border border-magenta/30 bg-magenta/5 px-5 py-4 space-y-1">
+            <p className="font-serif text-lg text-text-primary">
+              Welcome to PURA, {clinic.clinic_name} — your AI is now training.
+            </p>
+            <p className="font-sans text-sm text-text-muted">
+              Check-ins will begin going out tomorrow morning. You&apos;ll see patient signals appear here as responses come in.
+            </p>
+          </div>
+        )}
 
         <TopStrip
           clinicName={clinic.clinic_name}

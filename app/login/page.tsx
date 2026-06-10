@@ -49,10 +49,10 @@ export default async function LoginPage({
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
-        <div className="text-center space-y-3">
-          <h1 className="font-serif text-6xl text-text-primary">PURA</h1>
-          <div className="mx-auto h-px w-8 bg-magenta" />
-          <p className="font-sans text-sm text-text-muted">Sign in to your clinic</p>
+        <div className="text-center space-y-2">
+          <div className="w-2 h-2 rounded-full bg-magenta mx-auto" />
+          <p className="font-sans text-xs font-medium uppercase tracking-widest text-text-muted">PURA Health</p>
+          <p className="font-sans text-sm text-text-primary">Sign in to your clinic</p>
         </div>
 
         {error && (

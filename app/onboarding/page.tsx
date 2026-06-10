@@ -50,8 +50,20 @@ export default async function OnboardingPage({
       <div className="w-full max-w-xl">
         {/* Header */}
         <div className="mb-8 text-center space-y-2">
-          <h1 className="font-serif text-5xl text-text-primary">PURA</h1>
-          <p className="font-sans text-sm text-text-muted">Setting up your clinic</p>
+          <div className="w-2 h-2 rounded-full bg-magenta mx-auto" />
+          <p className="font-sans text-xs font-medium uppercase tracking-widest text-text-muted">PURA Health</p>
+          <h1 className="font-serif text-2xl text-text-primary">
+            {step === 1 && `Welcome — let's set up ${clinic.clinic_name}`}
+            {step === 2 && 'Add your patients'}
+            {step === 3 && 'Set your check-in schedule'}
+            {step === 4 && 'Choose your AI style'}
+          </h1>
+          <p className="font-sans text-sm text-text-muted">
+            {step === 1 && 'Takes about 5 minutes.'}
+            {step === 2 && 'Import your roster — PURA handles the rest.'}
+            {step === 3 && 'You can change these any time from Settings.'}
+            {step === 4 && 'One last step, then your dashboard is ready.'}
+          </p>
         </div>
 
         <Stepper current={step} />

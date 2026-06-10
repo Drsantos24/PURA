@@ -33,6 +33,12 @@ function signalTextColor(s: number) {
   return 'text-danger'
 }
 
+function signalBgColor(s: number) {
+  if (s >= 80) return 'bg-signal-green/10 border-signal-green/30'
+  if (s >= 55) return 'bg-amber/10 border-amber/30'
+  return 'bg-danger/10 border-danger/30'
+}
+
 function ringColor(s: number) {
   if (s >= 80) return 'ring-signal-green/60'
   if (s >= 55) return 'ring-amber/60'
@@ -310,14 +316,20 @@ export default function PatientRoster({
                   </span>
                 </div>
 
-                {/* Signal number */}
-                <div className="shrink-0 w-12 text-right">
+                {/* Signal badge */}
+                <div className="shrink-0 text-right">
                   {p.latestSignal !== null ? (
-                    <span className={`font-serif text-3xl leading-none ${signalTextColor(p.latestSignal)}`}>
-                      {p.latestSignal}
-                    </span>
+                    <div className={`inline-flex flex-col items-center rounded-lg border px-3 py-1.5 ${signalBgColor(p.latestSignal)}`}>
+                      <span className={`font-serif text-2xl leading-none ${signalTextColor(p.latestSignal)}`}>
+                        {p.latestSignal}
+                      </span>
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">Signal</span>
+                    </div>
                   ) : (
-                    <span className="font-mono text-lg text-text-muted">—</span>
+                    <div className="inline-flex flex-col items-center rounded-lg border border-border/40 px-3 py-1.5">
+                      <span className="font-mono text-lg text-text-muted leading-none">—</span>
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">Signal</span>
+                    </div>
                   )}
                 </div>
               </button>
