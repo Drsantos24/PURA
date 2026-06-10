@@ -24,6 +24,10 @@ export function Step1Form({ clinic }: { clinic: Clinic }) {
 
   return (
     <form action={saveStep1} className="space-y-5">
+      <p className="text-sm font-sans text-text-muted leading-relaxed">
+        This is how your clinic appears to your team inside PURA.
+        Your timezone is used to schedule morning check-ins at the right time for your patients.
+      </p>
       <Field label="Clinic name">
         <input
           name="clinic_name"

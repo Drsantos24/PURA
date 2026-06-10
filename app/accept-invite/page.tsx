@@ -44,13 +44,13 @@ export default async function AcceptInvitePage({
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
-        <div className="text-center space-y-3">
-          <h1 className="font-serif text-6xl text-text-primary">PURA</h1>
-          <div className="mx-auto h-px w-8 bg-magenta" />
-          <p className="font-sans text-sm text-text-muted">
+        <div className="text-center space-y-2">
+          <div className="w-2 h-2 rounded-full bg-magenta mx-auto" />
+          <p className="font-sans text-xs font-medium uppercase tracking-widest text-text-muted">PURA Health</p>
+          <p className="font-sans text-sm text-text-primary">
             You&apos;ve been invited to join{' '}
-            <span className="text-text-primary">{clinic?.clinic_name}</span>
-            {' '}as a <span className="text-text-primary capitalize">{invite.role}</span>.
+            <span className="font-medium">{clinic?.clinic_name}</span>
+            {' '}as a <span className="font-medium capitalize">{invite.role}</span>.
           </p>
         </div>
 
@@ -106,8 +106,8 @@ function ErrorScreen({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm text-center space-y-4">
-        <h1 className="font-serif text-6xl text-text-primary">PURA</h1>
-        <div className="mx-auto h-px w-8 bg-magenta" />
+        <div className="w-2 h-2 rounded-full bg-magenta mx-auto" />
+        <p className="font-sans text-xs font-medium uppercase tracking-widest text-text-muted">PURA Health</p>
         <p className="font-sans text-sm text-text-muted">{children}</p>
         <a href="/login" className="block text-sm font-sans text-text-muted hover:text-text-primary transition-colors">← Back to sign in</a>
       </div>

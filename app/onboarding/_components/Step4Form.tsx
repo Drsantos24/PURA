@@ -58,9 +58,10 @@ export function Step4Form() {
     return (
       <div className="space-y-6">
         <div className="space-y-1">
-          <p className="font-sans text-sm text-text-primary font-medium">Train your clinic AI</p>
+          <p className="font-sans text-sm text-text-primary font-medium">Give your AI a voice</p>
           <p className="font-sans text-xs text-text-muted">
-            Choose how you want to give PURA context about your practice.
+            This is what makes PURA sound like you — not like a generic chatbot.
+            A 10-minute conversation here saves you hours of editing later.
           </p>
         </div>
 
@@ -98,7 +99,7 @@ export function Step4Form() {
           <a href="/onboarding?step=3" className={ghostBtn}>← Back</a>
           <form action={completeOnboarding}>
             <button type="submit" className="text-xs font-sans text-text-muted underline underline-offset-2 hover:text-text-primary transition-colors">
-              Skip for now
+              Set up AI later from Settings
             </button>
           </form>
         </div>

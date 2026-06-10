@@ -26,12 +26,12 @@ export default async function SignupPage({
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
-        <div className="text-center space-y-3">
-          <h1 className="font-serif text-6xl text-text-primary">PURA</h1>
-          <div className="mx-auto h-px w-8 bg-magenta" />
-          <p className="font-sans text-sm text-text-muted">
+        <div className="text-center space-y-2">
+          <div className="w-2 h-2 rounded-full bg-magenta mx-auto" />
+          <p className="font-sans text-xs font-medium uppercase tracking-widest text-text-muted">PURA Health</p>
+          <p className="font-sans text-sm text-text-primary">
             Set up your account for{' '}
-            <span className="text-text-primary">{invite.clinic_name}</span>
+            <span className="font-medium">{invite.clinic_name}</span>
           </p>
         </div>
 
@@ -103,8 +103,8 @@ function InvalidInvite({ message }: { message: string }) {
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6 text-center">
-        <h1 className="font-serif text-6xl text-text-primary">PURA</h1>
-        <div className="mx-auto h-px w-8 bg-magenta" />
+        <div className="w-2 h-2 rounded-full bg-magenta mx-auto" />
+        <p className="font-sans text-xs font-medium uppercase tracking-widest text-text-muted">PURA Health</p>
         <p className="font-sans text-sm text-text-muted">{message}</p>
         <a href="/login" className="block text-sm font-sans text-text-muted hover:text-text-primary transition-colors">
           ← Back to sign in
