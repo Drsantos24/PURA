@@ -33,24 +33,18 @@ function signalTextColor(s: number) {
   return 'text-danger'
 }
 
-function signalBgColor(s: number) {
+function signalPillStyle(s: number) {
   if (s >= 80) return 'bg-signal-green/10 border-signal-green/30'
   if (s >= 55) return 'bg-amber/10 border-amber/30'
   return 'bg-danger/10 border-danger/30'
 }
 
-function ringColor(s: number) {
-  if (s >= 80) return 'ring-signal-green/60'
-  if (s >= 55) return 'ring-amber/60'
-  return 'ring-danger/60'
-}
-
 function statusBadge(s: number | null): { label: string; className: string } {
   if (s === null) return { label: 'No data yet', className: 'text-text-muted border-border' }
-  if (s >= 80)   return { label: 'Recovering',     className: 'text-signal-green border-signal-green/30 bg-signal-green/5' }
-  if (s >= 55)   return { label: 'Stable',          className: 'text-amber border-amber/30 bg-amber/5' }
-  if (s >= 30)   return { label: 'Watch',           className: 'text-danger border-danger/30 bg-danger/5' }
-  return           { label: 'Action needed',         className: 'text-magenta border-magenta/30 bg-magenta/5' }
+  if (s >= 80)   return { label: 'Recovering',    className: 'text-signal-green border-signal-green/30 bg-signal-green/5' }
+  if (s >= 55)   return { label: 'Stable',         className: 'text-amber border-amber/30 bg-amber/5' }
+  if (s >= 30)   return { label: 'Watch',          className: 'text-danger border-danger/30 bg-danger/5' }
+  return           { label: 'Action needed',        className: 'text-magenta border-magenta/30 bg-magenta/5' }
 }
 
 function Sparkline({ values, signal }: { values: number[]; signal: number | null }) {
@@ -61,7 +55,8 @@ function Sparkline({ values, signal }: { values: number[]; signal: number | null
   const yOf = (v: number) => H - PAD - ((v - min) / (max - min)) * (H - PAD * 2)
   const pts  = values.map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ')
   const zone = signal !== null ? getZone(signal) : 'red'
-  const stroke = zone === 'green' ? '#22C55E' : zone === 'amber' ? '#F59E0B' : '#EF4444'
+  // Softened zone palette matching tailwind tokens
+  const stroke = zone === 'green' ? '#4ADE80' : zone === 'amber' ? '#FBBF24' : '#F87171'
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
       <polyline points={pts} fill="none" stroke={stroke} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
@@ -69,13 +64,13 @@ function Sparkline({ values, signal }: { values: number[]; signal: number | null
   )
 }
 
-function Initials({ first, last }: { first: string; last: string }) {
+function PatientInitials({ first, last }: { first: string; last: string }) {
   return `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase()
 }
 
-// ─── Morning Briefing card (rendered inside client component so callouts can open drawer) ───
+// ─── Morning Briefing ────────────────────────────────────────────────────────
 
-function BriefingCard({
+function MorningBriefing({
   briefing,
   patients,
   onOpenPatient,
@@ -84,43 +79,50 @@ function BriefingCard({
   patients:      PatientSummary[]
   onOpenPatient: (id: string) => void
 }) {
-  const [collapsed, setCollapsed] = useState(false)
-  const nameOf = (id: string) => {
-    const p = patients.find(x => x.id === id)
-    return p ? `${p.first_name} ${p.last_name}` : null
-  }
-  return (
-    <div className="rounded-lg border border-border bg-surface overflow-hidden">
-      <button
-        onClick={() => setCollapsed(c => !c)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-border/20 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-magenta/40"
-        aria-expanded={!collapsed}
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="font-sans text-[10px] uppercase tracking-widest text-text-muted shrink-0">Morning Briefing</span>
-          <span className="font-sans text-sm text-text-primary truncate">{briefing.summary_text}</span>
-        </div>
-        <span className={`text-text-muted text-xs transition-transform shrink-0 ml-3 ${collapsed ? '' : 'rotate-180'}`}>▼</span>
-      </button>
+  const nameOf = (id: string) => patients.find(x => x.id === id)
+  // Limit to 3 callouts per the design brief
+  const callouts = briefing.patient_callouts.slice(0, 3).filter(c => nameOf(c.patient_id))
 
-      {!collapsed && briefing.patient_callouts.length > 0 && (
-        <div className="border-t border-border divide-y divide-border">
-          {briefing.patient_callouts.map((c, i) => {
-            const name = nameOf(c.patient_id)
-            if (!name) return null
+  const gridClass =
+    callouts.length === 1 ? 'grid-cols-1' :
+    callouts.length === 2 ? 'grid-cols-1 sm:grid-cols-2' :
+    'grid-cols-1 sm:grid-cols-3'
+
+  return (
+    <div className="pb-8 border-b border-border space-y-5">
+      {/* Section label + serif headline */}
+      <div>
+        <p className="font-sans text-[10px] uppercase tracking-widest text-text-muted mb-3">
+          Morning Briefing
+        </p>
+        <p className="font-serif text-xl sm:text-2xl text-text-primary leading-snug">
+          {briefing.summary_text}
+        </p>
+      </div>
+
+      {/* Callout cards */}
+      {callouts.length > 0 && (
+        <div className={`grid gap-3 ${gridClass}`}>
+          {callouts.map((c, i) => {
+            const p = nameOf(c.patient_id)!
             return (
               <button
                 key={i}
                 onClick={() => onOpenPatient(c.patient_id)}
-                className="w-full text-left px-5 py-3 flex items-start gap-4 hover:bg-border/20 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-magenta/40 group"
+                className="text-left rounded-2xl border border-border bg-surface px-5 py-5 hover:border-magenta/40 hover:bg-surface-elevated transition-colors focus:outline-none focus:ring-2 focus:ring-magenta/40 group"
               >
-                <span className="w-2 h-2 rounded-full bg-magenta mt-1.5 shrink-0" aria-hidden="true" />
-                <div className="min-w-0 flex-1">
-                  <p className="font-sans text-sm font-medium text-text-primary group-hover:text-magenta transition-colors truncate">{name}</p>
-                  <p className="font-sans text-xs text-text-muted mt-0.5">{c.reason}</p>
-                  <p className="font-sans text-xs text-text-muted/70 mt-0.5 italic">{c.suggested_action}</p>
-                </div>
-                <span className="text-text-muted/40 group-hover:text-text-muted text-xs mt-1 shrink-0">→</span>
+                <p className="font-serif text-lg text-text-primary group-hover:text-magenta transition-colors truncate">
+                  {p.first_name} {p.last_name}
+                </p>
+                <p className="font-sans text-sm text-text-secondary mt-2 leading-relaxed line-clamp-2">
+                  {c.reason}
+                </p>
+                <p className="font-sans text-xs text-text-muted mt-2 italic leading-relaxed line-clamp-2">
+                  {c.suggested_action}
+                </p>
+                <p className="font-sans text-xs text-magenta mt-3 group-hover:underline">
+                  Open chart →
+                </p>
               </button>
             )
           })}
@@ -129,6 +131,8 @@ function BriefingCard({
     </div>
   )
 }
+
+// ─── Patient Roster ───────────────────────────────────────────────────────────
 
 export default function PatientRoster({
   patients,
@@ -189,11 +193,11 @@ export default function PatientRoster({
 
   if (patients.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {briefing && (
-          <BriefingCard briefing={briefing} patients={patients} onOpenPatient={setOpenId} />
+          <MorningBriefing briefing={briefing} patients={patients} onOpenPatient={setOpenId} />
         )}
-        <div className="rounded-lg border border-border bg-surface/50 px-6 py-12 text-center">
+        <div className="rounded-2xl border border-border bg-surface/50 px-6 py-12 text-center">
           <p className="font-sans text-sm text-text-muted">
             No patients enrolled yet. Add patients in Settings → Patients.
           </p>
@@ -204,139 +208,202 @@ export default function PatientRoster({
 
   return (
     <>
-      {/* Morning Briefing */}
+      {/* Zone 2: Morning Briefing */}
       {briefing && (
-        <BriefingCard briefing={briefing} patients={patients} onOpenPatient={setOpenId} />
+        <MorningBriefing briefing={briefing} patients={patients} onOpenPatient={setOpenId} />
       )}
 
-      {/* Controls */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <input
-          type="search"
-          placeholder="Search patients…"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          className="rounded-md border border-border bg-surface px-4 py-2 text-sm font-sans text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-magenta/40 w-56"
-          aria-label="Search patients"
-        />
+      {/* Zone 3: Roster controls */}
+      <div className="pt-2 space-y-5">
+        <div className="flex items-center gap-4 flex-wrap">
+          {/* Search */}
+          <input
+            type="search"
+            placeholder="Search patients…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-sans text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-magenta/40 w-52"
+            aria-label="Search patients"
+          />
 
-        <div className="flex items-center gap-1.5" role="group" aria-label="Filter patients">
-          {filterOptions.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setFilter(opt.value)}
-              className={`rounded-full px-3 py-1 text-xs font-sans transition-colors focus:outline-none focus:ring-2 focus:ring-magenta/40 ${
-                filter === opt.value
-                  ? 'bg-text-primary text-background font-medium'
-                  : 'border border-border text-text-muted hover:border-text-muted hover:text-text-primary'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="ml-auto">
-          <select
-            value={sort}
-            onChange={e => setSort(e.target.value as SortMode)}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-sans text-text-muted focus:outline-none focus:ring-2 focus:ring-magenta/40"
-            aria-label="Sort patients"
-          >
-            <option value="signal_asc">Signal: lowest first</option>
-            <option value="signal_desc">Signal: highest first</option>
-            <option value="last_checkin">Last check-in</option>
-            <option value="name">Name</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Roster */}
-      {filtered.length === 0 ? (
-        <div className="rounded-lg border border-border bg-surface/50 px-6 py-10 text-center">
-          <p className="font-sans text-sm text-text-muted">No patients match this filter.</p>
-        </div>
-      ) : (
-        <div className="space-y-2" role="list" aria-label="Patient roster">
-          {filtered.map(p => {
-            const badge    = statusBadge(p.latestSignal)
-            const needsAttn = p.latestSignal !== null && p.latestSignal < 55
-            const lastDate  = p.last_checkin_date
-              ? new Date(p.last_checkin_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-              : null
-
-            return (
+          {/* Filter — elegant text toggles */}
+          <div className="flex items-center gap-5" role="group" aria-label="Filter patients">
+            {filterOptions.map(opt => (
               <button
-                key={p.id}
-                role="listitem"
-                onClick={() => setOpenId(p.id)}
-                className={`w-full text-left rounded-lg border px-5 py-4 flex items-center gap-5
-                  transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-magenta/40
-                  ${needsAttn
-                    ? 'border-magenta/25 bg-magenta/[0.03] hover:bg-magenta/[0.06]'
-                    : 'border-border bg-surface/50 hover:bg-surface'
-                  }`}
-                aria-label={`Open detail for ${p.first_name} ${p.last_name}`}
+                key={opt.value}
+                onClick={() => setFilter(opt.value)}
+                className={`font-sans text-sm transition-colors focus:outline-none whitespace-nowrap pb-0.5 ${
+                  filter === opt.value
+                    ? 'text-text-primary border-b border-text-primary/50'
+                    : 'text-text-muted hover:text-text-secondary'
+                }`}
               >
-                {/* Avatar */}
-                <div className={`w-10 h-10 rounded-full bg-border flex items-center justify-center ring-2 shrink-0 ${
-                  p.latestSignal !== null ? ringColor(p.latestSignal) : 'ring-border'
-                }`}>
-                  <span className="font-sans text-sm font-medium text-text-muted">
-                    <Initials first={p.first_name} last={p.last_name} />
-                  </span>
-                </div>
-
-                {/* Name + complaint */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-sans font-semibold text-text-primary truncate">
-                    {p.first_name} {p.last_name}
-                  </p>
-                  {p.chief_complaint && (
-                    <p className="font-sans text-xs text-text-muted truncate mt-0.5">{p.chief_complaint}</p>
-                  )}
-                </div>
-
-                {/* Sparkline */}
-                <div className="shrink-0">
-                  <Sparkline values={p.sparkline} signal={p.latestSignal} />
-                </div>
-
-                {/* Last check-in */}
-                <div className="shrink-0 text-right w-20">
-                  <p className="font-mono text-[11px] text-text-muted">
-                    {lastDate ?? 'never'}
-                  </p>
-                </div>
-
-                {/* Status badge */}
-                <div className="shrink-0 w-28 text-right">
-                  <span className={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-sans ${badge.className}`}>
-                    {badge.label}
-                  </span>
-                </div>
-
-                {/* Signal badge */}
-                <div className="shrink-0 text-right">
-                  {p.latestSignal !== null ? (
-                    <div className={`inline-flex flex-col items-center rounded-lg border px-3 py-1.5 ${signalBgColor(p.latestSignal)}`}>
-                      <span className={`font-serif text-2xl leading-none ${signalTextColor(p.latestSignal)}`}>
-                        {p.latestSignal}
-                      </span>
-                      <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">Signal</span>
-                    </div>
-                  ) : (
-                    <div className="inline-flex flex-col items-center rounded-lg border border-border/40 px-3 py-1.5">
-                      <span className="font-mono text-lg text-text-muted leading-none">—</span>
-                      <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">Signal</span>
-                    </div>
-                  )}
-                </div>
+                {opt.label}
               </button>
-            )
-          })}
+            ))}
+          </div>
+
+          {/* Sort */}
+          <div className="ml-auto">
+            <select
+              value={sort}
+              onChange={e => setSort(e.target.value as SortMode)}
+              className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm font-sans text-text-muted focus:outline-none focus:ring-2 focus:ring-magenta/40"
+              aria-label="Sort patients"
+            >
+              <option value="signal_asc">Signal: lowest first</option>
+              <option value="signal_desc">Signal: highest first</option>
+              <option value="last_checkin">Last check-in</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
         </div>
-      )}
+
+        {/* Roster */}
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-surface/50 px-6 py-10 text-center">
+            <p className="font-sans text-sm text-text-muted">No patients match this filter.</p>
+          </div>
+        ) : (
+          <div className="space-y-3" role="list" aria-label="Patient roster">
+            {filtered.map(p => {
+              const badge    = statusBadge(p.latestSignal)
+              const needsAttn = p.latestSignal !== null && p.latestSignal < 55
+              const lastDate  = p.last_checkin_date
+                ? new Date(p.last_checkin_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                : null
+
+              return (
+                <button
+                  key={p.id}
+                  role="listitem"
+                  onClick={() => setOpenId(p.id)}
+                  className={`w-full text-left rounded-2xl border px-5 py-5 sm:py-6
+                    transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-magenta/40
+                    ${needsAttn
+                      ? 'border-magenta/25 bg-magenta/[0.03] hover:bg-magenta/[0.06]'
+                      : 'border-border bg-surface hover:bg-surface-elevated'
+                    }`}
+                  aria-label={`Open detail for ${p.first_name} ${p.last_name}`}
+                >
+                  {/* ── Mobile layout (< sm) ─────────────────── */}
+                  <div className="flex items-center gap-4 sm:hidden">
+                    {/* Avatar */}
+                    <div
+                      className="w-11 h-11 rounded-full shrink-0 flex items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, #2A2724 0%, #1C1917 100%)' }}
+                    >
+                      <span className="font-sans text-sm font-medium text-text-secondary">
+                        <PatientInitials first={p.first_name} last={p.last_name} />
+                      </span>
+                    </div>
+
+                    {/* Name + complaint + date */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-serif text-base text-text-primary truncate">
+                        {p.first_name} {p.last_name}
+                      </p>
+                      {p.chief_complaint && (
+                        <p className="font-sans text-xs text-text-muted truncate mt-0.5">
+                          {p.chief_complaint}
+                        </p>
+                      )}
+                      {lastDate && (
+                        <p className="font-sans text-[11px] text-text-muted/70 mt-0.5">
+                          Last: {lastDate}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Signal pill */}
+                    {p.latestSignal !== null ? (
+                      <div className={`shrink-0 inline-flex flex-col items-center rounded-xl border px-3 py-2 ${signalPillStyle(p.latestSignal)}`}>
+                        <span className={`font-serif text-2xl leading-none ${signalTextColor(p.latestSignal)}`}>
+                          {p.latestSignal}
+                        </span>
+                        <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">
+                          Signal
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="shrink-0 inline-flex flex-col items-center rounded-xl border border-border/40 px-3 py-2">
+                        <span className="font-sans text-xl text-text-muted leading-none">—</span>
+                        <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">
+                          Signal
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Desktop layout (>= sm) ────────────────── */}
+                  <div className="hidden sm:flex items-center gap-5">
+                    {/* Avatar */}
+                    <div
+                      className="w-11 h-11 rounded-full shrink-0 flex items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, #2A2724 0%, #1C1917 100%)' }}
+                    >
+                      <span className="font-sans text-sm font-medium text-text-secondary">
+                        <PatientInitials first={p.first_name} last={p.last_name} />
+                      </span>
+                    </div>
+
+                    {/* Name + complaint */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-serif text-lg text-text-primary truncate">
+                        {p.first_name} {p.last_name}
+                      </p>
+                      {p.chief_complaint && (
+                        <p className="font-sans text-sm text-text-muted truncate mt-0.5">
+                          {p.chief_complaint}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Sparkline */}
+                    <div className="shrink-0">
+                      <Sparkline values={p.sparkline} signal={p.latestSignal} />
+                    </div>
+
+                    {/* Last check-in */}
+                    <div className="shrink-0 text-right w-20">
+                      <p className="font-sans text-xs text-text-muted">
+                        {lastDate ?? 'never'}
+                      </p>
+                    </div>
+
+                    {/* Status badge */}
+                    <div className="shrink-0 w-28 text-right">
+                      <span className={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-sans ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+
+                    {/* Signal pill */}
+                    {p.latestSignal !== null ? (
+                      <div className={`shrink-0 inline-flex flex-col items-center rounded-xl border px-3 py-2 ${signalPillStyle(p.latestSignal)}`}>
+                        <span className={`font-serif text-2xl leading-none ${signalTextColor(p.latestSignal)}`}>
+                          {p.latestSignal}
+                        </span>
+                        <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">
+                          Signal
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="shrink-0 inline-flex flex-col items-center rounded-xl border border-border/40 px-3 py-2">
+                        <span className="font-sans text-xl text-text-muted leading-none">—</span>
+                        <span className="font-sans text-[9px] uppercase tracking-widest text-text-muted mt-0.5">
+                          Signal
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Drawer */}
       <PatientDrawer
