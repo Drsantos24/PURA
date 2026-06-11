@@ -69,6 +69,8 @@ function PatientInitials({ first, last }: { first: string; last: string }) {
 }
 
 // ─── Morning Briefing ────────────────────────────────────────────────────────
+// Carbon Health reference: summary reads like a doctor's note — calm, confident.
+// Inverted hierarchy: editorial serif headline dominates, callout cards are quiet.
 
 function MorningBriefing({
   briefing,
@@ -80,7 +82,6 @@ function MorningBriefing({
   onOpenPatient: (id: string) => void
 }) {
   const nameOf = (id: string) => patients.find(x => x.id === id)
-  // Limit to 3 callouts per the design brief
   const callouts = briefing.patient_callouts.slice(0, 3).filter(c => nameOf(c.patient_id))
 
   const gridClass =
@@ -89,38 +90,45 @@ function MorningBriefing({
     'grid-cols-1 sm:grid-cols-3'
 
   return (
-    <div className="pb-8 border-b border-border space-y-5">
-      {/* Section label + serif headline */}
-      <div>
-        <p className="font-sans text-[10px] uppercase tracking-widest text-text-muted mb-3">
-          Morning Briefing
-        </p>
-        <p className="font-serif text-xl sm:text-2xl text-text-primary leading-snug">
-          {briefing.summary_text}
-        </p>
-      </div>
+    <div className="pb-8 border-b border-border">
+      {/* Section label */}
+      <p className="font-sans text-[10px] uppercase tracking-widest text-text-muted mb-4">
+        Morning Briefing
+      </p>
 
-      {/* Callout cards */}
+      {/* Editorial headline — the AI's voice, set in serif, generous size */}
+      {/* This is the "doctor's note" moment. It leads, the callouts follow. */}
+      <p className="font-serif text-2xl sm:text-3xl text-text-primary leading-snug">
+        {briefing.summary_text}
+      </p>
+
+      {/* Callout cards — quiet note surfaces, not system alerts */}
       {callouts.length > 0 && (
-        <div className={`grid gap-3 ${gridClass}`}>
+        <div className={`grid gap-3 mt-6 ${gridClass}`}>
           {callouts.map((c, i) => {
             const p = nameOf(c.patient_id)!
             return (
               <button
                 key={i}
                 onClick={() => onOpenPatient(c.patient_id)}
-                className="text-left rounded-2xl border border-border bg-surface px-5 py-5 hover:border-magenta/40 hover:bg-surface-elevated transition-colors focus:outline-none focus:ring-2 focus:ring-magenta/40 group"
+                className="text-left rounded-2xl bg-surface-elevated border border-border/40 px-6 py-5
+                  hover:border-border transition-colors
+                  focus:outline-none focus:ring-2 focus:ring-magenta/40 group"
               >
-                <p className="font-serif text-lg text-text-primary group-hover:text-magenta transition-colors truncate">
+                {/* Name: label-weight — the reason text is the note body */}
+                <p className="font-sans text-xs uppercase tracking-widest text-text-muted truncate">
                   {p.first_name} {p.last_name}
                 </p>
-                <p className="font-sans text-sm text-text-secondary mt-2 leading-relaxed line-clamp-2">
+                {/* Reason: the actual finding — primary text, reading weight */}
+                <p className="font-sans text-sm text-text-primary mt-2 leading-relaxed line-clamp-3">
                   {c.reason}
                 </p>
+                {/* Suggested action: softer, italic — the recommendation */}
                 <p className="font-sans text-xs text-text-muted mt-2 italic leading-relaxed line-clamp-2">
                   {c.suggested_action}
                 </p>
-                <p className="font-sans text-xs text-magenta mt-3 group-hover:underline">
+                {/* Implicit CTA — appears on hover only, no button noise */}
+                <p className="font-sans text-xs text-text-muted/30 group-hover:text-magenta mt-3 transition-colors">
                   Open chart →
                 </p>
               </button>
