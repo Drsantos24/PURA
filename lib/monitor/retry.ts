@@ -32,14 +32,14 @@ export async function retryMissingBriefings(): Promise<RetryResult[]> {
     try {
       await generateBriefingForClinic(clinic.id)
 
-      // Log the successful retry
-      await service.from('access_log').insert({
+      // Log the successful retry — fire-and-forget (PromiseLike, no .catch)
+      void service.from('access_log').insert({
         clinic_id:   clinic.id,
         actor_email: 'monitor@system',
         action:      'auto_retry_briefing_success',
         target_type: 'clinic',
         target_id:   clinic.id,
-      }).catch(() => {}) // non-fatal
+      })
 
       results.push({
         clinic_id:   clinic.id,
@@ -51,13 +51,14 @@ export async function retryMissingBriefings(): Promise<RetryResult[]> {
       const msg = err instanceof Error ? err.message : String(err)
       console.error(`[monitor/retry] briefing failed for clinic ${clinic.id}:`, msg)
 
-      await service.from('access_log').insert({
+      // Fire-and-forget — PromiseLike, no .catch
+      void service.from('access_log').insert({
         clinic_id:   clinic.id,
         actor_email: 'monitor@system',
         action:      'auto_retry_briefing_failed',
         target_type: 'clinic',
         target_id:   clinic.id,
-      }).catch(() => {})
+      })
 
       results.push({
         clinic_id:   clinic.id,
