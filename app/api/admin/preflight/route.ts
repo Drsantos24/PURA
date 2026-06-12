@@ -482,5 +482,137 @@ export async function GET(req: NextRequest) {
     return { pass, detail: `status=${res.status} (non-founder must not see 200)` }
   })
 
+  // ── H: Beta readiness — end-to-end channel + cron verification ──────────────
+  // Dry-run where possible. Real sends only for H1-H3 (to FOUNDER_PHONE / sandbox / FOUNDER_EMAIL).
+
+  await run('H1', async () => {
+    const founderPhone = process.env.FOUNDER_PHONE
+    if (!founderPhone) return { pass: false, detail: 'FOUNDER_PHONE env var not set' }
+    const { sendSMS } = await import('@/lib/sms/twilio')
+    const sent = await sendSMS(founderPhone, `[PURA preflight H1] SMS test via ${process.env.TWILIO_TOLL_FREE_NUMBER ? 'toll-free' : 'long-code'} at ${new Date().toLocaleTimeString()}`)
+    return { pass: sent, detail: sent ? `SMS sent to ${founderPhone}` : 'SMS send returned false — check Twilio config or A2P status' }
+  })
+
+  await run('H2', async () => {
+    const founderPhone = process.env.FOUNDER_PHONE
+    if (!founderPhone) return { pass: false, detail: 'FOUNDER_PHONE not set — cannot test WhatsApp' }
+    const { sendWhatsApp } = await import('@/lib/sms/twilio')
+    const sent = await sendWhatsApp(founderPhone, `[PURA preflight H2] WhatsApp test at ${new Date().toLocaleTimeString()}`)
+    return { pass: sent, detail: sent ? `WhatsApp sent to ${founderPhone}` : 'WhatsApp send returned false — patient must opt in to sandbox first (see Twilio docs)' }
+  })
+
+  await run('H3', async () => {
+    const founderEmail = process.env.FOUNDER_EMAIL
+    if (!founderEmail) return { pass: false, detail: 'FOUNDER_EMAIL not set' }
+    const { sendCheckinLinkEmail } = await import('@/lib/email/resend')
+    const result = await sendCheckinLinkEmail({
+      toEmail: founderEmail, patientFirstName: 'Joshua', clinicName: 'PURA Preflight',
+      checkInUrl: `${BASE}/c/test-link-h3`,
+    })
+    return { pass: result.ok, detail: result.ok ? `Check-in link email sent to ${founderEmail}` : `Send failed: ${result.error}` }
+  })
+
+  await run('H4', async () => {
+    // Submit a test check-in for a demo patient and verify the results email render fires
+    if (!demoPatientId) return { pass: false, detail: 'no demo patient' }
+    const { buildCheckinResultsEmail, computeSignalFromValues, signalToZone } =
+      await import('@/lib/email/checkin-results')
+    const signal = computeSignalFromValues({ pain: 3, sleepQuality: 8, sleepHours: 7.5, energy: 7, stress: 3, functional: 8, mood: 7 })
+    const zone   = signalToZone(signal)
+    const { html, text } = buildCheckinResultsEmail({
+      patientFirstName: 'TestPatient', clinicName: 'PURA Preflight',
+      signal, zone, trend: [68, 70, 71, 72, 72, 73, signal],
+      encouragingLine: 'Preflight check — keep going.',
+    })
+    const pass = html.includes(String(signal)) && text.includes(String(signal)) && zone !== undefined
+    return { pass, detail: `Results email renders ok — signal=${signal} zone=${zone}` }
+  })
+
+  await run('H5', async () => {
+    // Dry-run demo-reset: verify the seed data logic runs without writing to DB
+    const { DEMO_PATIENTS, checkinValues, computeSignal } = await import('@/lib/demo/seed')
+    let rowCount = 0
+    DEMO_PATIENTS.forEach((p, idx) => {
+      const maxDay = p.group === 'droppedoff' ? 15 : 20
+      for (let d = 0; d <= maxDay; d++) {
+        const v = checkinValues(p.group, d, idx, p.off)
+        const sig = computeSignal(v)
+        if (sig < 0 || sig > 100) throw new Error(`Out-of-range signal ${sig} for ${p.name} day ${d}`)
+        rowCount++
+      }
+    })
+    return { pass: true, detail: `Dry-run: ${DEMO_PATIENTS.length} patients × up to 21 days = ${rowCount} rows would be inserted` }
+  })
+
+  await run('H6', async () => {
+    // Run the health-check cron against itself — should return healthy
+    const res = await fetch(`${BASE}/api/cron/health-check`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
+    })
+    const json = await res.json().catch(() => ({}))
+    return { pass: res.ok && json.passed === true, detail: `status=${res.status} passed=${json.passed} failures=${JSON.stringify(json.failures ?? [])}` }
+  })
+
+  await run('H7', async () => {
+    // Dry-run monitor-digest: gather data without sending email
+    const { gatherDigest } = await import('@/lib/monitor/digest')
+    const digest = await gatherDigest()
+    const pass = typeof digest.checkinsToday === 'number' && Array.isArray(digest.anomalies) && typeof digest.date === 'string'
+    return {
+      pass,
+      detail: `Digest dry-run ok: date=${digest.date} checkinsToday=${digest.checkinsToday} anomalies=${digest.anomalies.length} clinics=${digest.clinics.length}`,
+    }
+  })
+
+  await run('H8', async () => {
+    // Verify all crons registered in vercel.json
+    const expected = ['morning-send', 'monitor-retry', 'monitor-digest', 'demo-reset', 'purge-logs', 'weekly-insights', 'health-check']
+    const fs = await import('fs')
+    const path = await import('path')
+    const vPath = path.join(process.cwd(), 'vercel.json')
+    const vJson = JSON.parse(fs.readFileSync(vPath, 'utf8'))
+    const registered: string[] = (vJson.crons ?? []).map((c: { path: string }) => c.path.split('/').pop() ?? c.path)
+    const missing = expected.filter(e => !registered.some(r => r.includes(e)))
+    return {
+      pass: missing.length === 0,
+      detail: missing.length ? `missing crons: ${missing.join(', ')}` : `All ${registered.length} crons registered: ${registered.join(', ')}`,
+    }
+  })
+
+  await run('H9', async () => {
+    const required = [
+      'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
+      'CRON_SECRET', 'FOUNDER_EMAIL', 'ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GROQ_API_KEY',
+      'RESEND_API_KEY', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_PHONE_NUMBER',
+      'NEXT_PUBLIC_APP_URL',
+    ]
+    const optional = ['FOUNDER_PHONE', 'TWILIO_TOLL_FREE_NUMBER', 'TWILIO_WHATSAPP_NUMBER']
+    const missing  = required.filter(k => !process.env[k] || process.env[k]!.startsWith('placeholder'))
+    const optPresent = optional.filter(k => !!process.env[k])
+    return {
+      pass: missing.length === 0,
+      detail: missing.length
+        ? `MISSING required: ${missing.join(', ')}`
+        : `All ${required.length} required vars present. Optional: ${optPresent.join(', ') || 'none yet'}`,
+    }
+  })
+
+  await run('H10', async () => {
+    // BETA READY: count passes across A-G + H1-H9
+    const allResults = Object.entries(results) as [string, { pass: boolean; detail: string; ms: number }][]
+    const total  = allResults.length
+    const passed = allResults.filter(([, r]) => r.pass).length
+    const failed = allResults.filter(([, r]) => !r.pass).map(([id]) => id)
+    const betaReady = failed.length === 0
+    return {
+      pass: betaReady,
+      detail: betaReady
+        ? `✓ BETA READY — ${passed}/${total} tests passed`
+        : `Not yet: ${passed}/${total} passed. Failing: ${failed.join(', ')}`,
+    }
+  })
+
   return NextResponse.json({ results, ts: new Date().toISOString() })
 }
+
