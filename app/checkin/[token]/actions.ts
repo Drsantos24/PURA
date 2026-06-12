@@ -85,5 +85,61 @@ export async function submitCheckin(
     .update({ used_at: new Date().toISOString() })
     .eq('id', tokenRow.id)
 
+  // ── Patient results email (fire-and-wait with 3s cap) ──────────────────────
+  try {
+    const { sendCheckinResultsEmail, computeSignalFromValues, signalToZone, generateEncouragingLine } =
+      await import('@/lib/email/checkin-results')
+
+    // Fetch patient email + clinic info + clinic voice in parallel
+    const [patRow, clinicRow, profileRow, trendRow] = await Promise.all([
+      service.from('patients').select('email, first_name').eq('id', tokenRow.patient_id).single(),
+      service.from('clinics').select('clinic_name, is_demo').eq('id', tokenRow.clinic_id).single(),
+      service.from('clinic_profiles')
+        .select('clinic_vocabulary, practice_philosophy')
+        .eq('clinic_id', tokenRow.clinic_id).maybeSingle(),
+      service.from('pura_index_history')
+        .select('pura_signal')
+        .eq('patient_id', tokenRow.patient_id)
+        .order('calculated_at', { ascending: true })
+        .limit(7),
+    ])
+
+    const patEmail = patRow.data?.email
+    const isDemo   = (clinicRow.data as { is_demo?: boolean } | null)?.is_demo === true
+
+    if (patEmail) {
+      const signal = computeSignalFromValues({
+        pain: pain, sleepQuality, sleepHours, energy, stress, functional, mood,
+      })
+      const zone  = signalToZone(signal)
+      const trend = (trendRow.data ?? []).map(r => r.pura_signal)
+
+      const [encouragingLine] = await Promise.all([
+        generateEncouragingLine({
+          zone, signal,
+          clinicVocabulary: profileRow.data?.clinic_vocabulary,
+          clinicPhilosophy: profileRow.data?.practice_philosophy,
+          patientFirstName: patRow.data?.first_name ?? 'there',
+        }),
+      ])
+
+      const emailInput = {
+        patientFirstName: patRow.data?.first_name ?? 'there',
+        clinicName:       clinicRow.data?.clinic_name ?? 'Your Care Team',
+        signal, zone, trend, encouragingLine,
+      }
+
+      if (isDemo) {
+        // Demo: log only, don't send
+        console.log('[checkin-email] Demo mode — would send to:', patEmail, JSON.stringify(emailInput))
+      } else {
+        void sendCheckinResultsEmail({ toEmail: patEmail, input: emailInput })
+      }
+    }
+  } catch (emailErr) {
+    // Non-fatal — never block patient redirect on email failure
+    console.error('[checkin-email] Error (non-fatal):', emailErr)
+  }
+
   redirect(`/checkin/${token}/done`)
 }

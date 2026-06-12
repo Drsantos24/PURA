@@ -125,6 +125,26 @@ export async function GET(req: NextRequest) {
     return { pass, detail: pass ? `pura_signal=${data.pura_signal}` : 'no pura_index_history row yet (trigger may not have fired)' }
   })
 
+  await run('B5', async () => {
+    // Verify the patient results email render function executes without error
+    const { buildCheckinResultsEmail, computeSignalFromValues, signalToZone } =
+      await import('@/lib/email/checkin-results')
+    const signal = computeSignalFromValues({
+      pain: 3, sleepQuality: 7, sleepHours: 7.5,
+      energy: 7, stress: 3, functional: 8, mood: 7,
+    })
+    const zone = signalToZone(signal)
+    const { html, text } = buildCheckinResultsEmail({
+      patientFirstName: 'TestPatient',
+      clinicName:       'Test Clinic',
+      signal, zone,
+      trend:           [65, 68, 70, 71, 72, 73, signal],
+      encouragingLine: 'Consistency is the treatment — keep it up.',
+    })
+    const pass = html.includes(String(signal)) && html.includes('TestPatient') && text.includes(String(signal))
+    return { pass, detail: pass ? `Email render ok — signal=${signal} zone=${zone}` : 'Email HTML missing expected content' }
+  })
+
   // Cleanup test token and test checkin
   await Promise.all([
     testToken    ? service.from('patient_checkin_tokens').delete().eq('short_code', testToken) : Promise.resolve(),
