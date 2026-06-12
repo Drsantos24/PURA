@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { sendSMS } from '@/lib/sms/twilio'
+import { sendSMS, sendWhatsAppCheckin } from '@/lib/sms/twilio'
+import { sendCheckinLinkEmail } from '@/lib/email/resend'
 import { generateBriefingForClinic } from '@/lib/ai/briefing'
 
 // POST /api/cron/morning-send
@@ -64,15 +65,19 @@ export async function POST(req: NextRequest) {
         .eq('id', clinicId)
         .single()
 
-      // ── Fetch active patients ───────────────────────────────────────────
+      // ── Fetch active patients (include delivery channel + email) ──────
       const { data: patients } = await service
         .from('patients')
-        .select('id, first_name, phone_number')
+        .select('id, first_name, phone_number, email, delivery_channel')
         .eq('clinic_id', clinicId)
         .eq('enrollment_status', 'active')
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const isDemo       = (clinic as any)?.is_demo === true
+      const clinicName   = clinic?.clinic_name ?? 'your care team'
+
       if (patients?.length) {
-        // ── Send check-in links ───────────────────────────────────────────
+        // ── Send check-in links via patient's preferred channel ───────────
         for (const patient of patients) {
           try {
             const shortCode = await makeShortCode(service)
@@ -85,18 +90,31 @@ export async function POST(req: NextRequest) {
               expires_at: expiresAt,
             })
 
-            const url  = `${baseUrl}/c/${shortCode}`
-            const body = `Hi ${patient.first_name}, here's your daily PURA check-in from ${clinic?.clinic_name ?? 'your care team'}: ${url} — takes 30 seconds.`
+            const url      = `${baseUrl}/c/${shortCode}`
+            const channel  = (patient as { delivery_channel?: string }).delivery_channel ?? 'sms'
+            const smsBody  = `Hi ${patient.first_name}, here's your daily PURA check-in from ${clinicName}: ${url} — takes 30 seconds.`
 
-            // Demo clinics skip real SMS sends
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const isDemo = (clinic as any)?.is_demo === true
             if (!isDemo) {
-              await sendSMS(patient.phone_number, body)
+              // Route delivery per patient preference
+              if (channel === 'sms' || channel === 'both_sms_email') {
+                await sendSMS(patient.phone_number, smsBody)
+              }
+              if (channel === 'whatsapp') {
+                await sendWhatsAppCheckin(patient.phone_number, patient.first_name, clinicName, url)
+              }
+              if ((channel === 'email' || channel === 'both_sms_email') && (patient as { email?: string }).email) {
+                await sendCheckinLinkEmail({
+                  toEmail:          (patient as { email?: string }).email!,
+                  patientFirstName: patient.first_name,
+                  clinicName,
+                  checkInUrl:       url,
+                  isDemo:           false,
+                })
+              }
             }
             tokensSent++
           } catch (err) {
-            console.error(`[cron] Token/SMS failed for patient ${patient.id}:`, err)
+            console.error(`[cron] Token/delivery failed for patient ${patient.id}:`, err)
           }
         }
       }

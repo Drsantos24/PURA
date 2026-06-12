@@ -139,22 +139,32 @@ export async function generateBriefingForClinic(clinicId: string): Promise<{
   // Message drafts remain on Groq — cheaper, sufficient for short SMS output
   const briefingResult = await generateBriefingClaude(deidentified, clinicProfile, clinicId)
 
-  // Re-map patient_refs → real patient_ids in callouts
+  // ── Re-identify ALL text fields — replace P-XX codes with first names ────────
+  // The AI receives de-identified refs (P-01, P-02…) and sometimes echoes them
+  // back in summary or callout text. We must replace every P-XX before storing
+  // so DCs always see real names, not internal codes.
+  function reidentify(text: string): string {
+    return text.replace(/\bP-(\d+)\b/g, (match) => {
+      const id = refToId[match]
+      return id ? (idToFirst[id] ?? match) : match
+    })
+  }
+
   type StoredCallout = { patient_id: string; reason: string; suggested_action: string }
   const storedCallouts: StoredCallout[] = briefingResult.callouts
     .filter(c => refToId[c.patient_ref])
     .map(c => ({
       patient_id:       refToId[c.patient_ref],
-      reason:           c.reason,
-      suggested_action: c.suggested_action,
+      reason:           reidentify(c.reason),
+      suggested_action: reidentify(c.suggested_action),
     }))
 
-  // Store briefing
+  // Store briefing with fully re-identified text
   const { data: briefingRow, error: bErr } = await service
     .from('briefings')
     .insert({
       clinic_id:        clinicId,
-      summary_text:     briefingResult.summary,
+      summary_text:     reidentify(briefingResult.summary),
       patient_callouts: storedCallouts,
     })
     .select('id')
