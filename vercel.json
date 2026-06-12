@@ -7,6 +7,14 @@
       "schedule": "0 10 * * *"
     },
     {
+      "path": "/api/cron/monitor-retry",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/monitor-digest",
+      "schedule": "0 3 * * *"
+    },
+    {
       "path": "/api/cron/purge-logs",
       "schedule": "0 3 1 * *"
     },
