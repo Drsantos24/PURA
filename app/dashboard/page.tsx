@@ -64,7 +64,6 @@ export default async function DashboardPage({
     supabase
       .from('briefings')
       .select('summary_text, patient_callouts')
-      .gte('generated_at', `${today}T00:00:00`)
       .order('generated_at', { ascending: false })
       .limit(1),
   ])
