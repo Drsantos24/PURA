@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { sendSMS } from '@/lib/sms/twilio'
+import { sendSMS, sendCheckin } from '@/lib/sms/twilio'
 import { requiresApproval, createApprovalRequest } from '@/lib/approvals'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -165,7 +165,7 @@ export async function sendCheckinLinkNow(patientId: string): Promise<{
   if (isDemo && !isLivePt) {
     sent = await simulatedSend()
   } else {
-    sent = await sendSMS(patient.phone_number, body)
+    sent = await sendCheckin(patient.phone_number, patient.first_name, clinicRow?.clinic_name ?? 'your clinic', url, patient.clinic_id)
     if (!sent && isDemo && isLivePt) {
       console.log('[DEMO] Twilio A2P not approved yet — simulating live patient check-in send')
       sent = await simulatedSend()
@@ -227,7 +227,7 @@ export async function sendDraftAsSMS(draftId: string, patientId: string): Promis
   if (isDemo && !isLivePt) {
     sent = await simulatedSend()
   } else {
-    sent = await sendSMS(patient.phone_number, draft.body_text)
+    sent = await sendSMS(patient.phone_number, draft.body_text, patient.clinic_id)
     if (!sent && isDemo && isLivePt) {
       console.log('[DEMO] Twilio A2P not approved yet — simulating live patient draft send')
       sent = await simulatedSend()
@@ -256,6 +256,45 @@ export async function updateDraftBody(draftId: string, body: string): Promise<vo
     .from('message_drafts')
     .update({ body_text: body.trim() })
     .eq('id', draftId)
+}
+
+// ─── Update patient delivery channel ─────────────────────────────────────────
+
+export async function updatePatientDeliveryChannel(
+  patientId: string,
+  channel:   'sms' | 'whatsapp' | 'email' | 'both_sms_email',
+): Promise<{ ok: boolean; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Unauthorized' }
+
+  const service = createServiceClient()
+
+  // Confirm ownership before update
+  const { data: member } = await supabase
+    .from('clinic_members').select('clinic_id, role')
+    .eq('user_email', user.email!).eq('status', 'active').limit(1).maybeSingle()
+  if (!member) return { ok: false, error: 'No clinic membership' }
+
+  const { data: patient } = await service
+    .from('patients').select('clinic_id').eq('id', patientId).maybeSingle()
+  if (!patient || patient.clinic_id !== member.clinic_id) {
+    return { ok: false, error: 'Patient not found' }
+  }
+
+  const { error } = await service
+    .from('patients').update({ delivery_channel: channel }).eq('id', patientId)
+
+  if (error) return { ok: false, error: error.message }
+
+  await service.from('access_log').insert({
+    clinic_id:   member.clinic_id,
+    actor_email: user.email!,
+    action:      'update_delivery_channel',
+    target_type: 'patient',
+  })
+
+  return { ok: true }
 }
 
 // ─── Learning loop: capture implicit DC feedback on AI output ─────────────────

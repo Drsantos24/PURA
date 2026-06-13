@@ -50,6 +50,12 @@ const TESTS: { id: string; label: string; category: string }[] = [
   { id: 'G8', label: 'GET /c/[fresh-token] → 200 with check-in form',     category: 'G — Real HTTP' },
   { id: 'G9', label: 'Founder login → /admin/dashboard returns 200',      category: 'G — Real HTTP' },
   { id: 'G10', label: 'Non-founder → /admin/dashboard denied (not 200)',  category: 'G — Real HTTP' },
+  // I — Per-clinic SMS
+  { id: 'I1', label: 'clinic_sms_credentials RLS — clinic A cannot read clinic B', category: 'I — Per-clinic SMS' },
+  { id: 'I2', label: 'Per-clinic routing — verified creds used when present',       category: 'I — Per-clinic SMS' },
+  { id: 'I3', label: 'Platform fallback — env vars present for platform sends',     category: 'I — Per-clinic SMS' },
+  { id: 'I4', label: 'WhatsApp prefix logic — whatsapp:+ applied correctly',        category: 'I — Per-clinic SMS' },
+  { id: 'I5', label: 'Email fallback — RESEND_API_KEY present for email channel',   category: 'I — Per-clinic SMS' },
 ]
 
 const CATEGORIES = Array.from(new Set(TESTS.map(t => t.category)))
