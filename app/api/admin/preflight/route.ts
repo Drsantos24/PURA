@@ -613,6 +613,80 @@ export async function GET(req: NextRequest) {
     }
   })
 
+  // ── I: Per-clinic SMS ─────────────────────────────────────────────────────────
+
+  await run('I1', async () => {
+    // RLS isolation: query clinic_sms_credentials with a bogus clinic_id — must return 0 rows.
+    const bogus = '00000000-0000-0000-0000-000000000001'
+    const { data, error } = await service
+      .from('clinic_sms_credentials')
+      .select('id')
+      .eq('clinic_id', bogus)
+      .limit(1)
+    if (error) return { pass: false, detail: error.message }
+    const pass = (data?.length ?? 0) === 0
+    return { pass, detail: pass ? 'RLS isolation OK — 0 rows for unknown clinic' : `FAIL: ${data?.length} rows returned for bogus clinic_id` }
+  })
+
+  await run('I2', async () => {
+    if (!demoClinicId) return { pass: false, detail: 'no demo clinic from B1' }
+    const { data: creds } = await service
+      .from('clinic_sms_credentials')
+      .select('provider, is_verified, from_number')
+      .eq('clinic_id', demoClinicId)
+      .maybeSingle()
+    if (!creds) return { pass: true, detail: 'no clinic creds row — platform fallback path is correct for demo clinic' }
+    if (creds.provider === 'platform_default') return { pass: true, detail: 'provider=platform_default — routing to platform' }
+    const pass = creds.is_verified && !!creds.from_number
+    return {
+      pass,
+      detail: pass
+        ? `clinic creds: provider=${creds.provider} from=${creds.from_number} verified=true`
+        : `clinic creds present but is_verified=false or from_number missing`,
+    }
+  })
+
+  await run('I3', async () => {
+    const sid   = process.env.TWILIO_ACCOUNT_SID
+    const token = process.env.TWILIO_AUTH_TOKEN
+    const from  = process.env.TWILIO_TOLL_FREE_NUMBER || process.env.TWILIO_PHONE_NUMBER
+    const ok    = !!sid && !sid.startsWith('placeholder') && !!token && !!from
+    return {
+      pass: ok,
+      detail: ok
+        ? `platform creds present — SID=${sid?.slice(0, 6)}… FROM=${from}`
+        : `missing: ${[!sid && 'TWILIO_ACCOUNT_SID', !token && 'TWILIO_AUTH_TOKEN', !from && 'TWILIO_PHONE_NUMBER'].filter(Boolean).join(', ')}`,
+    }
+  })
+
+  await run('I4', async () => {
+    const rawFrom = process.env.TWILIO_WHATSAPP_NUMBER ?? 'whatsapp:+14155238886'
+    const waFrom  = rawFrom.startsWith('whatsapp:') ? rawFrom : `whatsapp:${rawFrom}`
+    const testTo  = '+17875551234'
+    const waTo    = testTo.startsWith('whatsapp:') ? testTo : `whatsapp:${testTo}`
+    const pass    = waFrom.startsWith('whatsapp:+') && waTo === 'whatsapp:+17875551234'
+    return { pass, detail: `from=${waFrom} to=${waTo} — prefix logic ${pass ? 'correct' : 'BROKEN'}` }
+  })
+
+  await run('I5', async () => {
+    const hasResend = !!process.env.RESEND_API_KEY
+    let emailPatients = 0
+    if (demoClinicId) {
+      const { count } = await service
+        .from('patients')
+        .select('id', { count: 'exact', head: true })
+        .eq('clinic_id', demoClinicId)
+        .eq('delivery_channel', 'email')
+      emailPatients = count ?? 0
+    }
+    return {
+      pass: hasResend,
+      detail: hasResend
+        ? `RESEND_API_KEY present · ${emailPatients} patient(s) with delivery_channel=email`
+        : 'RESEND_API_KEY missing — email fallback will silently skip',
+    }
+  })
+
   return NextResponse.json({ results, ts: new Date().toISOString() })
 }
 

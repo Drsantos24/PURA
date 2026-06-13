@@ -8,13 +8,17 @@ import {
   dismissDraft,
   updateDraftBody,
   logDraftFeedback,
+  updatePatientDeliveryChannel,
   type PatientDetailData,
 } from '../actions'
+
+type DeliveryChannel = 'sms' | 'whatsapp' | 'email' | 'both_sms_email'
 
 type Props = {
   patientId:       string | null
   patientName:     string
   chiefComplaint:  string | null
+  deliveryChannel?: DeliveryChannel
   onClose:         () => void
   userRole?:       'owner' | 'clinician' | 'assistant'
 }
@@ -208,12 +212,14 @@ function DraftCard({
 
 // ─── Main drawer ──────────────────────────────────────────────────────────────
 
-export default function PatientDrawer({ patientId, patientName, chiefComplaint, onClose, userRole = 'owner' }: Props) {
+export default function PatientDrawer({ patientId, patientName, chiefComplaint, deliveryChannel: initialChannel = 'sms', onClose, userRole = 'owner' }: Props) {
   const [detail,       setDetail]       = useState<PatientDetailData | null>(null)
   const [loading,      setLoading]      = useState(false)
   const [draftHandled, setDraftHandled] = useState(false)
   const [toast,        setToast]        = useState<string | null>(null)
   const [sendBusy,     setSendBusy]     = useState(false)
+  const [channel,      setChannel]      = useState<DeliveryChannel>(initialChannel)
+  const [channelBusy,  setChannelBusy]  = useState(false)
 
   const load = useCallback(async (id: string) => {
     setLoading(true)
@@ -234,6 +240,15 @@ export default function PatientDrawer({ patientId, patientName, chiefComplaint, 
     const t = setTimeout(() => setToast(null), 4000)
     return () => clearTimeout(t)
   }, [toast])
+
+  async function handleChannelChange(val: DeliveryChannel) {
+    if (!patientId) return
+    setChannelBusy(true)
+    const result = await updatePatientDeliveryChannel(patientId, val)
+    if (result.ok) { setChannel(val); setToast(`Channel → ${val}`) }
+    else setToast(`Error: ${result.error}`)
+    setChannelBusy(false)
+  }
 
   async function handleSendLink() {
     if (!patientId) return
@@ -373,8 +388,26 @@ export default function PatientDrawer({ patientId, patientName, chiefComplaint, 
           </div>
         )}
 
-        {/* Footer: send check-in link */}
-        <div className="px-6 py-4 border-t border-border shrink-0">
+        {/* Footer: channel picker (owner) + send link */}
+        <div className="px-6 py-4 border-t border-border shrink-0 space-y-3">
+          {userRole === 'owner' && (
+            <div className="flex items-center gap-3">
+              <label className="font-sans text-[10px] uppercase tracking-widest text-text-muted shrink-0">
+                Channel
+              </label>
+              <select
+                value={channel}
+                disabled={channelBusy || !patientId}
+                onChange={e => handleChannelChange(e.target.value as DeliveryChannel)}
+                className="flex-1 rounded-md border border-border bg-surface/30 px-2 py-1.5 font-sans text-xs text-text-primary focus:outline-none focus:border-magenta/50 disabled:opacity-50"
+              >
+                <option value="sms">SMS</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="email">Email</option>
+                <option value="both_sms_email">SMS + Email</option>
+              </select>
+            </div>
+          )}
           <button
             onClick={handleSendLink}
             disabled={sendBusy || !patientId}

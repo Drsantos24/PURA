@@ -97,10 +97,10 @@ export async function POST(req: NextRequest) {
             if (!isDemo) {
               // Route delivery per patient preference
               if (channel === 'sms' || channel === 'both_sms_email') {
-                await sendSMS(patient.phone_number, smsBody)
+                await sendSMS(patient.phone_number, smsBody, clinicId)
               }
               if (channel === 'whatsapp') {
-                await sendWhatsAppCheckin(patient.phone_number, patient.first_name, clinicName, url)
+                await sendWhatsAppCheckin(patient.phone_number, patient.first_name, clinicName, url, clinicId)
               }
               if ((channel === 'email' || channel === 'both_sms_email') && (patient as { email?: string }).email) {
                 await sendCheckinLinkEmail({

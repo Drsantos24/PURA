@@ -44,6 +44,16 @@ The PAT used during Sessions 1-4 (`ghp_jsI...`) was used for inline git pushes. 
 - 017: intake_conversations + intake_exchanges (conversational intake)
 - 018: approval_settings + approval_requests (multi-user approval workflow)
 - 019: patient_import_jobs + founder_config
+- 020: delivery_channel enum on patients ('sms' | 'whatsapp' | 'email' | 'both_sms_email'), default 'sms'
+- 021: clinic_sms_credentials — per-clinic Twilio creds, AES-encrypted via pgcrypto, RLS, SECURITY DEFINER get_clinic_sms_creds() + encrypt_sms_credentials()
+
+## Per-clinic SMS env vars (migration 021)
+- `SUPABASE_SMS_SECRET` — 32-byte hex string used as AES key. Generate: `openssl rand -hex 32`
+- Must be set two places:
+  1. Vercel env: `SUPABASE_SMS_SECRET=<value>`
+  2. Supabase SQL Editor: `ALTER DATABASE postgres SET app.sms_secret = '<value>';`
+- lib/sms/twilio.ts now calls `get_clinic_sms_creds(clinic_id)` RPC. Falls back to platform TWILIO_* env vars if clinic has no verified creds.
+- /settings/sms (owner-only): two-card UI for own Twilio vs platform default, with 6-digit SMS verification flow.
 
 ## Demo credentials
 - URL: purasignal.com

@@ -16,6 +16,7 @@ export type PatientSummary = {
   last_checkin_date: string | null
   latestSignal: number | null
   sparkline: number[]
+  delivery_channel?: 'sms' | 'whatsapp' | 'email' | 'both_sms_email'
 }
 
 type FilterMode = 'all' | 'attention' | 'stable' | 'nodata'
@@ -343,6 +344,7 @@ export default function PatientRoster({
         patientId={openId}
         patientName={openPatient ? `${openPatient.first_name} ${openPatient.last_name}` : ''}
         chiefComplaint={openPatient?.chief_complaint ?? null}
+        deliveryChannel={openPatient?.delivery_channel ?? 'sms'}
         onClose={() => setOpenId(null)}
         userRole={userRole}
       />
